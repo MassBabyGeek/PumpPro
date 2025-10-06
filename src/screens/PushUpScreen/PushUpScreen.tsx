@@ -1,5 +1,5 @@
 import React from 'react';
-import {Text, View, StyleSheet, Animated, Dimensions} from 'react-native';
+import {Text, View, StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import GradientButton from '../../components/GradientButton/GradientButton';
 import appColors from '../../assets/colors';
@@ -14,10 +14,8 @@ import {TYPE_LABELS, VARIANT_LABELS} from '../../types/workout.types';
 import {FREE_MODE_STANDARD} from '../../data/workoutPrograms.mock';
 import {ScrollView} from 'react-native-gesture-handler';
 import {useWorkout} from '../../hooks';
-import {AppTitle} from '../../components';
 import Icon from 'react-native-vector-icons/Ionicons';
-
-const {width, height} = Dimensions.get('window');
+import PushUpProgressBar from './component/PushUpProgressBar';
 
 const PushUpScreen = () => {
   const navigation = useNavigation<LibreScreenNavigationProp>();
@@ -28,26 +26,15 @@ const PushUpScreen = () => {
     workoutState,
     distance,
     setDistance,
+    cameraActive,
     incrementRep,
     togglePause,
-    stop,
-    completeCurrentSet,
+    stopWorkout,
     getCurrentSetProgress,
-    isCurrentSetComplete,
   } = useWorkout(program);
 
-  // Si l'entraînement est terminé, aller au résumé
-  React.useEffect(() => {
-    if (workoutState?.isCompleted) {
-      const session = stop();
-      if (session) {
-        navigation.navigate('PushUpSummary', {session});
-      }
-    }
-  }, [workoutState?.isCompleted, navigation]);
-
   const handleStop = () => {
-    const session = stop();
+    const session = stopWorkout();
     if (session) {
       navigation.navigate('PushUpSummary', {session});
     }
@@ -110,7 +97,7 @@ const PushUpScreen = () => {
 
         {/* Caméra cachée */}
         <PushUpCamera
-          isActive={!workoutState.isPaused && !isResting}
+          isActive={cameraActive}
           setPushUpCount={incrementRep}
           setDistance={setDistance}
         />
@@ -139,23 +126,25 @@ const PushUpScreen = () => {
               <LinearGradient
                 colors={[`${appColors.primary}15`, `${appColors.accent}15`]}
                 style={styles.counterGradient}>
-                <View style={styles.counterCircle}>
-                  <Text style={styles.counterLabel}>POMPES</Text>
-                  <Text style={styles.counterText}>
-                    {workoutState.currentReps}
-                  </Text>
-                  {workoutState.targetRepsForCurrentSet && (
-                    <Text style={styles.targetText}>
-                      / {workoutState.targetRepsForCurrentSet}
+                <View style={styles.counterGradientContainer}>
+                  <View style={styles.counterCircle}>
+                    <Text style={styles.counterLabel}>POMPES</Text>
+                    <Text style={styles.counterText}>
+                      {workoutState.currentReps}
                     </Text>
-                  )}
-                  {workoutState.targetRepsForCurrentSet && (
-                    <View style={styles.progressIndicator}>
-                      <View
-                        style={[styles.progressFill, {width: `${progress}%`}]}
-                      />
-                    </View>
-                  )}
+                    {workoutState.targetRepsForCurrentSet && (
+                      <Text style={styles.targetText}>
+                        / {workoutState.targetRepsForCurrentSet}
+                      </Text>
+                    )}
+                    {workoutState.targetRepsForCurrentSet && (
+                      <View style={styles.progressIndicator}>
+                        <View
+                          style={[styles.progressFill, {width: `${progress}%`}]}
+                        />
+                      </View>
+                    )}
+                  </View>
                 </View>
               </LinearGradient>
             </View>
@@ -164,8 +153,9 @@ const PushUpScreen = () => {
             <View style={styles.timerContainer}>
               <Icon
                 name="time-outline"
-                size={20}
-                color={appColors.textSecondary}
+                size={32}
+                color={appColors.primary}
+                style={styles.timerIcon}
               />
               <Text style={styles.timer}>
                 {formatTime(workoutState.elapsedTime)}
@@ -175,27 +165,16 @@ const PushUpScreen = () => {
         )}
 
         {/* Indicateur de distance */}
-        <View style={styles.distanceSection}>
-          <View style={styles.distanceHeader}>
-            <Icon name="eye-outline" size={18} color={appColors.primary} />
-            <Text style={styles.distanceLabel}>Détection du visage</Text>
-          </View>
-          <View style={styles.distanceBar}>
-            <LinearGradient
-              colors={[appColors.primary, appColors.accent]}
-              start={{x: 0, y: 0}}
-              end={{x: 1, y: 0}}
-              style={[styles.distanceFill, {width: `${distance ?? 0}%`}]}
-            />
-            <Text style={styles.distanceText}>
-              {distance !== null
-                ? distance > 70
-                  ? '✓ Position OK'
-                  : 'Ajustez votre position'
-                : '⚠ Visage non détecté'}
-            </Text>
-          </View>
-        </View>
+        <PushUpProgressBar
+          value={distance ?? 0}
+          label="Détection du visage"
+          height={30}
+          labels={[
+            '✓ Position OK',
+            'Ajustez votre position',
+            '⚠ Visage non détecté',
+          ]}
+        />
 
         {/* Statistiques en grille */}
         <View style={styles.statsGrid}>
@@ -203,9 +182,11 @@ const PushUpScreen = () => {
             <LinearGradient
               colors={[`${appColors.primary}15`, `${appColors.accent}15`]}
               style={styles.statCardGradient}>
-              <Icon name="barbell" size={24} color={appColors.primary} />
-              <Text style={styles.statValue}>{workoutState.totalReps}</Text>
-              <Text style={styles.statLabelText}>Total</Text>
+              <View style={styles.statCardGradientContainer}>
+                <Icon name="barbell" size={24} color={appColors.primary} />
+                <Text style={styles.statValue}>{workoutState.totalReps}</Text>
+                <Text style={styles.statLabelText}>Total</Text>
+              </View>
             </LinearGradient>
           </View>
 
@@ -213,9 +194,11 @@ const PushUpScreen = () => {
             <LinearGradient
               colors={[`${appColors.error}15`, `${appColors.warning}15`]}
               style={styles.statCardGradient}>
-              <Icon name="flame" size={24} color={appColors.error} />
-              <Text style={styles.statValue}>{calories}</Text>
-              <Text style={styles.statLabelText}>Calories</Text>
+              <View style={styles.statCardGradientContainer}>
+                <Icon name="flame" size={24} color={appColors.error} />
+                <Text style={styles.statValue}>{calories}</Text>
+                <Text style={styles.statLabelText}>Calories</Text>
+              </View>
             </LinearGradient>
           </View>
 
@@ -223,9 +206,11 @@ const PushUpScreen = () => {
             <LinearGradient
               colors={[`${appColors.success}15`, `${appColors.accent}15`]}
               style={styles.statCardGradient}>
-              <Icon name="speedometer" size={24} color={appColors.success} />
-              <Text style={styles.statValue}>{repsPerMin}</Text>
-              <Text style={styles.statLabelText}>Reps/min</Text>
+              <View style={styles.statCardGradientContainer}>
+                <Icon name="speedometer" size={24} color={appColors.success} />
+                <Text style={styles.statValue}>{repsPerMin}</Text>
+                <Text style={styles.statLabelText}>Reps/min</Text>
+              </View>
             </LinearGradient>
           </View>
         </View>
@@ -285,6 +270,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingTop: 60,
     justifyContent: 'center',
     paddingHorizontal: 20,
   },
@@ -351,7 +337,8 @@ const styles = StyleSheet.create({
   timer: {
     fontSize: 50,
     color: appColors.primary,
-    marginBottom: 20,
+    alignContent: 'center',
+    alignItems: 'center',
   },
   restContainer: {
     alignItems: 'center',
@@ -380,12 +367,18 @@ const styles = StyleSheet.create({
   },
   counterContainer: {
     marginVertical: 10,
+    width: '100%',
+    borderColor: appColors.primary,
+    borderWidth: 1,
+    borderRadius: 30,
   },
-  counterGradient: {
+  counterGradientContainer: {
     paddingVertical: 30,
     paddingHorizontal: 40,
-    borderRadius: 200,
+  },
+  counterGradient: {
     alignItems: 'center',
+    borderRadius: 30,
   },
   counterLabel: {
     fontSize: 14,
@@ -422,23 +415,11 @@ const styles = StyleSheet.create({
   },
   timerContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'center', // centre verticalement icône et texte
     gap: 8,
     marginTop: 12,
   },
-  progressBarContainer: {
-    width: 300,
-    height: 8,
-    backgroundColor: `${appColors.textSecondary}30`,
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginTop: -20,
-  },
-  progressBar: {
-    height: '100%',
-    backgroundColor: appColors.success,
-    borderRadius: 4,
-  },
+  timerIcon: {},
   buttonsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -497,27 +478,24 @@ const styles = StyleSheet.create({
     backgroundColor: appColors.primary,
     borderRadius: 20,
   },
-  distanceText: {
-    fontSize: 16,
-    color: appColors.background,
-    fontWeight: 'bold',
-    zIndex: 1,
-  },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
-    marginBottom: 16,
+    marginVertical: 10,
   },
   statCard: {
     flex: 1,
     minWidth: 100,
   },
   statCardGradient: {
-    padding: 16,
     borderRadius: 16,
-    alignItems: 'center',
     gap: 8,
+  },
+  statCardGradientContainer: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    paddingHorizontal: 16,
   },
   statValue: {
     fontSize: 24,

@@ -1,11 +1,11 @@
-import {useState, useEffect, useMemo} from 'react';
+import {useState, useMemo} from 'react';
 import {
   Challenge,
   ChallengeFilters,
   ChallengeSortBy,
   ChallengeCategory,
 } from '../types/challenge.types';
-import {DifficultyLevel, WorkoutProgramType} from '../types/workout.types';
+import {DifficultyLevel} from '../types/workout.types';
 import {MOCK_CHALLENGES} from '../data/challenges.mock';
 
 export const useChallenges = () => {

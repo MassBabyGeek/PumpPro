@@ -1,12 +1,19 @@
 import {useState, useEffect, useRef} from 'react';
 import {WorkoutEngine} from '../services/workoutEngine.service';
-import {WorkoutProgram, WorkoutState} from '../types/workout.types';
+import {
+  WorkoutProgram,
+  WorkoutState,
+  WorkoutSession,
+} from '../types/workout.types';
 
 export const useWorkout = (program: WorkoutProgram) => {
   const engineRef = useRef<WorkoutEngine | null>(null);
   const [workoutState, setWorkoutState] = useState<WorkoutState | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
+  const [cameraActive, setCameraActive] = useState(true);
+  const [session, setSession] = useState<WorkoutSession | null>(null);
 
+  // Instanciation du moteur
   useEffect(() => {
     const engine = new WorkoutEngine(program);
     engineRef.current = engine;
@@ -23,9 +30,24 @@ export const useWorkout = (program: WorkoutProgram) => {
     return () => {
       unsubscribe();
       engine.stop();
+      setCameraActive(false);
     };
   }, [program]);
 
+  // Gestion automatique de la caméra
+  useEffect(() => {
+    if (!workoutState) return;
+
+    if (workoutState.isCompleted) {
+      setCameraActive(false);
+    } else if (workoutState.isPaused || workoutState.isResting) {
+      setCameraActive(false);
+    } else {
+      setCameraActive(true);
+    }
+  }, [workoutState]);
+
+  // Gestion des répétitions
   const incrementRep = () => {
     if (engineRef.current) {
       engineRef.current.incrementRep();
@@ -42,11 +64,14 @@ export const useWorkout = (program: WorkoutProgram) => {
     }
   };
 
-  const stop = () => {
+  // Stop workout et sauvegarde session
+  const stopWorkout = (): WorkoutSession | null => {
     if (engineRef.current) {
-      const session = engineRef.current.getSession();
+      const currentSession = engineRef.current.getSession();
       engineRef.current.stop();
-      return session;
+      setCameraActive(false);
+      setSession(currentSession);
+      return currentSession;
     }
     return null;
   };
@@ -65,20 +90,19 @@ export const useWorkout = (program: WorkoutProgram) => {
     return engineRef.current?.isCurrentSetComplete() || false;
   };
 
-  const getSession = () => {
-    return engineRef.current?.getSession() || null;
-  };
+  const getSession = () => session || engineRef.current?.getSession() || null;
 
   return {
     workoutState,
     distance,
     setDistance,
+    cameraActive,
     incrementRep,
     togglePause,
-    stop,
+    stopWorkout, // ✅ fonction pour stopper le workout et récupérer la session
     completeCurrentSet,
     getCurrentSetProgress,
     isCurrentSetComplete,
-    getSession,
+    getSession, // ✅ retourne la session si existante
   };
 };

@@ -29,13 +29,23 @@ export const FREE_MODE_STANDARD: FreeModeConfig = {
   difficulty: 'BEGINNER',
 };
 
+export const TARGET_20_REPS: TargetRepsConfig = {
+  id: 'targer-20',
+  name: 'Objectif 20',
+  description: 'Atteins 20 pompes en une seule série',
+  type: 'TARGET_REPS',
+  variant: 'STANDARD',
+  difficulty: 'BEGINNER',
+  targetReps: 20,
+};
+
 export const TARGET_50_REPS: TargetRepsConfig = {
   id: 'target-50',
   name: 'Objectif 50',
   description: 'Atteins 50 pompes en une seule série',
   type: 'TARGET_REPS',
   variant: 'STANDARD',
-  difficulty: 'BEGINNER',
+  difficulty: 'INTERMEDIATE',
   targetReps: 50,
 };
 

@@ -103,8 +103,8 @@ const PushUpCamera = ({
     <Camera
       style={styles.hiddenCamera}
       device={device}
-      isActive={true}
-      frameProcessor={frameProcessor}
+      isActive={isActive}
+      frameProcessor={isActive ? frameProcessor : undefined}
     />
   );
 };
