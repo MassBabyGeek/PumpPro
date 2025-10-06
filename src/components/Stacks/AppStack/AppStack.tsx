@@ -4,11 +4,7 @@ import TabsNavigator from '../../TabsNavigator/TabsNavigator';
 
 const Stack = createStackNavigator();
 
-type AppStackProps = {
-  onLogout?: () => void;
-};
-
-const AppStack = ({onLogout}: AppStackProps) => {
+const AppStack = () => {
   return (
     <Stack.Navigator>
       {/* Ajout des onglets en tant que route principale après connexion */}

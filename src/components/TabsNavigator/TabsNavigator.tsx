@@ -5,6 +5,7 @@ import ProfileScreen from '../../screens/ProfileScreen/ProfileScreen';
 import appColors from '../../assets/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
 import TrainingStack from '../Stacks/TrainingStack/TrainingStack';
+import ChallengeStack from '../Stacks/ChallengeStack/ChallengeStack';
 
 // Créer les navigators
 const Tab = createBottomTabNavigator();
@@ -34,6 +35,21 @@ const TabsNavigator = () => {
               />
             ),
             tabBarLabel: 'Home',
+            headerShown: false,
+          }}
+        />
+        <Tab.Screen
+          name="Challenges"
+          component={ChallengeStack}
+          options={{
+            tabBarIcon: ({focused}) => (
+              <Icon
+                name={focused ? 'trophy' : 'trophy-outline'}
+                size={28}
+                color={focused ? appColors.primary : appColors.disabled}
+              />
+            ),
+            tabBarLabel: 'Challenges',
             headerShown: false,
           }}
         />

@@ -12,8 +12,6 @@ const TrainingStack = () => (
       headerShown: false,
       cardStyle: {
         flex: 1,
-        paddingHorizontal: 20,
-        paddingVertical: 80,
         backgroundColor: appColors.background,
       },
     }}>

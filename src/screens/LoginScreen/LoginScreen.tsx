@@ -8,23 +8,27 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../assets/colors';
+import {useAuth} from '../../hooks/useAuth';
+import GradientButton from '../../components/GradientButton/GradientButton';
 
 type LoginScreenProps = {
   navigation: any;
-  onLogin: () => void;
 };
 
-const LoginScreen = ({navigation, onLogin}: LoginScreenProps) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const LoginScreen = ({navigation}: LoginScreenProps) => {
+  const {login} = useAuth();
+  const [email, setEmail] = useState('test@test.com');
+  const [password, setPassword] = useState('test');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Erreur', 'Veuillez remplir tous les champs');
       return;
@@ -32,28 +36,33 @@ const LoginScreen = ({navigation, onLogin}: LoginScreenProps) => {
 
     setIsLoading(true);
 
-    // Simulation d'appel API
-    setTimeout(() => {
+    try {
+      await login(email, password);
+    } catch (error) {
+      Alert.alert(
+        'Erreur',
+        error instanceof Error ? error.message : 'Connexion échouée',
+      );
+    } finally {
       setIsLoading(false);
-      // Connexion réussie
-      onLogin();
-    }, 1500);
+    }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <LinearGradient
-        colors={[appColors.background, appColors.backgroundDark]}
-        style={styles.gradient}>
-        {/* Header */}
+    <LinearGradient
+      colors={[appColors.background, appColors.backgroundDark]}
+      style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}>
+        {/* Header avec Logo centré */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
             <LinearGradient
               colors={[appColors.primary, appColors.accent]}
               style={styles.logoGradient}>
-              <Icon name="fitness" size={50} color="#fff" />
+              <Icon name="fitness" size={60} color="#fff" />
             </LinearGradient>
           </View>
           <Text style={styles.title}>Bon retour! 👋</Text>
@@ -78,6 +87,7 @@ const LoginScreen = ({navigation, onLogin}: LoginScreenProps) => {
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
+              editable={!isLoading}
             />
           </View>
 
@@ -96,10 +106,12 @@ const LoginScreen = ({navigation, onLogin}: LoginScreenProps) => {
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               autoCapitalize="none"
+              editable={!isLoading}
             />
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
-              style={styles.eyeIcon}>
+              style={styles.eyeIcon}
+              disabled={isLoading}>
               <Icon
                 name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                 size={20}
@@ -109,25 +121,26 @@ const LoginScreen = ({navigation, onLogin}: LoginScreenProps) => {
           </View>
 
           <TouchableOpacity
-            onPress={() => navigation.navigate('ForgotPassword')}>
+            onPress={() => navigation.navigate('ForgotPassword')}
+            disabled={isLoading}>
             <Text style={styles.forgotPassword}>Mot de passe oublié?</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            activeOpacity={0.8}
+          <GradientButton
+            text="Se connecter"
+            icon="arrow-forward"
             onPress={handleLogin}
-            disabled={isLoading}>
-            <LinearGradient
-              colors={[appColors.primary, appColors.accent]}
-              start={{x: 0, y: 0}}
-              end={{x: 1, y: 0}}
-              style={styles.loginButton}>
-              <Text style={styles.loginButtonText}>
-                {isLoading ? 'Connexion...' : 'Se connecter'}
-              </Text>
-              {!isLoading && <Icon name="arrow-forward" size={20} color="#fff" />}
-            </LinearGradient>
-          </TouchableOpacity>
+            isLoading={isLoading}
+            disabled={isLoading}
+            style={styles.loginButtonContainer}
+          />
+
+          {/* Info de test */}
+          <View style={styles.testInfo}>
+            <Text style={styles.testInfoText}>
+              💡 Test: test@test.com / test
+            </Text>
+          </View>
 
           {/* Divider */}
           <View style={styles.divider}>
@@ -137,14 +150,18 @@ const LoginScreen = ({navigation, onLogin}: LoginScreenProps) => {
           </View>
 
           {/* Social buttons */}
-          <TouchableOpacity style={styles.socialButton}>
+          <TouchableOpacity
+            style={styles.socialButton}
+            disabled={isLoading}
+            onPress={() => Alert.alert('Info', 'Fonctionnalité à venir')}>
             <Icon name="logo-google" size={20} color={appColors.textPrimary} />
-            <Text style={styles.socialButtonText}>
-              Continuer avec Google
-            </Text>
+            <Text style={styles.socialButtonText}>Continuer avec Google</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.socialButton}>
+          <TouchableOpacity
+            style={styles.socialButton}
+            disabled={isLoading}
+            onPress={() => Alert.alert('Info', 'Fonctionnalité à venir')}>
             <Icon name="logo-apple" size={20} color={appColors.textPrimary} />
             <Text style={styles.socialButtonText}>Continuer avec Apple</Text>
           </TouchableOpacity>
@@ -152,15 +169,17 @@ const LoginScreen = ({navigation, onLogin}: LoginScreenProps) => {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('SignUp')}
+            disabled={isLoading}>
             <Text style={styles.footerText}>
               Pas encore de compte?{' '}
               <Text style={styles.footerLink}>S'inscrire</Text>
             </Text>
           </TouchableOpacity>
         </View>
-      </LinearGradient>
-    </KeyboardAvoidingView>
+      </ScrollView>
+    </LinearGradient>
   );
 };
 
@@ -168,88 +187,97 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  gradient: {
-    flex: 1,
-    paddingHorizontal: 24,
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 40,
   },
   header: {
     alignItems: 'center',
-    marginTop: 80,
-    marginBottom: 40,
+    marginBottom: 48,
   },
   logoContainer: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   logoGradient: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: appColors.primary,
-    shadowOffset: {width: 0, height: 8},
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: {width: 0, height: 10},
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 10,
   },
   title: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: 'bold',
     color: appColors.textPrimary,
     marginBottom: 8,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     color: appColors.textSecondary,
+    textAlign: 'center',
   },
   form: {
-    gap: 16,
+    marginBottom: 32,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: `${appColors.border}30`,
-    borderRadius: 12,
+    backgroundColor: `${appColors.border}40`,
+    borderRadius: 14,
     paddingHorizontal: 16,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: appColors.border,
+    marginBottom: 16,
   },
   inputIcon: {
     marginRight: 12,
   },
   input: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 18,
     fontSize: 16,
     color: appColors.textPrimary,
   },
   eyeIcon: {
-    padding: 4,
+    padding: 8,
   },
   forgotPassword: {
     fontSize: 14,
     color: appColors.primary,
     textAlign: 'right',
     fontWeight: '600',
+    marginBottom: 24,
   },
-  loginButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
+  loginButtonContainer: {
+    marginBottom: 16,
+  },
+  testInfo: {
+    backgroundColor: `${appColors.primary}15`,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderRadius: 12,
-    gap: 8,
-    marginTop: 8,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: `${appColors.primary}30`,
   },
-  loginButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
+  testInfoText: {
+    fontSize: 13,
+    color: appColors.textSecondary,
+    textAlign: 'center',
+    fontWeight: '500',
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 8,
+    marginVertical: 24,
   },
   dividerLine: {
     flex: 1,
@@ -258,7 +286,7 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     paddingHorizontal: 16,
-    fontSize: 12,
+    fontSize: 13,
     color: appColors.textSecondary,
     fontWeight: '600',
   },
@@ -266,12 +294,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: `${appColors.border}30`,
-    borderWidth: 1,
+    paddingVertical: 16,
+    borderRadius: 14,
+    backgroundColor: `${appColors.border}40`,
+    borderWidth: 1.5,
     borderColor: appColors.border,
     gap: 12,
+    marginBottom: 12,
   },
   socialButtonText: {
     fontSize: 15,
@@ -279,18 +308,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   footer: {
-    flex: 1,
-    justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingBottom: 40,
+    paddingTop: 32,
   },
   footerText: {
-    fontSize: 14,
+    fontSize: 15,
     color: appColors.textSecondary,
   },
   footerLink: {
     color: appColors.primary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });
 

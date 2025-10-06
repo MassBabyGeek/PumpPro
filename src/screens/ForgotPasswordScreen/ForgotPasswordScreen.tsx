@@ -5,13 +5,13 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../assets/colors';
+import GradientButton from '../../components/GradientButton/GradientButton';
 
 type ForgotPasswordScreenProps = {
   navigation: any;
@@ -47,12 +47,10 @@ const ForgotPasswordScreen = ({navigation}: ForgotPasswordScreenProps) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <LinearGradient
-        colors={[appColors.background, appColors.backgroundDark]}
-        style={styles.gradient}>
+    <LinearGradient
+      colors={[appColors.background, appColors.backgroundDark]}
+      style={styles.container}>
+      <View style={styles.scrollContent}>
         {/* Back button */}
         <TouchableOpacity
           style={styles.backButton}
@@ -93,27 +91,14 @@ const ForgotPasswordScreen = ({navigation}: ForgotPasswordScreenProps) => {
             />
           </View>
 
-          <TouchableOpacity
-            activeOpacity={0.8}
+          <GradientButton
+            text="Envoyer le lien de réinitialisation"
+            icon="send"
             onPress={handleResetPassword}
-            disabled={isLoading}>
-            <LinearGradient
-              colors={[appColors.primary, appColors.accent]}
-              start={{x: 0, y: 0}}
-              end={{x: 1, y: 0}}
-              style={styles.resetButton}>
-              {isLoading ? (
-                <Text style={styles.resetButtonText}>Envoi en cours...</Text>
-              ) : (
-                <>
-                  <Icon name="send" size={20} color="#fff" />
-                  <Text style={styles.resetButtonText}>
-                    Envoyer le lien de réinitialisation
-                  </Text>
-                </>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
+            isLoading={isLoading}
+            disabled={isLoading}
+            style={styles.resetButtonContainer}
+          />
         </View>
 
         {/* Footer */}
@@ -125,8 +110,8 @@ const ForgotPasswordScreen = ({navigation}: ForgotPasswordScreenProps) => {
             </Text>
           </TouchableOpacity>
         </View>
-      </LinearGradient>
-    </KeyboardAvoidingView>
+      </View>
+    </LinearGradient>
   );
 };
 
@@ -134,9 +119,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  gradient: {
+  scrollContent: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 40,
   },
   backButton: {
     width: 44,
@@ -145,8 +132,7 @@ const styles = StyleSheet.create({
     backgroundColor: `${appColors.border}50`,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 60,
-    marginBottom: 20,
+    marginBottom: 30,
   },
   header: {
     alignItems: 'center',
@@ -172,7 +158,6 @@ const styles = StyleSheet.create({
     color: appColors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
-    paddingHorizontal: 20,
   },
   form: {
     gap: 16,
@@ -180,10 +165,10 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: `${appColors.border}30`,
-    borderRadius: 12,
+    backgroundColor: `${appColors.border}40`,
+    borderRadius: 14,
     paddingHorizontal: 16,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: appColors.border,
   },
   inputIcon: {
@@ -191,28 +176,16 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 18,
     fontSize: 16,
     color: appColors.textPrimary,
   },
-  resetButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
-  },
-  resetButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
+  resetButtonContainer: {
+    marginBottom: 16,
   },
   footer: {
-    flex: 1,
-    justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingBottom: 40,
+    marginTop: 40,
   },
   footerText: {
     fontSize: 14,

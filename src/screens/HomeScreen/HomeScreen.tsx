@@ -1,36 +1,15 @@
 import React, {useState} from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import {StyleSheet, View, Text, ScrollView, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
+import {useNavigation} from '@react-navigation/native';
 import appColors from '../../assets/colors';
 import StatCard from '../../components/StatCard/StatCard';
-
-const {width} = Dimensions.get('window');
-
-// Mock data - À remplacer par de vraies données utilisateur
-const userStats = {
-  todayPushUps: 45,
-  weeklyTotal: 287,
-  personalBest: 62,
-  weekStreak: 12,
-  averagePerDay: 41,
-  totalAllTime: 3420,
-};
-
-const leaderboard = [
-  {id: 1, name: 'Alex M.', score: 892, rank: 1},
-  {id: 2, name: 'Sarah K.', score: 854, rank: 2},
-  {id: 3, name: 'Mike R.', score: 831, rank: 3},
-  {id: 4, name: 'Emma L.', score: 789, rank: 4},
-  {id: 5, name: 'Tom W.', score: 756, rank: 5},
-];
+import AppTitle from '../../components/AppTitle/AppTitle';
+import SectionTitle from '../../components/SectionTitle/SectionTitle';
+import ProgramCard from '../../components/ProgramCard/ProgramCard';
+import {useUserStats, useLeaderboard} from '../../hooks';
+import {FREE_MODE_STANDARD} from '../../data/workoutPrograms.mock';
 
 const motivationalQuotes = [
   '💪 Chaque pompe est un pas vers la meilleure version de toi-même',
@@ -69,21 +48,37 @@ const quickPrograms = [
 ];
 
 const HomeScreen = () => {
+  const navigation = useNavigation<any>();
+  const {stats} = useUserStats();
+  const {leaderboard} = useLeaderboard();
   const [currentQuote] = useState(
     motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)],
   );
 
+  const handleProgramPress = () => {
+    // Navigue vers l'écran d'entraînement avec le programme par défaut
+    // "PushUp" est le nom du Tab qui contient le TrainingStack
+    navigation.navigate('PushUp', {
+      screen: 'Libre',
+      params: {program: FREE_MODE_STANDARD},
+    });
+  };
+
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <LinearGradient
+      colors={[appColors.background, appColors.backgroundDark]}
+      style={styles.gradientContainer}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled">
       {/* Header avec salutation */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Salut Champion! 👋</Text>
-          <Text style={styles.subGreeting}>Prêt à repousser tes limites?</Text>
-        </View>
-        <TouchableOpacity style={styles.notificationButton}>
-          <Icon name="notifications-outline" size={24} color={appColors.icon} />
-        </TouchableOpacity>
+        <AppTitle
+          greeting="Salut Champion! 👋"
+          subGreeting="Prêt à repousser tes limites?"
+        />
       </View>
 
       {/* Citation motivante */}
@@ -105,18 +100,18 @@ const HomeScreen = () => {
 
       {/* Stats du jour */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📊 Aujourd'hui</Text>
+        <SectionTitle title="📊 Aujourd'hui" />
         <View style={styles.statsGrid}>
           <StatCard
             icon="fitness"
             label="Pompes"
-            value={userStats.todayPushUps}
+            value={stats.todayPushUps}
             color={appColors.primary}
           />
           <StatCard
             icon="flame"
             label="Série actuelle"
-            value={userStats.weekStreak}
+            value={stats.weekStreak}
             unit="jours"
             color={appColors.error}
           />
@@ -125,53 +120,39 @@ const HomeScreen = () => {
 
       {/* Programmes rapides */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>⚡ Démarrage rapide</Text>
+        <SectionTitle title="⚡ Démarrage rapide" />
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.programsScroll}>
           {quickPrograms.map(program => (
-            <TouchableOpacity key={program.id} activeOpacity={0.8}>
-              <LinearGradient
-                colors={[`${program.color}00`, `${program.color}80`]}
-                style={styles.programCard}>
-                <View style={styles.programContent}>
-                  <Icon
-                    name={program.icon}
-                    size={32}
-                    color={program.color}
-                    style={styles.programIcon}
-                  />
-                  <Text style={styles.programTitle}>{program.title}</Text>
-                  <Text style={styles.programDescription}>
-                    {program.description}
-                  </Text>
-                  <View style={styles.programBadge}>
-                    <Text style={[styles.programReps, {color: program.color}]}>
-                      {program.reps} reps
-                    </Text>
-                  </View>
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
+            <ProgramCard
+              key={program.id}
+              title={program.title}
+              description={program.description}
+              reps={program.reps}
+              icon={program.icon}
+              color={program.color}
+              onPress={handleProgramPress}
+            />
           ))}
         </ScrollView>
       </View>
 
       {/* Stats hebdomadaires */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📈 Cette semaine</Text>
+        <SectionTitle title="📈 Cette semaine" />
         <View style={styles.statsGrid}>
           <StatCard
             icon="bar-chart"
             label="Total"
-            value={userStats.weeklyTotal}
+            value={stats.weeklyTotal}
             color={appColors.success}
           />
           <StatCard
             icon="trending-up"
             label="Moyenne/jour"
-            value={userStats.averagePerDay}
+            value={stats.averagePerDay}
             color={appColors.accent}
           />
         </View>
@@ -179,13 +160,13 @@ const HomeScreen = () => {
           <StatCard
             icon="trophy"
             label="Record perso"
-            value={userStats.personalBest}
+            value={stats.personalBest}
             color={appColors.warning}
           />
           <StatCard
             icon="stats-chart"
             label="Total"
-            value={userStats.totalAllTime}
+            value={stats.totalAllTime}
             color={appColors.primary}
           />
         </View>
@@ -193,12 +174,11 @@ const HomeScreen = () => {
 
       {/* Classement */}
       <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>🏆 Classement hebdo</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAllText}>Voir tout</Text>
-          </TouchableOpacity>
-        </View>
+        <SectionTitle
+          title="🏆 Classement hebdo"
+          actionText="Voir tout"
+          onActionPress={() => {}}
+        />
         <View style={styles.leaderboardCard}>
           {leaderboard.map((user, index) => (
             <View
@@ -239,19 +219,22 @@ const HomeScreen = () => {
       </View>
 
       <View style={styles.bottomSpacing} />
-    </ScrollView>
+      </ScrollView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
+  gradientContainer: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: appColors.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 20,
@@ -307,23 +290,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingHorizontal: 20,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: appColors.textPrimary,
-    marginBottom: 16,
-  },
-  seeAllText: {
-    fontSize: 14,
-    color: appColors.primary,
-    fontWeight: '600',
-  },
   statsGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -332,43 +298,6 @@ const styles = StyleSheet.create({
   programsScroll: {
     gap: 12,
     paddingRight: 20,
-  },
-  programCard: {
-    width: width * 0.4,
-    flexDirection: 'column',
-    alignItems: 'center',
-    borderRadius: 16,
-  },
-  programContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  programIcon: {
-    marginBottom: 8,
-  },
-  programTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: appColors.textPrimary,
-    marginBottom: 4,
-  },
-  programDescription: {
-    fontSize: 12,
-    color: appColors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  programBadge: {
-    backgroundColor: `${appColors.background}80`,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  programReps: {
-    fontSize: 13,
-    fontWeight: 'bold',
   },
   leaderboardCard: {
     backgroundColor: `${appColors.border}30`,

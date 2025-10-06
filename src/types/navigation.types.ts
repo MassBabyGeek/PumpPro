@@ -1,5 +1,6 @@
 import {RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {WorkoutProgram, WorkoutSession} from './workout.types';
 
 // Types pour AuthStack
 export type AuthStackParamList = {
@@ -10,13 +11,11 @@ export type AuthStackParamList = {
 // Types pour TrainingStack
 export type TrainingStackParamList = {
   Training: undefined;
-  Libre: undefined;
+  Libre: {program?: WorkoutProgram};
   Timer: {duration: number};
   Serie: {sets: number; reps: number};
   PushUpSummary: {
-    pushUpCount: number;
-    elapsedTime: number;
-    calories: string;
+    session: WorkoutSession;
   };
 };
 
@@ -36,6 +35,13 @@ export type AppStackParamList = {
 export type TrainingScreenNavigationProp = StackNavigationProp<
   TrainingStackParamList,
   'Training'
+>;
+
+export type LibreScreenRouteProp = RouteProp<TrainingStackParamList, 'Libre'>;
+
+export type LibreScreenNavigationProp = StackNavigationProp<
+  TrainingStackParamList,
+  'Libre'
 >;
 
 export type PushUpSummaryScreenRouteProp = RouteProp<

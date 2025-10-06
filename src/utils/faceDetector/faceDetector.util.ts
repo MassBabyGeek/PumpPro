@@ -13,13 +13,9 @@ const {MIN_FACE_WIDTH, MAX_FACE_WIDTH, CLOSE_THRESHOLD, FAR_THRESHOLD} =
  * @returns Distance normalisée entre 0 et 100
  */
 export function normalizeDistance(faceWidth: number): number {
-  // Plus le visage est large, plus il est proche
-  // On inverse la logique: grande largeur = grande distance normalisée
-  const normalized =
+  const percentage =
     ((faceWidth - MIN_FACE_WIDTH) / (MAX_FACE_WIDTH - MIN_FACE_WIDTH)) * 100;
-
-  // Limiter entre 0 et 100
-  return Math.max(0, Math.min(100, Math.round(normalized)));
+  return Math.round(Math.max(0, Math.min(100, percentage)));
 }
 
 export function onFacesDetected(

@@ -33,7 +33,11 @@ type PushUpCameraProps = {
   setDistance?: Dispatch<SetStateAction<number | null>>;
 };
 
-const PushUpCamera = ({setPushUpCount, isActive, setDistance}: PushUpCameraProps) => {
+const PushUpCamera = ({
+  setPushUpCount,
+  isActive,
+  setDistance,
+}: PushUpCameraProps) => {
   const [hasPermission, setHasPermission] = useState(false);
   const [estimatedDistance, setEstimatedDistance] = useState<number | null>(
     null,
@@ -64,7 +68,7 @@ const PushUpCamera = ({setPushUpCount, isActive, setDistance}: PushUpCameraProps
               PermissionsAndroid.PERMISSIONS.CAMERA,
             )
           : await Camera.requestCameraPermission();
-      setHasPermission(permission === 'granted' || permission === 'authorized');
+      setHasPermission(permission === 'granted' || permission === 'denied');
     })();
   }, []);
 

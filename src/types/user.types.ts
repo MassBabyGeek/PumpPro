@@ -4,8 +4,8 @@ export type UserProfile = {
   email: string;
   avatar?: string;
   age?: number;
-  weight?: number; // kg
-  height?: number; // cm
+  weight?: number;
+  height?: number;
   goal?: string;
   joinDate: string;
 };
@@ -21,7 +21,7 @@ export type DayStats = {
   totalPushUps: number;
   totalWorkouts: number;
   totalCalories: number;
-  totalTime: number; // en secondes
+  totalTime: number;
   averagePushUps: number;
   bestSession: number;
 };
