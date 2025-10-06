@@ -92,13 +92,15 @@ const HomeScreen = () => {
         start={{x: 0, y: 0}}
         end={{x: 1, y: 1}}
         style={styles.quoteCard}>
-        <Icon
-          name="chatbox-ellipses"
-          size={24}
-          color={appColors.primary}
-          style={styles.quoteIcon}
-        />
-        <Text style={styles.quoteText}>{currentQuote}</Text>
+        <View style={styles.quoteContent}>
+          <Icon
+            name="chatbox-ellipses"
+            size={24}
+            color={appColors.primary}
+            style={styles.quoteIcon}
+          />
+          <Text style={styles.quoteText}>{currentQuote}</Text>
+        </View>
       </LinearGradient>
 
       {/* Stats du jour */}
@@ -131,22 +133,24 @@ const HomeScreen = () => {
           {quickPrograms.map(program => (
             <TouchableOpacity key={program.id} activeOpacity={0.8}>
               <LinearGradient
-                colors={[`${program.color}20`, `${program.color}30`]}
+                colors={[`${program.color}00`, `${program.color}80`]}
                 style={styles.programCard}>
-                <Icon
-                  name={program.icon}
-                  size={32}
-                  color={program.color}
-                  style={styles.programIcon}
-                />
-                <Text style={styles.programTitle}>{program.title}</Text>
-                <Text style={styles.programDescription}>
-                  {program.description}
-                </Text>
-                <View style={styles.programBadge}>
-                  <Text style={[styles.programReps, {color: program.color}]}>
-                    {program.reps} reps
+                <View style={styles.programContent}>
+                  <Icon
+                    name={program.icon}
+                    size={32}
+                    color={program.color}
+                    style={styles.programIcon}
+                  />
+                  <Text style={styles.programTitle}>{program.title}</Text>
+                  <Text style={styles.programDescription}>
+                    {program.description}
                   </Text>
+                  <View style={styles.programBadge}>
+                    <Text style={[styles.programReps, {color: program.color}]}>
+                      {program.reps} reps
+                    </Text>
+                  </View>
                 </View>
               </LinearGradient>
             </TouchableOpacity>
@@ -272,17 +276,22 @@ const styles = StyleSheet.create({
   },
   quoteCard: {
     marginHorizontal: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
     borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
     marginBottom: 24,
   },
+  quoteContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    width: '100%',
+  },
   quoteIcon: {
-    marginRight: 12,
-    width: 24,
     height: 24,
+    width: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   quoteText: {
     flex: 1,
@@ -292,6 +301,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: appColors.textPrimary,
     fontWeight: '500',
+    width: '85%',
   },
   section: {
     marginBottom: 24,
@@ -325,9 +335,15 @@ const styles = StyleSheet.create({
   },
   programCard: {
     width: width * 0.4,
-    borderRadius: 16,
+    flexDirection: 'column',
     alignItems: 'center',
+    borderRadius: 16,
+  },
+  programContent: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
   },
   programIcon: {
     marginBottom: 8,
