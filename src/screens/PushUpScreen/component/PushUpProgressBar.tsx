@@ -57,7 +57,7 @@ const PushUpProgressBar: React.FC<PushUpProgressBarProps> = ({
     value !== null ? (value > 70 ? labels[0] : labels[1]) : labels[2];
 
   return (
-    <View style={[styles.container, {width}]}>
+    <View style={[styles.container, {width: width as number}]}>
       <View style={styles.distanceHeader}>
         <Icon
           name="eye-outline"

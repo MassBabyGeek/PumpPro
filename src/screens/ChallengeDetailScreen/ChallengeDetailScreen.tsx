@@ -1,58 +1,126 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useRoute, useNavigation} from '@react-navigation/native';
 import appColors from '../../assets/colors';
 import {useChallenges} from '../../hooks';
-import TaskItem from '../../components/TaskItem/TaskItem';
 import ProgressBar from '../../components/ProgressBar/ProgressBar';
 import {GradientButton} from '../../components';
 import {ChallengeTask} from '../../types/challenge.types';
-import {DIFFICULTY_LABELS, VARIANT_LABELS} from '../../types/workout.types';
+import {WorkoutProgram} from '../../types/workout.types';
+import ChallengeInfoSection from './component/ChallengeInfoSection';
+import StatsGrid from './component/StatsGrid';
+import TasksSection from './component/TasksSection';
+import {RefreshControl} from 'react-native-gesture-handler';
+import LoaderScreen from '../LoaderScreen/LoaderScreen';
 
 const ChallengeDetailScreen = () => {
   const route = useRoute<any>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const {challengeId} = route.params;
 
-  const {getChallengeById, toggleTaskCompletion, getChallengeProgress} =
-    useChallenges();
+  const {
+    isLoading,
+    selectedChallenge,
+    refreshChallengesById,
+    getChallengeProgress,
+    convertTaskToProgram,
+    convertChallengeToProgram,
+  } = useChallenges(challengeId);
 
-  const challenge = getChallengeById(challengeId);
+  useEffect(() => {
+    console.log('[ChallengeDetail] selectedChallenge:', selectedChallenge);
+  }, [selectedChallenge]);
+
   const progress = getChallengeProgress(challengeId);
 
-  if (!challenge) {
+  if (isLoading) {
+    return <LoaderScreen />;
+  }
+
+  if (!selectedChallenge) {
     return (
       <LinearGradient
         colors={[appColors.background, appColors.backgroundDark]}
         style={styles.gradient}>
-        <View style={styles.errorContainer}>
-          <Icon name="alert-circle" size={64} color={appColors.error} />
-          <Text style={styles.errorText}>Challenge non trouvé</Text>
-        </View>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={() => refreshChallengesById(challengeId)}
+              tintColor={appColors.primary}
+            />
+          }>
+          <View style={styles.errorContainer}>
+            <Icon name="alert-circle" size={64} color={appColors.error} />
+            <Text style={styles.errorText}>Challenge non trouvé</Text>
+          </View>
+        </ScrollView>
       </LinearGradient>
     );
   }
 
-  const completedTasks = challenge.tasks?.filter(t => t.completed).length || 0;
-  const totalTasks = challenge.tasks?.length || 0;
+  const completedTasks =
+    selectedChallenge.challengeTasks?.filter(t => t.userProgress?.completed).length || 0;
+  const totalTasks = selectedChallenge.challengeTasks?.length || 0;
 
-  const handleTaskPress = (task: ChallengeTask) => {
-    if (task.completed || task.isLocked) return;
-    // TODO: Navigate to workout screen with this task
-    console.log('Start task:', task.title);
-  };
+  const handleTaskPress = (task: ChallengeTask | null) => {
+    if (task && (task.userProgress?.completed || task.isLocked)) {
+      return;
+    }
 
-  const handleToggleComplete = (taskId: string) => {
-    toggleTaskCompletion(challengeId, taskId);
+    let program: WorkoutProgram | null = null;
+    let currentTaskId: string | undefined;
+
+    if (task) {
+      // Challenge avec tasks: convertir la tâche en programme
+      program = convertTaskToProgram(task, selectedChallenge.difficulty);
+      currentTaskId = task.id;
+      console.log(
+        '[ChallengeDetail] Starting task:',
+        task.title,
+        'with program:',
+        program,
+      );
+    } else {
+      // Challenge sans tasks: convertir le challenge directement
+      program = convertChallengeToProgram(selectedChallenge);
+      console.log(
+        '[ChallengeDetail] Starting simple challenge:',
+        selectedChallenge.title,
+        'with program:',
+        program,
+      );
+    }
+
+    // Naviguer vers PushUpScreen avec les params challenge
+    navigation.navigate('PushUp', {
+      screen: 'Libre',
+      params: {
+        program,
+        challengeId: selectedChallenge.id,
+        taskId: currentTaskId,
+      },
+    });
   };
 
   return (
     <LinearGradient
       colors={[appColors.background, appColors.backgroundDark]}
       style={styles.gradient}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={() => refreshChallengesById(challengeId)}
+            tintColor={appColors.primary}
+          />
+        }>
         {/* Header */}
         <View style={styles.header}>
           <Icon
@@ -65,140 +133,56 @@ const ChallengeDetailScreen = () => {
         </View>
 
         {/* Challenge Info */}
-        <View style={styles.challengeInfo}>
-          <View style={styles.iconContainer}>
-            <Icon
-              name={challenge.iconName}
-              size={48}
-              color={challenge.iconColor}
-            />
-          </View>
-
-          <Text style={styles.title}>{challenge.title}</Text>
-          <Text style={styles.description}>{challenge.description}</Text>
-
-          {/* Badges */}
-          <View style={styles.badges}>
-            <View
-              style={[
-                styles.difficultyBadge,
-                {backgroundColor: `${challenge.iconColor}20`},
-              ]}>
-              <Text style={[styles.badgeText, {color: challenge.iconColor}]}>
-                {DIFFICULTY_LABELS[challenge.difficulty]}
-              </Text>
-            </View>
-            <View style={styles.pointsBadge}>
-              <Icon name="star" size={14} color={appColors.warning} />
-              <Text style={styles.pointsText}>{challenge.points} pts</Text>
-            </View>
-            {challenge.isOfficial && (
-              <View style={styles.officialBadge}>
-                <Icon
-                  name="checkmark-circle"
-                  size={14}
-                  color={appColors.primary}
-                />
-                <Text style={styles.officialText}>Officiel</Text>
-              </View>
-            )}
-          </View>
-        </View>
+        <ChallengeInfoSection
+          iconName={selectedChallenge.iconName}
+          iconColor={selectedChallenge.iconColor}
+          title={selectedChallenge.title}
+          description={selectedChallenge.description}
+          difficulty={selectedChallenge.difficulty}
+          points={selectedChallenge.points}
+          isOfficial={selectedChallenge.isOfficial}
+        />
 
         {/* Progress Section */}
-        {challenge.tasks && challenge.tasks.length > 0 && (
-          <View style={styles.progressSection}>
-            <View style={styles.progressHeader}>
-              <Text style={styles.sectionTitle}>Progression</Text>
-              <Text style={styles.progressText}>
-                {completedTasks}/{totalTasks} jours
+        {selectedChallenge.challengeTasks &&
+          selectedChallenge.challengeTasks.length > 0 && (
+            <View style={styles.progressSection}>
+              <View style={styles.progressHeader}>
+                <Text style={styles.sectionTitle}>Progression</Text>
+                <Text style={styles.progressText}>
+                  {completedTasks}/{totalTasks} jours
+                </Text>
+              </View>
+              <ProgressBar
+                current={completedTasks}
+                total={totalTasks}
+                showLabel={false}
+                height={12}
+                color={selectedChallenge.iconColor}
+              />
+              <Text style={styles.progressPercentage}>
+                {progress}% complété
               </Text>
             </View>
-            <ProgressBar
-              current={completedTasks}
-              total={totalTasks}
-              showLabel={false}
-              height={12}
-              color={challenge.iconColor}
-            />
-            <Text style={styles.progressPercentage}>{progress}% complété</Text>
-          </View>
-        )}
+          )}
 
         {/* Stats Grid */}
-        <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <LinearGradient
-              colors={[`${appColors.primary}15`, `${appColors.accent}10`]}
-              style={styles.statGradient}>
-              <View style={styles.statGradientContainer}>
-                <Icon name="people" size={24} color={appColors.primary} />
-                <Text style={styles.statValue}>
-                  {challenge.participants.toLocaleString()}
-                </Text>
-                <Text style={styles.statLabel}>Participants</Text>
-              </View>
-            </LinearGradient>
-          </View>
-
-          <View style={styles.statCard}>
-            <LinearGradient
-              colors={[`${appColors.success}15`, `${appColors.success}10`]}
-              style={styles.statGradient}>
-              <View style={styles.statGradientContainer}>
-                <Icon
-                  name="checkmark-done"
-                  size={24}
-                  color={appColors.success}
-                />
-                <Text style={styles.statValue}>
-                  {challenge.completions.toLocaleString()}
-                </Text>
-                <Text style={styles.statLabel}>Complétés</Text>
-              </View>
-            </LinearGradient>
-          </View>
-
-          <View style={styles.statCard}>
-            <LinearGradient
-              colors={[`${appColors.error}15`, `${appColors.error}10`]}
-              style={styles.statGradient}>
-              <View style={styles.statGradientContainer}>
-                <Icon name="heart" size={24} color={appColors.error} />
-                <Text style={styles.statValue}>
-                  {challenge.likes.toLocaleString()}
-                </Text>
-                <Text style={styles.statLabel}>Likes</Text>
-              </View>
-            </LinearGradient>
-          </View>
-        </View>
+        <StatsGrid
+          participants={selectedChallenge.participants}
+          completions={selectedChallenge.completions}
+          likes={selectedChallenge.likes}
+        />
 
         {/* Tasks List */}
-        {challenge.tasks && challenge.tasks.length > 0 && (
-          <View style={styles.tasksSection}>
-            <Text style={styles.sectionTitle}>
-              Programme - {challenge.totalDays} jours
-            </Text>
-            <Text style={styles.sectionSubtitle}>
-              Complétez chaque jour pour débloquer le suivant
-            </Text>
-
-            <View style={styles.tasksList}>
-              {challenge.tasks.map(task => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  onPress={handleTaskPress}
-                  onToggleComplete={handleToggleComplete}
-                />
-              ))}
-            </View>
-          </View>
-        )}
+        <TasksSection
+          tasks={selectedChallenge.challengeTasks || []}
+          totalDays={selectedChallenge.totalDays}
+          onTaskPress={handleTaskPress}
+          onToggleComplete={() => {}}
+        />
 
         {/* Action Button */}
-        {!challenge.userCompleted && (
+        {selectedChallenge.userCompleted !== true && (
           <View style={styles.actionSection}>
             <GradientButton
               text={
@@ -207,25 +191,18 @@ const ChallengeDetailScreen = () => {
                   : 'Continuer le challenge'
               }
               icon={completedTasks === 0 ? 'play' : 'arrow-forward'}
-              onPress={() => {
-                const nextTask = challenge.tasks?.find(
-                  t => !t.completed && !t.isLocked,
-                );
-                if (nextTask) {
-                  handleTaskPress(nextTask);
-                }
-              }}
+              onPress={() => handleTaskPress(null)}
             />
           </View>
         )}
 
         {/* Completed Banner */}
-        {challenge.userCompleted && (
+        {selectedChallenge.userCompleted === true && (
           <View style={styles.completedBanner}>
             <Icon name="trophy" size={48} color={appColors.warning} />
             <Text style={styles.completedTitle}>Challenge Complété!</Text>
             <Text style={styles.completedText}>
-              Vous avez gagné {challenge.points} points
+              Vous avez gagné {selectedChallenge.points} points
             </Text>
           </View>
         )}
@@ -239,6 +216,15 @@ const ChallengeDetailScreen = () => {
 const styles = StyleSheet.create({
   gradient: {
     flex: 1,
+  },
+  scrollContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   container: {
     flex: 1,

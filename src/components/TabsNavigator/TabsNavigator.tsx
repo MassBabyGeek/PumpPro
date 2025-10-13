@@ -45,6 +45,7 @@ const TabsNavigator = () => {
         options={{
           tabBarLabel: 'Accueil',
           tabBarIcon: renderTabIcon('home'),
+          popToTopOnBlur: true,
         }}
       />
       <Tab.Screen
@@ -53,6 +54,7 @@ const TabsNavigator = () => {
         options={{
           tabBarLabel: 'Challenges',
           tabBarIcon: renderTabIcon('trophy'),
+          popToTopOnBlur: true,
         }}
       />
       <Tab.Screen
@@ -61,6 +63,7 @@ const TabsNavigator = () => {
         options={{
           tabBarLabel: 'Push Up',
           tabBarIcon: renderTabIcon('fitness'),
+          popToTopOnBlur: true,
         }}
       />
       <Tab.Screen
@@ -69,6 +72,7 @@ const TabsNavigator = () => {
         options={{
           tabBarLabel: 'Profil',
           tabBarIcon: renderTabIcon('person'),
+          popToTopOnBlur: true,
         }}
       />
     </Tab.Navigator>

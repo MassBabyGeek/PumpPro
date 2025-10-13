@@ -35,8 +35,9 @@ const TaskItem: React.FC<TaskItemProps> = ({
     return '';
   };
 
-  const isLocked = task.isLocked && !task.completed;
-  const gradientColors = task.completed
+  const isCompleted = task.userProgress?.completed ?? false;
+  const isLocked = task.isLocked && !isCompleted;
+  const gradientColors = isCompleted
     ? [`${appColors.success}20`, `${appColors.success}10`]
     : isLocked
       ? [`${appColors.textSecondary}15`, `${appColors.textSecondary}05`]
@@ -56,13 +57,13 @@ const TaskItem: React.FC<TaskItemProps> = ({
               <View
                 style={[
                   styles.dayBadge,
-                  task.completed && styles.dayBadgeCompleted,
+                  isCompleted && styles.dayBadgeCompleted,
                   isLocked && styles.dayBadgeLocked,
                 ]}>
                 <Text
                   style={[
                     styles.dayText,
-                    task.completed && styles.dayTextCompleted,
+                    isCompleted && styles.dayTextCompleted,
                     isLocked && styles.dayTextLocked,
                   ]}>
                   J{task.day}
@@ -73,7 +74,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
                 <Text
                   style={[
                     styles.title,
-                    task.completed && styles.titleCompleted,
+                    isCompleted && styles.titleCompleted,
                     isLocked && styles.titleLocked,
                   ]}>
                   {task.title}
@@ -124,15 +125,15 @@ const TaskItem: React.FC<TaskItemProps> = ({
 
             {/* Right: Status */}
             <View style={styles.rightSection}>
-              {task.completed ? (
+              {isCompleted ? (
                 <View style={styles.completedBadge}>
                   <Icon
                     name="checkmark-circle"
                     size={32}
                     color={appColors.success}
                   />
-                  {task.score && (
-                    <Text style={styles.scoreText}>{task.score}</Text>
+                  {task.userProgress?.score && (
+                    <Text style={styles.scoreText}>{task.userProgress.score}</Text>
                   )}
                 </View>
               ) : isLocked ? (

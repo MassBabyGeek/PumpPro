@@ -1,4 +1,6 @@
-export type UserProfile = {
+import {BaseEntity} from './base.types';
+
+export interface UserProfile extends BaseEntity {
   id: string;
   name: string;
   email: string;
@@ -8,16 +10,19 @@ export type UserProfile = {
   height?: number;
   goal?: string;
   joinDate: string;
+}
+
+// Alias for backward compatibility
+export type User = UserProfile;
+
+export type AllStats = {
+  today: Stats;
+  week: Stats;
+  month: Stats;
+  year: Stats;
 };
 
-export type UserStats = {
-  today: DayStats;
-  week: DayStats;
-  month: DayStats;
-  year: DayStats;
-};
-
-export type DayStats = {
+export type Stats = {
   totalPushUps: number;
   totalWorkouts: number;
   totalCalories: number;

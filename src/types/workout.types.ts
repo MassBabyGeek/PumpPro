@@ -1,3 +1,5 @@
+import {BaseEntity} from './base.types';
+
 // ============================================================================
 // Base Types
 // ============================================================================
@@ -96,7 +98,7 @@ export type WorkoutProgram =
 // Workout Session & Progress Tracking
 // ============================================================================
 
-export interface SetResult {
+export interface SetResult extends BaseEntity {
   setNumber: number;
   targetReps?: number;
   completedReps: number;
@@ -104,9 +106,9 @@ export interface SetResult {
   timestamp: Date;
 }
 
-export interface WorkoutSession {
+export interface WorkoutSession extends BaseEntity {
   sessionId: string;
-  program: WorkoutProgram;
+  programId: string;
   startTime: Date;
   endTime?: Date;
   sets: SetResult[];

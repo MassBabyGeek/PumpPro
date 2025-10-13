@@ -1,4 +1,9 @@
-import {WorkoutProgramType, PushUpVariant, DifficultyLevel} from './workout.types';
+import {
+  WorkoutProgramType,
+  PushUpVariant,
+  DifficultyLevel,
+} from './workout.types';
+import {BaseEntity} from './base.types';
 
 // ============================================================================
 // Challenge Types
@@ -14,17 +19,34 @@ export type ChallengeCategory =
 export type ChallengeStatus = 'ACTIVE' | 'UPCOMING' | 'COMPLETED' | 'EXPIRED';
 
 // ============================================================================
+// User Challenge Task Progress
+// ============================================================================
+
+export interface UserChallengeTaskProgress {
+  id: string;
+  userId: string;
+  taskId: string;
+  challengeId: string;
+  completed: boolean;
+  completedAt?: Date;
+  score?: number;
+  attempts: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// ============================================================================
 // Challenge Tasks
 // ============================================================================
 
-export interface ChallengeTask {
+export interface ChallengeTask extends BaseEntity {
   id: string;
   challengeId: string;
   day: number; // Jour du challenge (1, 2, 3, etc.)
   title: string;
-  description: string;
-  type: WorkoutProgramType;
-  variant: PushUpVariant;
+  description?: string;
+  type?: WorkoutProgramType;
+  variant?: PushUpVariant;
 
   // Objectifs de la tâche
   targetReps?: number;
@@ -32,21 +54,20 @@ export interface ChallengeTask {
   sets?: number;
   repsPerSet?: number;
 
-  // État utilisateur
-  completed: boolean;
-  completedAt?: Date;
-  score?: number; // Score obtenu (nombre de reps réalisées, etc.)
+  // État utilisateur (nested object from backend)
+  userProgress?: UserChallengeTaskProgress;
 
   // Planning
   scheduledDate?: Date;
-  isLocked?: boolean; // Bloqué jusqu'à ce que la tâche précédente soit complétée
+  isLocked: boolean; // Bloqué jusqu'à ce que la tâche précédente soit complétée
+  score?: number;
 }
 
 // ============================================================================
 // Challenge Interface
 // ============================================================================
 
-export interface Challenge {
+export interface Challenge extends BaseEntity {
   id: string;
   title: string;
   description: string;
@@ -88,12 +109,11 @@ export interface Challenge {
   tags: string[];
 
   // Créateur (pour challenges communautaires)
-  createdBy?: string;
   creatorName?: string;
   isOfficial: boolean;
 
   // Tâches du challenge
-  tasks?: ChallengeTask[];
+  challengeTasks?: ChallengeTask[];
   totalDays?: number; // Nombre de jours du challenge
 }
 
@@ -122,7 +142,7 @@ export interface ChallengeFilters {
 // User Challenge Progress
 // ============================================================================
 
-export interface UserChallengeProgress {
+export interface UserChallengeProgress extends BaseEntity {
   challengeId: string;
   userId: string;
   progress: number; // 0-100%

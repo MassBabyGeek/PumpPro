@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
 import {AuthProvider} from './src/contexts/AuthContext';
 import {useAuth} from './src/hooks/useAuth';
 import AuthStack from './src/components/Stacks/AuthStack/AuthStack';
@@ -26,6 +27,7 @@ export default function App() {
   return (
     <AuthProvider>
       <AppNavigator />
+      <Toast />
     </AuthProvider>
   );
 }

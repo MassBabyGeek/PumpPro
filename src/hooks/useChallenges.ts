@@ -1,15 +1,22 @@
-import {useState, useMemo} from 'react';
+import {useState, useMemo, useEffect, useCallback} from 'react';
 import {
   Challenge,
   ChallengeFilters,
   ChallengeSortBy,
   ChallengeCategory,
+  ChallengeTask,
 } from '../types/challenge.types';
-import {DifficultyLevel} from '../types/workout.types';
-import {MOCK_CHALLENGES} from '../data/challenges.mock';
+import {DifficultyLevel, WorkoutProgram} from '../types/workout.types';
+import {challengeService} from '../services/api';
+import Toast from 'react-native-toast-message';
+import {useAuth} from './useAuth';
 
-export const useChallenges = () => {
-  const [challenges, setChallenges] = useState<Challenge[]>(MOCK_CHALLENGES);
+export const useChallenges = (challengeId?: string) => {
+  const {getToken} = useAuth();
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,71 +24,45 @@ export const useChallenges = () => {
     sortBy: 'POPULAR',
   });
 
-  // Filtrer et trier les challenges
-  const filteredChallenges = useMemo(() => {
-    let result = [...challenges];
-
-    // Filtre par catégorie
-    if (filters.category) {
-      result = result.filter(c => c.category === filters.category);
+  useEffect(() => {
+    if (challengeId) {
+      getChallengeById(challengeId);
     }
+  }, [challengeId]);
 
-    // Filtre par difficulté
-    if (filters.difficulty) {
-      result = result.filter(c => c.difficulty === filters.difficulty);
-    }
-
-    // Filtre par type
-    if (filters.type) {
-      result = result.filter(c => c.type === filters.type);
-    }
-
-    // Filtre par status
-    if (filters.status) {
-      result = result.filter(c => c.status === filters.status);
-    }
-
-    // Recherche par texte
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
-      result = result.filter(
-        c =>
-          c.title.toLowerCase().includes(query) ||
-          c.description.toLowerCase().includes(query) ||
-          c.tags.some(tag => tag.toLowerCase().includes(query)),
+  // Charger les challenges depuis l'API
+  const loadChallenges = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    const token = await getToken();
+    try {
+      const data = await challengeService.getChallenges(
+        filters,
+        token || undefined,
       );
+      setChallenges(data);
+    } catch (err) {
+      const errorMessage = 'Erreur lors du chargement des challenges';
+      setError(errorMessage);
+      Toast.show({
+        type: 'error',
+        text1: 'Erreur',
+        text2: errorMessage,
+      });
+    } finally {
+      setIsLoading(false);
     }
+  }, [filters]);
 
-    // Tri
-    switch (filters.sortBy) {
-      case 'POPULAR':
-        result.sort((a, b) => b.completions - a.completions);
-        break;
-      case 'LIKED':
-        result.sort((a, b) => b.likes - a.likes);
-        break;
-      case 'RECENT':
-        result.sort((a, b) => {
-          // Les challenges avec date de début plus récente en premier
-          const dateA = a.startDate?.getTime() || 0;
-          const dateB = b.startDate?.getTime() || 0;
-          return dateB - dateA;
-        });
-        break;
-      case 'DIFFICULTY':
-        const difficultyOrder = {BEGINNER: 0, INTERMEDIATE: 1, ADVANCED: 2};
-        result.sort(
-          (a, b) =>
-            difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty],
-        );
-        break;
-      case 'POINTS':
-        result.sort((a, b) => b.points - a.points);
-        break;
-    }
+  // Charger les challenges au montage et quand les filtres changent
+  useEffect(() => {
+    loadChallenges();
+  }, [loadChallenges]);
 
-    return result;
-  }, [challenges, filters]);
+  // Filtrer et trier les challenges (côté client pour performance)
+  const filteredChallenges = useMemo(() => {
+    return challenges; // Le tri/filtre est déjà fait par l'API
+  }, [challenges]);
 
   // Mettre à jour les filtres
   const updateFilters = (newFilters: Partial<ChallengeFilters>) => {
@@ -94,6 +75,83 @@ export const useChallenges = () => {
       ...prev,
       category: prev.category === category ? undefined : category,
     }));
+  };
+
+  // Fonction pour convertir une ChallengeTask en WorkoutProgram
+  const convertTaskToProgram = (
+    task: ChallengeTask,
+    challengeDifficulty: DifficultyLevel,
+  ): WorkoutProgram => {
+    const baseConfig = {
+      id: task.id,
+      name: task.title,
+      description: task.description || '',
+      variant: task.variant || 'STANDARD',
+      difficulty: challengeDifficulty || 'INTERMEDIATE',
+      type: task.type || 'TARGET_REPS',
+      restBetweenSets: 60,
+      isCustom: false,
+    };
+
+    switch (task.type || 'TARGET_REPS') {
+      case 'FREE_MODE':
+        return {
+          ...baseConfig,
+          type: 'FREE_MODE',
+        } as WorkoutProgram;
+
+      case 'TARGET_REPS':
+        return {
+          ...baseConfig,
+          type: 'TARGET_REPS',
+          targetReps: task.targetReps || 20,
+          timeLimit: task.duration,
+        } as WorkoutProgram;
+
+      case 'MAX_TIME':
+        return {
+          ...baseConfig,
+          type: 'MAX_TIME',
+          duration: task.duration || 120,
+          allowRest: true,
+        } as WorkoutProgram;
+
+      case 'SETS_REPS':
+        return {
+          ...baseConfig,
+          type: 'SETS_REPS',
+          sets: task.sets || 3,
+          repsPerSet: task.repsPerSet || 10,
+          restBetweenSets: 60,
+        } as WorkoutProgram;
+
+      default:
+        return {
+          ...baseConfig,
+          type: 'TARGET_REPS',
+          targetReps: task.targetReps || 20,
+        } as WorkoutProgram;
+    }
+  };
+
+  const convertChallengeToProgram = (challenge: Challenge): WorkoutProgram => {
+    const baseConfig: WorkoutProgram = {
+      id: challenge.id,
+      name: challenge.title,
+      description: challenge.description,
+      variant: challenge.variant,
+      difficulty: challenge.difficulty,
+      type: challenge.type,
+      restBetweenSets: challenge.duration,
+      isCustom: false,
+      createdBy: challenge.createdBy,
+      sets: challenge.sets ?? 0,
+      repsPerSet: challenge.repsPerSet ?? 0,
+      allowRest: true,
+      totalMinutes: challenge.duration,
+      targetReps: challenge.targetReps,
+    };
+    return baseConfig;
   };
 
   // Toggle difficulté
@@ -115,118 +173,197 @@ export const useChallenges = () => {
   };
 
   // Like/unlike challenge
-  const toggleLike = (challengeId: string) => {
-    setChallenges(prev =>
-      prev.map(c => {
-        if (c.id === challengeId) {
-          const newLiked = !c.userLiked;
-          return {
-            ...c,
-            userLiked: newLiked,
-            likes: newLiked ? c.likes + 1 : c.likes - 1,
-          };
-        }
-        return c;
-      }),
-    );
+  const toggleLike = async (challengeId: string) => {
+    const challenge = challenges?.find(c => c.id === challengeId);
+    if (!challenge) return;
+
+    const token = await getToken();
+    try {
+      if (challenge.userLiked) {
+        await challengeService.unlikeChallenge(challengeId, token || undefined);
+      } else {
+        await challengeService.likeChallenge(challengeId, token || undefined);
+      }
+
+      // Mettre à jour localement
+      setChallenges(prev =>
+        prev.map(c => {
+          if (c.id === challengeId) {
+            const newLiked = !c.userLiked;
+            return {
+              ...c,
+              userLiked: newLiked,
+              likes: newLiked ? c.likes + 1 : c.likes - 1,
+            };
+          }
+          return c;
+        }),
+      );
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Erreur',
+        text2: 'Impossible de modifier le like',
+      });
+    }
   };
 
   // Marquer un challenge comme complété
-  const completeChallenge = (challengeId: string) => {
-    setChallenges(prev =>
-      prev.map(c => {
-        if (c.id === challengeId) {
-          return {
-            ...c,
-            userCompleted: true,
-            completions: c.completions + 1,
-          };
-        }
-        return c;
-      }),
-    );
-  };
+  const completeChallenge = async (challengeId: string) => {
+    const token = await getToken();
+    try {
+      await challengeService.completeChallenge(challengeId, token || undefined);
 
-  // Toggle task completion
-  const toggleTaskCompletion = (challengeId: string, taskId: string) => {
-    setChallenges(prev =>
-      prev.map(challenge => {
-        if (challenge.id === challengeId && challenge.tasks) {
-          const updatedTasks = challenge.tasks.map(task => {
-            if (task.id === taskId) {
-              const newCompleted = !task.completed;
-              return {
-                ...task,
-                completed: newCompleted,
-                completedAt: newCompleted ? new Date() : undefined,
-              };
-            }
-            return task;
-          });
-
-          // Auto-unlock next task if this one is completed
-          const currentTaskIndex = updatedTasks.findIndex(t => t.id === taskId);
-          if (
-            currentTaskIndex >= 0 &&
-            updatedTasks[currentTaskIndex].completed &&
-            currentTaskIndex < updatedTasks.length - 1
-          ) {
-            updatedTasks[currentTaskIndex + 1] = {
-              ...updatedTasks[currentTaskIndex + 1],
-              isLocked: false,
+      setChallenges(prev =>
+        prev.map(c => {
+          if (c.id === challengeId) {
+            return {
+              ...c,
+              userCompleted: true,
+              completions: c.completions + 1,
             };
           }
+          return c;
+        }),
+      );
 
-          // Check if all tasks are completed
-          const allCompleted = updatedTasks.every(t => t.completed);
+      Toast.show({
+        type: 'success',
+        text1: 'Félicitations! 🎉',
+        text2: 'Challenge complété',
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Erreur',
+        text2: 'Impossible de compléter le challenge',
+      });
+    }
+  };
 
-          return {
-            ...challenge,
-            tasks: updatedTasks,
-            userCompleted: allCompleted,
-          };
-        }
-        return challenge;
-      }),
-    );
+  // Complete a task with score
+  const completeTask = async (
+    challengeId: string,
+    taskId: string,
+    score: number,
+  ) => {
+    const token = await getToken();
+    try {
+      await challengeService.completeTask(
+        challengeId,
+        taskId,
+        score,
+        token || undefined,
+      );
+
+      // Mettre à jour localement
+      setChallenges(prev =>
+        prev.map(challenge => {
+          if (challenge?.id === challengeId && challenge?.challengeTasks) {
+            const updatedTasks = challenge?.challengeTasks?.map(
+              challengeTask => {
+                if (challengeTask.id === taskId) {
+                  return {
+                    ...challengeTask,
+                    userProgress: {
+                      id: taskId,
+                      userId: '',
+                      taskId,
+                      challengeId,
+                      completed: true,
+                      completedAt: new Date(),
+                      score,
+                      attempts: 1,
+                      createdAt: new Date(),
+                      updatedAt: new Date(),
+                    },
+                  };
+                }
+                return challengeTask;
+              },
+            );
+
+            const allCompleted = updatedTasks?.every(t => t.userProgress?.completed);
+
+            return {
+              ...challenge,
+              challengeTasks: updatedTasks,
+              userCompleted: allCompleted,
+            };
+          }
+          return challenge;
+        }),
+      );
+
+      Toast.show({
+        type: 'success',
+        text1: 'Tâche complétée! ✅',
+        text2: `Score: ${score}`,
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Erreur',
+        text2: 'Impossible de compléter la tâche',
+      });
+    }
+  };
+
+  // Check if challenge is completed
+  const isChallengeCompleted = (challengeId: string): boolean => {
+    const challenge = challenges?.find(c => c.id === challengeId);
+    if (
+      !challenge ||
+      !challenge?.challengeTasks ||
+      challenge.challengeTasks?.length === 0
+    ) {
+      return false;
+    }
+    return challenge?.challengeTasks?.every(t => t.userProgress?.completed);
   };
 
   // Get challenge by ID
-  const getChallengeById = (challengeId: string) => {
-    return challenges.find(c => c.id === challengeId);
-  };
-
-  // Get challenge progress (percentage of tasks completed)
-  const getChallengeProgress = (challengeId: string): number => {
-    const challenge = challenges.find(c => c.id === challengeId);
-    if (!challenge || !challenge.tasks || challenge.tasks.length === 0) {
-      return 0;
-    }
-    const completedTasks = challenge.tasks.filter(t => t.completed).length;
-    return Math.round((completedTasks / challenge.tasks.length) * 100);
-  };
-
-  // Refresh challenges (simulé, serait un appel API)
-  const refreshChallenges = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      // Simuler un appel API
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setChallenges(MOCK_CHALLENGES);
-    } catch (err) {
-      setError('Erreur lors du chargement des challenges');
-    } finally {
+  const getChallengeById = async (challengeId: string) => {
+    if (!challengeId) return null;
+    if (!selectedChallenge || selectedChallenge.id !== challengeId) {
+      setIsLoading(true);
+      const token = await getToken();
+      const challenge = await challengeService.getChallengeById(
+        challengeId,
+        token || undefined,
+      );
+      setSelectedChallenge(challenge);
       setIsLoading(false);
     }
+    return selectedChallenge;
   };
 
-  // Stats sur les challenges filtrés
+  const refreshChallengesById = getChallengeById;
+
+  // Get challenge progress
+  const getChallengeProgress = useCallback(
+    (challengeId: string): number => {
+      if (!selectedChallenge || selectedChallenge.id !== challengeId) return 0;
+
+      const tasks = selectedChallenge.challengeTasks ?? [];
+      if (tasks.length === 0) return 0;
+
+      const completedTasks = tasks.filter(t => t.userProgress?.completed).length;
+      return Math.round((completedTasks / tasks.length) * 100);
+    },
+    [selectedChallenge],
+  );
+
+  // Refresh challenges
+  const refreshChallenges = loadChallenges;
+
+  // Stats
   const stats = useMemo(() => {
     return {
-      total: filteredChallenges.length,
-      completed: filteredChallenges.filter(c => c.userCompleted).length,
-      totalPoints: filteredChallenges.reduce((sum, c) => sum + c.points, 0),
+      total: filteredChallenges?.length || 0,
+      completed: filteredChallenges?.filter(c => c.userCompleted)?.length || 0,
+      totalPoints:
+        filteredChallenges?.reduce((sum, c) => sum + c.points, 0) || 0,
     };
   }, [filteredChallenges]);
 
@@ -237,16 +374,21 @@ export const useChallenges = () => {
     error,
     filters,
     stats,
+    selectedChallenge,
     updateFilters,
+    refreshChallengesById,
     toggleCategory,
     toggleDifficulty,
     setSortBy,
     resetFilters,
     toggleLike,
     completeChallenge,
-    toggleTaskCompletion,
+    completeTask,
+    isChallengeCompleted,
     getChallengeById,
     getChallengeProgress,
     refreshChallenges,
+    convertTaskToProgram,
+    convertChallengeToProgram,
   };
 };

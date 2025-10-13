@@ -15,6 +15,6 @@ export {useTimer} from './useTimer';
 export {useWorkoutStats} from './useWorkoutStats';
 export {useImagePicker} from './useImagePicker';
 export {useLeaderboard} from './useLeaderboard';
-export {useUserStats} from './useUserStats';
+export {useUser} from './useUser';
 export {useWorkout} from './useWorkout';
 export {useChallenges} from './useChallenges';

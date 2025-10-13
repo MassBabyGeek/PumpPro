@@ -1,40 +1,74 @@
-import React, {useState} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  Image,
-  ActivityIndicator,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import React, {useState, useEffect, useCallback} from 'react';
+import {View, Text, StyleSheet, ScrollView, Alert} from 'react-native';
+import Toast from 'react-native-toast-message';
+import {useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
 import AppTitle from '../../components/AppTitle/AppTitle';
-import StatCard from '../../components/StatCard/StatCard';
 import WorkoutChart from '../../components/WorkoutChart/WorkoutChart';
+import Footer from '../../components/Footer';
 import appColors from '../../assets/colors';
-import {MOCK_STATS} from '../../data/mockData';
-import {formatTime} from '../../utils/workout.utils';
 import {useImagePicker} from '../../hooks/useImagePicker';
 import {useAuth} from '../../hooks/useAuth';
-import {useModal} from '../../hooks/useModal';
 import QuoteCard from '../../components/QuoteCard/QuoteCard';
-import SectionTitle from '../../components/SectionTitle/SectionTitle';
-import InfoCard from '../../components/InfoCard/InfoCard';
 import LinearGradient from 'react-native-linear-gradient';
+import ProfileHeader from './component/ProfileHeader';
+import PersonalInfoSection from './component/PersonalInfoSection';
+import StatsSection from './component/StatsSection';
+import AccountActionsSection from './component/AccountActionsSection';
+import {AppStackParamList} from '../../types/navigation.types';
+import {userService} from '../../services/api';
+import {Stats} from '../../types/user.types';
+
+type ProfileScreenNavigationProp = StackNavigationProp<AppStackParamList>;
 
 const ProfileScreen = () => {
-  const {user, logout, updateUser} = useAuth();
-  const [stats] = useState(MOCK_STATS);
+  const navigation = useNavigation<ProfileScreenNavigationProp>();
+  const {user, logout, updateUser, deleteAccount, getToken} = useAuth();
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState<
     'today' | 'week' | 'month' | 'year'
   >('week');
 
   const {pickAndUploadImage, isUploading} = useImagePicker();
-  const logoutModal = useModal();
 
-  const currentStats = stats[selectedPeriod];
+  const loadStats = useCallback(async () => {
+    if (!user) return;
+
+    const token = await getToken();
+    try {
+      setIsLoadingStats(true);
+      const stats = await userService.getStats(
+        user.id,
+        selectedPeriod,
+        token || undefined,
+      );
+      setStats(stats);
+    } catch (error) {
+      console.error('Error loading user stats:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Erreur',
+        text2: 'Impossible de charger les statistiques',
+      });
+    } finally {
+      setIsLoadingStats(false);
+    }
+  }, [user, getToken, selectedPeriod]);
+
+  // Charger les statistiques utilisateur
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
+
+  const currentStats = stats || {
+    totalPushUps: 0,
+    totalWorkouts: 0,
+    totalCalories: 0,
+    totalTime: 0,
+    averagePushUps: 0,
+    bestSession: 0,
+  };
 
   const handleChangeAvatar = async () => {
     const imageUrl = await pickAndUploadImage();
@@ -42,15 +76,23 @@ const ProfileScreen = () => {
       // Mettre à jour l'avatar via le contexte
       try {
         await updateUser({avatar: imageUrl});
-        Alert.alert('Succès', 'Photo de profil mise à jour !');
+        Toast.show({
+          type: 'success',
+          text1: 'Succès',
+          text2: 'Photo de profil mise à jour !',
+        });
       } catch (error) {
-        Alert.alert('Erreur', 'Impossible de mettre à jour la photo de profil');
+        Toast.show({
+          type: 'error',
+          text1: 'Erreur',
+          text2: 'Impossible de mettre à jour la photo de profil',
+        });
       }
     }
   };
 
   const handleEditProfile = () => {
-    Alert.alert('Modifier le profil', 'Fonctionnalité à venir...');
+    navigation.navigate('EditProfile');
   };
 
   const handleDeleteAccount = () => {
@@ -64,7 +106,7 @@ const ProfileScreen = () => {
           style: 'destructive',
           onPress: async () => {
             // TODO: Implémenter la suppression du compte backend
-            await logout();
+            await deleteAccount();
             Alert.alert('Compte supprimé', 'Au revoir ! 👋');
           },
         },
@@ -81,8 +123,17 @@ const ProfileScreen = () => {
         onPress: async () => {
           try {
             await logout();
+            Toast.show({
+              type: 'success',
+              text1: 'Déconnexion réussie',
+              text2: 'À bientôt !',
+            });
           } catch (error) {
-            Alert.alert('Erreur', 'Impossible de se déconnecter');
+            Toast.show({
+              type: 'error',
+              text1: 'Erreur',
+              text2: 'Impossible de se déconnecter',
+            });
           }
         },
       },
@@ -120,149 +171,22 @@ const ProfileScreen = () => {
         />
 
         {/* Avatar et Info utilisateur */}
-        <View style={styles.profileHeader}>
-          <View style={styles.avatarContainer}>
-            {user.avatar ? (
-              <Image source={{uri: user.avatar}} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Icon name="person" size={48} color={appColors.textSecondary} />
-              </View>
-            )}
-            <TouchableOpacity
-              style={styles.editAvatarButton}
-              onPress={handleChangeAvatar}
-              disabled={isUploading}>
-              {isUploading ? (
-                <ActivityIndicator size="small" color={appColors.background} />
-              ) : (
-                <Icon name="camera" size={16} color={appColors.background} />
-              )}
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>{user.name}</Text>
-            <Text style={styles.userEmail}>{user.email}</Text>
-            {user.goal && (
-              <View style={styles.goalContainer}>
-                <Icon name="flag" size={14} color={appColors.primary} />
-                <Text style={styles.goalText}>{user.goal}</Text>
-              </View>
-            )}
-          </View>
-        </View>
+        <ProfileHeader
+          user={user}
+          isUploading={isUploading}
+          onChangeAvatar={handleChangeAvatar}
+        />
 
         {/* Infos personnelles */}
-        <View style={styles.section}>
-          <SectionTitle title="Informations" />
-          <View style={styles.infoGrid}>
-            {user.age && (
-              <InfoCard
-                icon="calendar-outline"
-                label="Âge"
-                value={`${user.age} ans`}
-              />
-            )}
-            {user.weight && (
-              <InfoCard
-                icon="fitness-outline"
-                label="Poids"
-                value={`${user.weight} kg`}
-              />
-            )}
-            {user.height && (
-              <InfoCard
-                icon="resize-outline"
-                label="Taille"
-                value={`${user.height} cm`}
-              />
-            )}
-            {user.joinDate && (
-              <InfoCard
-                icon="time-outline"
-                label="Membre depuis"
-                value={new Date(user.joinDate).toLocaleDateString('fr-FR', {
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              />
-            )}
-          </View>
-        </View>
+        <PersonalInfoSection user={user} />
 
         {/* Statistiques - Sélecteur de période */}
-        <View style={styles.section}>
-          <SectionTitle title="Statistiques" />
-          <View style={styles.periodSelector}>
-            {(['today', 'week', 'month', 'year'] as const).map(period => (
-              <TouchableOpacity
-                key={period}
-                style={[
-                  styles.periodButton,
-                  selectedPeriod === period && styles.activePeriod,
-                ]}
-                onPress={() => setSelectedPeriod(period)}>
-                <Text
-                  style={[
-                    styles.periodText,
-                    selectedPeriod === period && styles.activePeriodText,
-                  ]}>
-                  {period === 'today'
-                    ? 'Jour'
-                    : period === 'week'
-                      ? 'Semaine'
-                      : period === 'month'
-                        ? 'Mois'
-                        : 'Année'}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Cartes de stats */}
-          <View style={styles.statsGrid}>
-            <StatCard
-              icon="fitness"
-              label="Total pompes"
-              value={currentStats.totalPushUps}
-              color={appColors.primary}
-            />
-            <StatCard
-              icon="flame"
-              label="Calories"
-              value={currentStats.totalCalories.toFixed(0)}
-              unit="kcal"
-              color={appColors.accent}
-            />
-            <StatCard
-              icon="barbell"
-              label="Séances"
-              value={currentStats.totalWorkouts}
-              color={appColors.success}
-            />
-            <StatCard
-              icon="time"
-              label="Temps total"
-              value={formatTime(currentStats.totalTime)}
-              color={appColors.warning}
-            />
-            <StatCard
-              icon="trophy"
-              label="Meilleure session"
-              value={currentStats.bestSession}
-              unit="pompes"
-              color={appColors.primary}
-            />
-            <StatCard
-              icon="stats-chart"
-              label="Moyenne"
-              value={currentStats.averagePushUps.toFixed(1)}
-              unit="pompes"
-              color={appColors.accent}
-            />
-          </View>
-        </View>
+        <StatsSection
+          currentStats={currentStats}
+          selectedPeriod={selectedPeriod}
+          onPeriodChange={setSelectedPeriod}
+          isLoading={isLoadingStats}
+        />
 
         {/* Graphique de progression */}
         <View style={styles.section}>
@@ -270,37 +194,12 @@ const ProfileScreen = () => {
         </View>
 
         {/* Actions du compte */}
-        <View style={styles.section}>
-          <SectionTitle title="Compte" />
-          <TouchableOpacity style={styles.actionButton} onPress={handleLogout}>
-            <Icon
-              name="log-out-outline"
-              size={20}
-              color={appColors.textPrimary}
-            />
-            <Text style={styles.actionButtonText}>Se déconnecter</Text>
-            <Icon
-              name="chevron-forward"
-              size={20}
-              color={appColors.textSecondary}
-            />
-          </TouchableOpacity>
+        <AccountActionsSection
+          onLogout={handleLogout}
+          onDeleteAccount={handleDeleteAccount}
+        />
 
-          <TouchableOpacity
-            style={[styles.actionButton, styles.dangerButton]}
-            onPress={handleDeleteAccount}>
-            <Icon name="trash-outline" size={20} color={appColors.error} />
-            <Text style={[styles.actionButtonText, styles.dangerText]}>
-              Supprimer mon compte
-            </Text>
-            <Icon name="chevron-forward" size={20} color={appColors.error} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Version 1.0.0</Text>
-          <Text style={styles.footerText}>PompeurPro © 2025</Text>
-        </View>
+        <Footer />
       </ScrollView>
     </LinearGradient>
   );
@@ -452,16 +351,6 @@ const styles = StyleSheet.create({
   },
   dangerText: {
     color: appColors.error,
-  },
-  footer: {
-    alignItems: 'center',
-    paddingVertical: 30,
-    paddingBottom: 40,
-    gap: 4,
-  },
-  footerText: {
-    fontSize: 12,
-    color: appColors.textSecondary,
   },
   errorText: {
     fontSize: 16,

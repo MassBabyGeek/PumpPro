@@ -4,11 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../assets/colors';
 import {Challenge} from '../../types/challenge.types';
-import {
-  DIFFICULTY_LABELS,
-  TYPE_LABELS,
-  VARIANT_LABELS,
-} from '../../types/workout.types';
+import {DIFFICULTY_LABELS, VARIANT_LABELS} from '../../types/workout.types';
 
 interface ChallengeCardProps {
   challenge: Challenge;
@@ -34,17 +30,17 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
     total: number;
     percentage: number;
   } => {
-    if (!challenge.tasks || challenge.tasks.length === 0) {
+    if (!challenge.challengeTasks || challenge.challengeTasks.length === 0) {
       return {current: 0, total: 0, percentage: 0};
     }
-    const completedTasks = challenge.tasks.filter(t => t.completed).length;
-    const totalTasks = challenge.tasks.length;
+    const completedTasks = challenge.challengeTasks.filter(t => t.completed).length;
+    const totalTasks = challenge.challengeTasks.length;
     const percentage = Math.round((completedTasks / totalTasks) * 100);
     return {current: completedTasks, total: totalTasks, percentage};
   };
 
   const progress = getProgress();
-  const hasStarted = progress.current > 0 && !challenge.userCompleted;
+  const hasStarted = progress.current > 0 && !!challenge.userCompleted;
 
   const getTargetText = (): string => {
     if (challenge.targetReps) {

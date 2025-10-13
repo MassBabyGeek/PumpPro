@@ -6,29 +6,23 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import AppTitle from '../../components/AppTitle/AppTitle';
-import Card from '../../components/Card/Card';
 import appColors from '../../assets/colors';
-import Icon from 'react-native-vector-icons/Ionicons';
 import {TrainingScreenNavigationProp} from '../../types/navigation.types';
 import {useNavigation} from '@react-navigation/native';
-import {
-  WorkoutProgram,
-  TYPE_LABELS,
-  DIFFICULTY_LABELS,
-  DifficultyLevel,
-} from '../../types/workout.types';
-import {FREE_MODE_STANDARD} from '../../data/workoutPrograms.mock';
-import {useWorkoutPrograms} from '../../hooks/useWorkoutPrograms';
+import {WorkoutProgram, DifficultyLevel} from '../../types/workout.types';
 import QuoteCard from '../../components/QuoteCard/QuoteCard';
-import SectionTitle from '../../components/SectionTitle/SectionTitle';
+import EmptyState from '../../components/EmptyState/EmptyState';
 import LinearGradient from 'react-native-linear-gradient';
+import ProgramsByDifficulty from './component/ProgramsByDifficulty';
+import {useWorkoutPrograms} from '../../hooks';
+import LoaderScreen from '../LoaderScreen/LoaderScreen';
 
 const TrainingScreen = () => {
   const navigation = useNavigation<TrainingScreenNavigationProp>();
   const {programs, isLoading, error} = useWorkoutPrograms();
 
   const handleProgramPress = (program: WorkoutProgram) => {
-    navigation.navigate('Libre', {program});
+    navigation.navigate('Libre', {programId: program.id});
   };
 
   const getProgramIcon = (type: string) => {
@@ -53,11 +47,7 @@ const TrainingScreen = () => {
   };
 
   if (isLoading) {
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={appColors.primary} />
-      </View>
-    );
+    return <LoaderScreen />;
   }
 
   if (error) {
@@ -68,11 +58,28 @@ const TrainingScreen = () => {
     );
   }
 
-  if (!programs.length) {
+  if (!programs || !programs.length) {
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>Aucun programme disponible</Text>
-      </View>
+      <LinearGradient
+        colors={[appColors.background, appColors.backgroundDark]}
+        style={styles.gradientContainer}>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}>
+          <AppTitle
+            greeting="🎯 Training"
+            subGreeting="Découvre les meilleures techniques"
+            showIcon={false}
+          />
+          <EmptyState
+            icon="barbell-outline"
+            title="Bientôt disponible"
+            message="Les programmes d'entraînement arrivent bientôt ! Nous travaillons dessus pour vous proposer les meilleurs exercices."
+            isLoading={isLoading}
+          />
+        </ScrollView>
+      </LinearGradient>
     );
   }
 
@@ -101,79 +108,13 @@ const TrainingScreen = () => {
           quote="Commence à pousser tes limites et à découvrir tes propres techniques de pompe et de pression."
         />
 
-        {/* Mode libre rapide */}
-        <View style={styles.section}>
-          <SectionTitle title="⚡ Mode Rapide" />
-          <Card
-            style={styles.card}
-            color={appColors.primary}
-            paddingHorizontal={20}
-            paddingVertical={30}
-            onPress={() => handleProgramPress(FREE_MODE_STANDARD)}>
-            <View style={styles.leftCard}>
-              <Icon name="flash" size={28} color={appColors.primary} />
-              <View style={styles.cardTextContainer}>
-                <Text style={styles.cardLabel}>Mode Libre</Text>
-                <Text style={styles.cardSubLabel}>Commence directement</Text>
-              </View>
-            </View>
-            <Icon
-              name="caret-forward-outline"
-              size={28}
-              color={appColors.primary}
-            />
-          </Card>
-        </View>
-
         {/* Boucle sur les niveaux de difficulté */}
-        {difficulties.map(level => {
-          const filteredPrograms = programs.filter(p => p.difficulty === level);
-
-          if (!filteredPrograms.length) return null;
-
-          return (
-            <View style={styles.section} key={level}>
-              <SectionTitle title={DIFFICULTY_LABELS[level]} />
-
-              <View style={styles.cards}>
-                {filteredPrograms.map(program => (
-                  <Card
-                    key={program.id}
-                    style={styles.card}
-                    color={appColors.primary}
-                    paddingHorizontal={20}
-                    paddingVertical={25}
-                    onPress={() => handleProgramPress(program)}>
-                    <View style={styles.leftCard}>
-                      <Icon
-                        name={getProgramIcon(program.type)}
-                        size={24}
-                        color={appColors.primary}
-                      />
-                      <View style={styles.cardTextContainer}>
-                        <Text style={styles.cardLabel}>{program.name}</Text>
-                        <Text style={styles.cardSubLabel}>
-                          {TYPE_LABELS[program.type]}
-                          {program.type === 'SETS_REPS' &&
-                            ` • ${program.sets}x${program.repsPerSet}`}
-                          {program.type === 'TARGET_REPS' &&
-                            ` • ${program.targetReps} reps`}
-                          {program.type === 'MAX_TIME' &&
-                            ` • ${Math.round(program.duration / 60)} min`}
-                        </Text>
-                      </View>
-                    </View>
-                    <Icon
-                      name="caret-forward-outline"
-                      size={24}
-                      color={appColors.primary}
-                    />
-                  </Card>
-                ))}
-              </View>
-            </View>
-          );
-        })}
+        <ProgramsByDifficulty
+          difficulties={difficulties}
+          programs={programs}
+          onProgramPress={handleProgramPress}
+          getProgramIcon={getProgramIcon}
+        />
 
         <View style={styles.bottomSpacing} />
       </ScrollView>

@@ -1,30 +1,64 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet, Dimensions, TouchableOpacity} from 'react-native';
+import React, {useState, useEffect, useCallback} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import {LineChart} from 'react-native-chart-kit';
 import appColors from '../../assets/colors';
 import {ChartData, ChartPeriod} from '../../types/user.types';
-import {
-  WEEK_CHART_DATA,
-  MONTH_CHART_DATA,
-  YEAR_CHART_DATA,
-} from '../../data/mockData';
+import {userService} from '../../services/api';
+import {useAuth} from '../../hooks/useAuth';
+import Toast from 'react-native-toast-message';
 
 const screenWidth = Dimensions.get('window').width;
 
 const WorkoutChart = () => {
+  const {user, getToken} = useAuth();
   const [period, setPeriod] = useState<ChartPeriod>('week');
+  const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const loadChartData = useCallback(async () => {
+    if (!user) return;
+    const token = await getToken();
+
+    setIsLoading(true);
+    try {
+      const data = await userService.getChartData(
+        user.id,
+        period,
+        token || undefined,
+      );
+      setChartData(data);
+    } catch (error) {
+      console.error('Error loading chart data:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Erreur',
+        text2: 'Impossible de charger les données du graphique',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, period]);
+
+  useEffect(() => {
+    loadChartData();
+  }, [loadChartData]);
 
   const getChartData = (): ChartData => {
-    switch (period) {
-      case 'week':
-        return WEEK_CHART_DATA;
-      case 'month':
-        return MONTH_CHART_DATA;
-      case 'year':
-        return YEAR_CHART_DATA;
-      default:
-        return WEEK_CHART_DATA;
+    if (chartData) {
+      return chartData;
     }
+    // Données par défaut si aucune donnée n'est chargée
+    return {
+      labels: [],
+      datasets: [{data: [0]}],
+    };
   };
 
   const chartConfig = {
@@ -50,7 +84,10 @@ const WorkoutChart = () => {
         <Text style={styles.title}>Progression</Text>
         <View style={styles.periodSelector}>
           <TouchableOpacity
-            style={[styles.periodButton, period === 'week' && styles.activePeriod]}
+            style={[
+              styles.periodButton,
+              period === 'week' && styles.activePeriod,
+            ]}
             onPress={() => setPeriod('week')}>
             <Text
               style={[
@@ -61,7 +98,10 @@ const WorkoutChart = () => {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.periodButton, period === 'month' && styles.activePeriod]}
+            style={[
+              styles.periodButton,
+              period === 'month' && styles.activePeriod,
+            ]}
             onPress={() => setPeriod('month')}>
             <Text
               style={[
@@ -72,7 +112,10 @@ const WorkoutChart = () => {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.periodButton, period === 'year' && styles.activePeriod]}
+            style={[
+              styles.periodButton,
+              period === 'year' && styles.activePeriod,
+            ]}
             onPress={() => setPeriod('year')}>
             <Text
               style={[
@@ -85,18 +128,24 @@ const WorkoutChart = () => {
         </View>
       </View>
 
-      <LineChart
-        data={getChartData()}
-        width={screenWidth - 40}
-        height={220}
-        chartConfig={chartConfig}
-        bezier
-        style={styles.chart}
-        withInnerLines={false}
-        withOuterLines={true}
-        withVerticalLabels={true}
-        withHorizontalLabels={true}
-      />
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={appColors.primary} />
+        </View>
+      ) : (
+        <LineChart
+          data={getChartData()}
+          width={screenWidth - 40}
+          height={220}
+          chartConfig={chartConfig}
+          bezier
+          style={styles.chart}
+          withInnerLines={false}
+          withOuterLines={true}
+          withVerticalLabels={true}
+          withHorizontalLabels={true}
+        />
+      )}
     </View>
   );
 };
@@ -141,6 +190,11 @@ const styles = StyleSheet.create({
   chart: {
     borderRadius: 16,
     marginVertical: 8,
+  },
+  loadingContainer: {
+    height: 220,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

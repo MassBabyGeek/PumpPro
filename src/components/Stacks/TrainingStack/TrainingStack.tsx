@@ -3,6 +3,7 @@ import PushUpScreen from '../../../screens/PushUpScreen/PushUpScreen';
 import TrainingScreen from '../../../screens/TrainingScreen/TrainingScreen';
 import appColors from '../../../assets/colors';
 import PushUpSummaryScreen from '../../../screens/PushUpSummaryScreen/PushUpSummaryScreen';
+import ChallengeCompletionScreen from '../../../screens/ChallengeCompletionScreen/ChallengeCompletionScreen';
 
 const Stack = createStackNavigator();
 
@@ -28,6 +29,11 @@ const TrainingStack = () => (
     <Stack.Screen
       name="PushUpSummary"
       component={PushUpSummaryScreen}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="ChallengeCompletion"
+      component={ChallengeCompletionScreen}
       options={{headerShown: false}}
     />
   </Stack.Navigator>

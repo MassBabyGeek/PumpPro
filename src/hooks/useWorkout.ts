@@ -6,7 +6,7 @@ import {
   WorkoutSession,
 } from '../types/workout.types';
 
-export const useWorkout = (program: WorkoutProgram) => {
+export const useWorkout = (program: WorkoutProgram | null) => {
   const engineRef = useRef<WorkoutEngine | null>(null);
   const [workoutState, setWorkoutState] = useState<WorkoutState | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
@@ -15,6 +15,10 @@ export const useWorkout = (program: WorkoutProgram) => {
 
   // Instanciation du moteur
   useEffect(() => {
+    if (!program) {
+      return;
+    }
+
     const engine = new WorkoutEngine(program);
     engineRef.current = engine;
 
@@ -99,10 +103,10 @@ export const useWorkout = (program: WorkoutProgram) => {
     cameraActive,
     incrementRep,
     togglePause,
-    stopWorkout, // ✅ fonction pour stopper le workout et récupérer la session
+    stopWorkout,
     completeCurrentSet,
     getCurrentSetProgress,
     isCurrentSetComplete,
-    getSession, // ✅ retourne la session si existante
+    getSession,
   };
 };

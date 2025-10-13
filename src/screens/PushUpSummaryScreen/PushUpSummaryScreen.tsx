@@ -1,17 +1,20 @@
 import React, {useEffect} from 'react';
-import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import {View, StyleSheet, ScrollView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import ConfettiCannon from 'react-native-confetti-cannon';
 import GradientButton from '../../components/GradientButton/GradientButton';
 import appColors from '../../assets/colors';
-import Icon from 'react-native-vector-icons/Ionicons';
 import {
   PushUpSummaryScreenRouteProp,
   PushUpSummaryScreenNavigationProp,
 } from '../../types/navigation.types';
-import {formatTime} from '../../utils/workout.utils';
-import {TYPE_LABELS, VARIANT_LABELS} from '../../types/workout.types';
-import {saveWorkoutSession} from '../../data/workoutPrograms.mock';
+import {workoutService} from '../../services/api';
+import Toast from 'react-native-toast-message';
+import SuccessHeader from './component/SuccessHeader';
+import MainStatsGrid from './component/MainStatsGrid';
+import SetsDetailSection from './component/SetsDetailSection';
+import MotivationCard from './component/MotivationCard';
+import {useAuth, useChallenges, useWorkout} from '../../hooks';
+import useWorkoutSession from '../../hooks/useWorkoutSession';
 
 type Props = {
   route: PushUpSummaryScreenRouteProp;
@@ -19,21 +22,107 @@ type Props = {
 };
 
 const PushUpSummaryScreen = ({route, navigation}: Props) => {
-  const {session} = route.params;
-  const {program, totalReps, totalDuration, completed, sets} = session;
+  const {getToken} = useAuth();
+  const {session, challengeId, taskId} = route.params;
+  const {programId, totalReps, totalDuration, completed, sets} = session;
   const calories = Math.round(totalReps * 0.5);
+
+  const {
+    completeTask,
+    isChallengeCompleted,
+    getChallengeById,
+    completeChallenge,
+  } = useChallenges();
+
+  const {saveWorkoutSession} = useWorkoutSession()
 
   // Sauvegarder la session au backend
   useEffect(() => {
     const save = async () => {
-      try {
-        await saveWorkoutSession(session);
-      } catch (error) {
-        console.error('Error saving session:', error);
-      }
+      
+      saveWorkoutSession(session)
+      
     };
     save();
-  }, [session]);
+  }, [session, getToken]);
+
+  const handleDone = async () => {
+    const token = await getToken();
+    if (challengeId) {
+      // ⚠️ Vérifier si l'objectif a été atteint
+      if (!completed) {
+        console.log(
+          '[PushUpSummary] ❌ Objectif non atteint, retour sans validation',
+        );
+        navigation.navigate('Training');
+        return;
+      }
+
+      if (taskId) {
+        // Challenge avec tasks: marquer la tâche comme complétée
+        console.log(
+          '[PushUpSummary] ✅ Objectif atteint! Completing task:',
+          taskId,
+        );
+        completeTask(challengeId, taskId, session.totalReps);
+
+        // Vérifier si le challenge est complètement terminé
+        const isFullyCompleted = isChallengeCompleted(challengeId);
+        console.log(
+          '[PushUpSummary] Is challenge fully completed?',
+          isFullyCompleted,
+        );
+
+        if (isFullyCompleted) {
+          // Challenge terminé: naviguer vers l'écran de félicitations
+          const challenge = getChallengeById(challengeId);
+          console.log(
+            '[PushUpSummary] 🎉 All tasks completed! Navigating to ChallengeCompletion',
+          );
+
+          navigation.navigate('ChallengeCompletion', {
+            challengeId,
+            totalReps: session.totalReps,
+            totalDuration: session.totalDuration,
+            earnedPoints: challenge?.points || 0,
+          });
+        } else {
+          // Il reste des tâches: retour au détail du challenge
+          console.log(
+            '[PushUpSummary] Task completed, returning to ChallengeDetail',
+          );
+          navigation.navigate('Training');
+        }
+      } else {
+        // Challenge sans tasks (simple challenge): marquer comme complété et aller aux félicitations
+        console.log(
+          '[PushUpSummary] ✅ Simple challenge completed, marking as completed',
+        );
+        completeChallenge(challengeId);
+
+        const challenge = getChallengeById(challengeId);
+        console.log('[PushUpSummary] 🎉 Navigating to ChallengeCompletion');
+
+        navigation.navigate('ChallengeCompletion', {
+          challengeId,
+          totalReps: session.totalReps,
+          totalDuration: session.totalDuration,
+          earnedPoints: challenge?.points || 0,
+        });
+      }
+    } else {
+      // Mode normal (pas de challenge): retour au training
+      console.log('[PushUpSummary] Normal mode, navigating to Training');
+      await workoutService.saveWorkoutSession(
+        {
+          endTime: new Date(),
+          ...session,
+        },
+        token || undefined,
+      );
+      navigation.navigate('Training');
+    }
+  };
 
   return (
     <LinearGradient
@@ -43,87 +132,30 @@ const PushUpSummaryScreen = ({route, navigation}: Props) => {
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
-        {/* 🎉 Animation confettis */}
-      {completed && <ConfettiCannon count={2000} origin={{x: 0, y: 0}} fadeOut />}
+        {/* ✅ Icône ou logo de succès */}
+        <SuccessHeader completed={completed} programId={programId} />
 
-      {/* ✅ Icône ou logo de succès */}
-      <Icon
-        name={completed ? 'checkmark-circle' : 'flag'}
-        size={100}
-        color={completed ? appColors.success : appColors.primary}
-      />
-
-      <Text style={styles.title}>
-        {completed ? 'Objectif atteint ! 🎯' : 'Session terminée'}
-      </Text>
-
-      {/* Info du programme */}
-      <View style={styles.programCard}>
-        <Text style={styles.programName}>{program.name}</Text>
-        <Text style={styles.programType}>
-          {TYPE_LABELS[program.type]} • {VARIANT_LABELS[program.variant]}
-        </Text>
-      </View>
-
-      {/* Stats principales */}
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Icon name="barbell" size={32} color={appColors.primary} />
-          <Text style={styles.statValue}>{totalReps}</Text>
-          <Text style={styles.statLabel}>Pompes</Text>
-        </View>
-
-        <View style={styles.statCard}>
-          <Icon name="time" size={32} color={appColors.accent} />
-          <Text style={styles.statValue}>{formatTime(totalDuration)}</Text>
-          <Text style={styles.statLabel}>Durée</Text>
-        </View>
-
-        <View style={styles.statCard}>
-          <Icon name="flame" size={32} color={appColors.error} />
-          <Text style={styles.statValue}>{calories}</Text>
-          <Text style={styles.statLabel}>Calories</Text>
-        </View>
-      </View>
-
-      {/* Détails des séries */}
-      {sets.length > 1 && (
-        <View style={styles.setsContainer}>
-          <Text style={styles.setsTitle}>Détails des séries</Text>
-          {sets.map((set, index) => (
-            <View key={index} style={styles.setRow}>
-              <Text style={styles.setNumber}>Série {set.setNumber}</Text>
-              <Text style={styles.setReps}>
-                {set.completedReps}
-                {set.targetReps && ` / ${set.targetReps}`} reps
-              </Text>
-              <Text style={styles.setDuration}>{set.duration}s</Text>
-            </View>
-          ))}
-        </View>
-      )}
-
-      {/* Motivation */}
-      <View style={styles.motivationCard}>
-        <Text style={styles.motivationText}>
-          {totalReps >= 100
-            ? '🏆 Performance incroyable !'
-            : totalReps >= 50
-            ? '💪 Excellent travail !'
-            : totalReps >= 20
-            ? '👍 Bon effort !'
-            : '🎯 Continue comme ça !'}
-        </Text>
-      </View>
-
-      {/* Boutons */}
-      <View style={styles.buttonContainer}>
-        <GradientButton
-          text="Retour"
-          icon="arrow-back"
-          onPress={() => navigation.navigate('Training')}
+        {/* Stats principales */}
+        <MainStatsGrid
+          totalReps={totalReps}
+          totalDuration={totalDuration}
+          calories={calories}
         />
-      </View>
+
+        {/* Détails des séries */}
+        <SetsDetailSection sets={sets} />
+
+        {/* Motivation */}
+        <MotivationCard totalReps={totalReps} />
+
+        {/* Boutons */}
+        <View style={styles.buttonContainer}>
+          <GradientButton
+            text="Retour"
+            icon="arrow-back"
+            onPress={handleDone}
+          />
+        </View>
       </ScrollView>
     </LinearGradient>
   );

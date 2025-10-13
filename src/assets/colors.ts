@@ -2,6 +2,7 @@ const appColors = {
   // Fond
   background: '#2C2F38', // Gris ardoise (fond principal)
   backgroundDark: '#1B1F3B', // Bleu nuit (optionnel)
+  backgroundLight: '#3A3D46', // Gris plus clair pour inputs
 
   // Tab
   tab: '#1E1E1E',
@@ -24,6 +25,7 @@ const appColors = {
   success: '#00C851',
   warning: '#FFBB33',
   error: '#FF4444',
+  danger: '#FF4444', // Alias pour error
 };
 
 export default appColors;

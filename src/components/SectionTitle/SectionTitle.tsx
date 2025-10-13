@@ -30,17 +30,21 @@ const SectionTitle = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
+    alignContent: 'center',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 10,
     marginBottom: 16,
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+    alignContent: 'center',
     color: appColors.textPrimary,
   },
   actionText: {
-    fontSize: 14,
+    fontSize: 12,
+    alignContent: 'center',
     color: appColors.primary,
     fontWeight: '600',
   },

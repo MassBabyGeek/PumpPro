@@ -1,46 +1,52 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback} from 'react';
+import {
+  leaderboardService,
+  LeaderboardEntry,
+  LeaderboardPeriod,
+} from '../services/api';
+import Toast from 'react-native-toast-message';
+import {useAuth} from './useAuth';
 
-export type LeaderboardEntry = {
-  id: number;
-  name: string;
-  score: number;
-  rank: number;
-};
-
-export const useLeaderboard = () => {
+export const useLeaderboard = (
+  period: LeaderboardPeriod = 'all-time',
+  limit: number = 50,
+) => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const {getToken} = useAuth();
 
-  useEffect(() => {
-    fetchLeaderboard();
-  }, []);
-
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+    const token = await getToken();
 
     try {
-      // TODO: Remplacer par un vrai appel API
-      // const response = await fetch('/api/leaderboard');
-      // const data = await response.json();
-
-      // Mock data pour le moment
-      const mockData: LeaderboardEntry[] = [
-        {id: 1, name: 'Alex M.', score: 892, rank: 1},
-        {id: 2, name: 'Sarah K.', score: 854, rank: 2},
-        {id: 3, name: 'Mike R.', score: 831, rank: 3},
-        {id: 4, name: 'Emma L.', score: 789, rank: 4},
-        {id: 5, name: 'Tom W.', score: 756, rank: 5},
-      ];
-
-      setLeaderboard(mockData);
+      const data = await leaderboardService.getLeaderboard(
+        period,
+        limit,
+        token || undefined,
+      );
+      setLeaderboard(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur de chargement');
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Erreur de chargement du classement';
+      setError(errorMessage);
+      Toast.show({
+        type: 'error',
+        text1: 'Erreur',
+        text2: errorMessage,
+      });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [period, limit, getToken]);
+
+  useEffect(() => {
+    fetchLeaderboard();
+  }, [fetchLeaderboard]);
 
   const refreshLeaderboard = () => {
     fetchLeaderboard();

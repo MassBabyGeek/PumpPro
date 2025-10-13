@@ -1,32 +1,26 @@
 import React, {useState} from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
-  TextInput,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../assets/colors';
 import {useChallenges} from '../../hooks';
 import ChallengeCard from '../../components/ChallengeCard/ChallengeCard';
-import FilterChip from '../../components/FilterChip/FilterChip';
-import {SectionTitle} from '../../components';
-import {
-  CATEGORY_LABELS,
-  SORT_LABELS,
-  ChallengeSortBy,
-  ChallengeCategory,
-  Challenge,
-} from '../../types/challenge.types';
-import {DIFFICULTY_LABELS, DifficultyLevel} from '../../types/workout.types';
+import EmptyState from '../../components/EmptyState/EmptyState';
+import {Challenge} from '../../types/challenge.types';
 import {useNavigation} from '@react-navigation/native';
-import {PushUpScreenNavigationProp} from '../../types/navigation.types';
+import {ChallengeScreenNavigationProp} from '../../types/navigation.types';
+import ChallengeHeader from './component/ChallengeHeader';
+import SearchBar from './component/SearchBar';
+import FiltersSection from './component/FiltersSection';
+import LoaderScreen from '../LoaderScreen/LoaderScreen';
 
 const ChallengeScreen = () => {
-  const navigation = useNavigation<PushUpScreenNavigationProp>();
+  const navigation = useNavigation<ChallengeScreenNavigationProp>();
   const {
     challenges,
     isLoading,
@@ -42,7 +36,7 @@ const ChallengeScreen = () => {
   } = useChallenges();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Handle search
   const handleSearch = (text: string) => {
@@ -52,11 +46,39 @@ const ChallengeScreen = () => {
 
   // Handle challenge press - navigate to detail
   const handleChallengePress = (challenge: Challenge) => {
-    navigation.navigate(
-      'ChallengeDetail' as never,
-      {challengeId: challenge.id} as never,
-    );
+    navigation.navigate('ChallengeDetail', {challengeId: challenge.id});
   };
+
+  if (isLoading) {
+    return <LoaderScreen />;
+  }
+
+  if (!challenges || challenges?.length === 0) {
+    return (
+      <LinearGradient
+        colors={[appColors.background, appColors.backgroundDark]}
+        style={styles.gradientContainer}>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={refreshChallenges}
+              tintColor={appColors.primary}
+            />
+          }>
+          <ChallengeHeader stats={stats} />
+          <EmptyState
+            icon="trophy-outline"
+            title="Bientôt disponible"
+            message="Les challenges arrivent bientôt ! Nous travaillons dessus pour vous offrir la meilleure expérience."
+            isLoading={isLoading}
+          />
+        </ScrollView>
+      </LinearGradient>
+    );
+  }
 
   return (
     <LinearGradient
@@ -73,168 +95,32 @@ const ChallengeScreen = () => {
           />
         }>
         {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>🏆 Challenges</Text>
-            <Text style={styles.subtitle}>
-              {stats.total} challenge{stats.total > 1 ? 's' : ''} disponible
-              {stats.total > 1 ? 's' : ''}
-            </Text>
-          </View>
-          <View style={styles.statsContainer}>
-            <View style={styles.statBadge}>
-              <Icon
-                name="checkmark-circle"
-                size={16}
-                color={appColors.success}
-              />
-              <Text style={styles.statBadgeText}>{stats.completed}</Text>
-            </View>
-            <View style={styles.statBadge}>
-              <Icon name="star" size={16} color={appColors.warning} />
-              <Text style={styles.statBadgeText}>{stats.totalPoints}</Text>
-            </View>
-          </View>
-        </View>
+        <ChallengeHeader stats={stats} />
 
         {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <Icon
-            name="search"
-            size={20}
-            color={appColors.textSecondary}
-            style={styles.searchIcon}
-          />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Rechercher un challenge..."
-            placeholderTextColor={appColors.textSecondary}
-            value={searchQuery}
-            onChangeText={handleSearch}
-          />
-          {searchQuery.length > 0 && (
-            <Icon
-              name="close-circle"
-              size={20}
-              color={appColors.textSecondary}
-              onPress={() => handleSearch('')}
-            />
-          )}
-        </View>
-
-        {/* Filters Toggle */}
-        <View style={styles.filterHeader}>
-          <SectionTitle
-            title="Filtres"
-            actionText={showFilters ? 'Masquer' : 'Afficher'}
-            onActionPress={() => setShowFilters(!showFilters)}
-          />
-          {(filters.category || filters.difficulty) && (
-            <Text style={styles.resetButton} onPress={resetFilters}>
-              Réinitialiser
-            </Text>
-          )}
-        </View>
+        <SearchBar value={searchQuery} onChangeText={handleSearch} />
 
         {/* Filters */}
-        {showFilters && (
-          <View style={styles.filtersSection}>
-            {/* Sort By */}
-            <View style={styles.filterGroup}>
-              <Text style={styles.filterLabel}>Trier par</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.filterRow}>
-                {(Object.keys(SORT_LABELS) as ChallengeSortBy[]).map(sort => (
-                  <FilterChip
-                    key={sort}
-                    label={SORT_LABELS[sort]}
-                    selected={filters.sortBy === sort}
-                    onPress={() => setSortBy(sort)}
-                  />
-                ))}
-              </ScrollView>
-            </View>
-
-            {/* Category Filter */}
-            <View style={styles.filterGroup}>
-              <Text style={styles.filterLabel}>Catégorie</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.filterRow}>
-                {(Object.keys(CATEGORY_LABELS) as ChallengeCategory[]).map(
-                  category => (
-                    <FilterChip
-                      key={category}
-                      label={CATEGORY_LABELS[category]}
-                      selected={filters.category === category}
-                      onPress={() => toggleCategory(category)}
-                    />
-                  ),
-                )}
-              </ScrollView>
-            </View>
-
-            {/* Difficulty Filter */}
-            <View style={styles.filterGroup}>
-              <Text style={styles.filterLabel}>Difficulté</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.filterRow}>
-                {(Object.keys(DIFFICULTY_LABELS) as DifficultyLevel[]).map(
-                  difficulty => (
-                    <FilterChip
-                      key={difficulty}
-                      label={DIFFICULTY_LABELS[difficulty]}
-                      selected={filters.difficulty === difficulty}
-                      onPress={() => toggleDifficulty(difficulty)}
-                    />
-                  ),
-                )}
-              </ScrollView>
-            </View>
-          </View>
-        )}
-
-        {/* Active Filters Summary */}
-        {(filters.category || filters.difficulty) && (
-          <View style={styles.activeFilters}>
-            <Text style={styles.activeFiltersText}>
-              Filtres actifs:{' '}
-              {filters.category && CATEGORY_LABELS[filters.category]}
-              {filters.category && filters.difficulty && ' • '}
-              {filters.difficulty && DIFFICULTY_LABELS[filters.difficulty]}
-            </Text>
-          </View>
-        )}
+        <FiltersSection
+          filters={filters}
+          showFilters={showFilters}
+          onToggleFilters={() => setShowFilters(!showFilters)}
+          onResetFilters={resetFilters}
+          onSortByChange={setSortBy}
+          onCategoryToggle={toggleCategory}
+          onDifficultyToggle={toggleDifficulty}
+        />
 
         {/* Challenges List */}
         <View style={styles.challengesList}>
-          {challenges.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Icon
-                name="search-outline"
-                size={64}
-                color={appColors.textSecondary}
-              />
-              <Text style={styles.emptyText}>Aucun challenge trouvé</Text>
-              <Text style={styles.emptySubtext}>
-                Essayez de modifier vos filtres
-              </Text>
-            </View>
-          ) : (
-            challenges.map(challenge => (
-              <ChallengeCard
-                key={challenge.id}
-                challenge={challenge}
-                onPress={handleChallengePress}
-                onLike={toggleLike}
-              />
-            ))
-          )}
+          {challenges.map(challenge => (
+            <ChallengeCard
+              key={challenge.id}
+              challenge={challenge}
+              onPress={handleChallengePress}
+              onLike={toggleLike}
+            />
+          ))}
         </View>
 
         <View style={styles.bottomSpacing} />
@@ -247,9 +133,21 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
   },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  gradientContainer: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     paddingHorizontal: 20,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingTop: 60,
   },
   header: {
     flexDirection: 'row',

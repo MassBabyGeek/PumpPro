@@ -10,12 +10,6 @@ import {
   WorkoutState,
   SetResult,
   WorkoutSession,
-  SetsRepsConfig,
-  PyramidConfig,
-  TargetRepsConfig,
-  MaxTimeConfig,
-  EMOMConfig,
-  AMRAPConfig,
 } from '../types/workout.types';
 
 export class WorkoutEngine {
@@ -233,7 +227,7 @@ export class WorkoutEngine {
    * Check if workout is completed based on reps
    */
   private checkRepBasedCompletion(): void {
-    const { program, currentReps } = this.state;
+    const {program, currentReps} = this.state;
 
     switch (program.type) {
       case 'TARGET_REPS':
@@ -264,7 +258,7 @@ export class WorkoutEngine {
    * Check if workout is completed based on time
    */
   private checkTimeBasedCompletion(): void {
-    const { program, elapsedTime } = this.state;
+    const {program, elapsedTime} = this.state;
 
     switch (program.type) {
       case 'MAX_TIME':
@@ -307,7 +301,7 @@ export class WorkoutEngine {
    * Get current workout state
    */
   getState(): WorkoutState {
-    return { ...this.state };
+    return {...this.state};
   }
 
   /**
@@ -316,7 +310,7 @@ export class WorkoutEngine {
   getSession(): WorkoutSession {
     return {
       sessionId: `session-${Date.now()}`,
-      program: this.state.program,
+      programId: this.state.program.id,
       startTime: this.sessionStartTime,
       endTime: this.state.isCompleted ? new Date() : undefined,
       sets: this.sets,
@@ -365,8 +359,7 @@ export class WorkoutEngine {
    * Get overall workout progress percentage
    */
   getOverallProgress(): number {
-    const { program, totalReps, elapsedTime, currentSet, totalSets } =
-      this.state;
+    const {program, totalReps, elapsedTime, currentSet, totalSets} = this.state;
 
     switch (program.type) {
       case 'TARGET_REPS':
@@ -388,9 +381,10 @@ export class WorkoutEngine {
 /**
  * Validate a workout program
  */
-export function validateWorkoutProgram(
-  program: WorkoutProgram,
-): { isValid: boolean; errors: string[] } {
+export function validateWorkoutProgram(program: WorkoutProgram): {
+  isValid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   if (!program.id || !program.name) {

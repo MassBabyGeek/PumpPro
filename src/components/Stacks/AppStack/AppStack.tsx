@@ -1,17 +1,28 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import TabsNavigator from '../../TabsNavigator/TabsNavigator';
+import EditProfileScreen from '../../../screens/EditProfileScreen/EditProfileScreen';
+import NotificationScreen from '../../../screens/NotificationScreen';
 
 const Stack = createStackNavigator();
 
 const AppStack = () => {
   return (
     <Stack.Navigator>
-      {/* Ajout des onglets en tant que route principale après connexion */}
       <Stack.Screen
         name="HomeTabs"
         component={TabsNavigator}
-        options={{headerShown: false}} // Désactive l'affichage du header pour la tab navigation
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="EditProfile"
+        component={EditProfileScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="Notifications"
+        component={NotificationScreen}
+        options={{headerShown: false}}
       />
     </Stack.Navigator>
   );

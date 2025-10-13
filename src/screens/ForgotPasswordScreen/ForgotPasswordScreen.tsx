@@ -5,9 +5,8 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert,
-  ActivityIndicator,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../assets/colors';
@@ -23,13 +22,21 @@ const ForgotPasswordScreen = ({navigation}: ForgotPasswordScreenProps) => {
 
   const handleResetPassword = () => {
     if (!email) {
-      Alert.alert('Erreur', 'Veuillez entrer votre email');
+      Toast.show({
+        type: 'error',
+        text1: 'Erreur',
+        text2: 'Veuillez entrer votre email',
+      });
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert('Erreur', 'Veuillez entrer un email valide');
+      Toast.show({
+        type: 'error',
+        text1: 'Erreur',
+        text2: 'Veuillez entrer un email valide',
+      });
       return;
     }
 
@@ -38,11 +45,12 @@ const ForgotPasswordScreen = ({navigation}: ForgotPasswordScreenProps) => {
     // Simulation d'appel API
     setTimeout(() => {
       setIsLoading(false);
-      Alert.alert(
-        'Email envoyé! 📧',
-        'Un lien de réinitialisation a été envoyé à votre adresse email.',
-        [{text: 'OK', onPress: () => navigation.goBack()}],
-      );
+      Toast.show({
+        type: 'success',
+        text1: 'Email envoyé! 📧',
+        text2: 'Un lien de réinitialisation a été envoyé à votre adresse email.',
+      });
+      navigation.goBack();
     }, 1500);
   };
 
