@@ -42,6 +42,7 @@ export interface BaseProgramConfig {
   restBetweenSets?: number;
   createdBy?: string;
   isCustom?: boolean;
+  usageCount?: number; // Nombre de fois que le programme a été utilisé
 }
 
 export interface FreeModeConfig extends BaseProgramConfig {

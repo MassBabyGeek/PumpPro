@@ -4,7 +4,7 @@
  * Custom hook for form state management and validation
  */
 
-import {useState, useCallback, ChangeEvent} from 'react';
+import {useState, useCallback} from 'react';
 
 interface ValidationRule<T> {
   validate: (value: T) => boolean;
@@ -28,7 +28,9 @@ interface UseFormReturn<T extends Record<string, any>> {
   isDirty: boolean;
   handleChange: (field: keyof T, value: any) => void;
   handleBlur: (field: keyof T) => void;
-  handleSubmit: (onSubmit: (values: T) => void | Promise<void>) => Promise<void>;
+  handleSubmit: (
+    onSubmit: (values: T) => void | Promise<void>,
+  ) => Promise<void>;
   reset: () => void;
   setFieldValue: (field: keyof T, value: any) => void;
   setFieldError: (field: keyof T, error: string) => void;
@@ -110,10 +112,13 @@ export const useForm = <T extends Record<string, any>>(
   const handleSubmit = useCallback(
     async (onSubmit: (values: T) => void | Promise<void>) => {
       // Mark all fields as touched
-      const allTouched = Object.keys(config).reduce((acc, key) => {
-        acc[key as keyof T] = true;
-        return acc;
-      }, {} as Record<keyof T, boolean>);
+      const allTouched = Object.keys(config).reduce(
+        (acc, key) => {
+          acc[key as keyof T] = true;
+          return acc;
+        },
+        {} as Record<keyof T, boolean>,
+      );
       setTouched(allTouched);
 
       // Validate all fields
@@ -170,34 +175,22 @@ export const validators = {
     message,
   }),
 
-  minLength: (
-    min: number,
-    message?: string,
-  ): ValidationRule<string> => ({
+  minLength: (min: number, message?: string): ValidationRule<string> => ({
     validate: (value: string) => value.length >= min,
     message: message || `Minimum ${min} caractères`,
   }),
 
-  maxLength: (
-    max: number,
-    message?: string,
-  ): ValidationRule<string> => ({
+  maxLength: (max: number, message?: string): ValidationRule<string> => ({
     validate: (value: string) => value.length <= max,
     message: message || `Maximum ${max} caractères`,
   }),
 
-  min: (
-    min: number,
-    message?: string,
-  ): ValidationRule<number> => ({
+  min: (min: number, message?: string): ValidationRule<number> => ({
     validate: (value: number) => value >= min,
     message: message || `Valeur minimum: ${min}`,
   }),
 
-  max: (
-    max: number,
-    message?: string,
-  ): ValidationRule<number> => ({
+  max: (max: number, message?: string): ValidationRule<number> => ({
     validate: (value: number) => value <= max,
     message: message || `Valeur maximum: ${max}`,
   }),

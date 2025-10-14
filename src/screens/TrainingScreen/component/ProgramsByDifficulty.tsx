@@ -61,6 +61,19 @@ const ProgramsByDifficulty = ({
                         {program.type === 'MAX_TIME' &&
                           ` • ${Math.round(program.duration / 60)} min`}
                       </Text>
+                      {program.usageCount !== undefined &&
+                        program.usageCount > 0 && (
+                          <View style={styles.usageContainer}>
+                            <Icon
+                              name="people"
+                              size={14}
+                              color={appColors.textSecondary}
+                            />
+                            <Text style={styles.usageText}>
+                              {program.usageCount} utilisations
+                            </Text>
+                          </View>
+                        )}
                     </View>
                   </View>
                   <Icon
@@ -108,6 +121,17 @@ const styles = StyleSheet.create({
   cardSubLabel: {
     fontSize: 13,
     color: appColors.textSecondary,
+  },
+  usageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  usageText: {
+    fontSize: 11,
+    color: appColors.textSecondary,
+    fontStyle: 'italic',
   },
 });
 

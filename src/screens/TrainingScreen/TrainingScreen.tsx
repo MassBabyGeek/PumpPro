@@ -16,34 +16,15 @@ import LinearGradient from 'react-native-linear-gradient';
 import ProgramsByDifficulty from './component/ProgramsByDifficulty';
 import {useWorkoutPrograms} from '../../hooks';
 import LoaderScreen from '../LoaderScreen/LoaderScreen';
+import FadeInView from '../../components/FadeInView/FadeInView';
+import Footer from '../../components/Footer';
 
 const TrainingScreen = () => {
   const navigation = useNavigation<TrainingScreenNavigationProp>();
-  const {programs, isLoading, error} = useWorkoutPrograms();
+  const {programs, isLoading, error, getProgramIcon} = useWorkoutPrograms();
 
   const handleProgramPress = (program: WorkoutProgram) => {
     navigation.navigate('Libre', {programId: program.id});
-  };
-
-  const getProgramIcon = (type: string) => {
-    switch (type) {
-      case 'FREE_MODE':
-        return 'infinite';
-      case 'TARGET_REPS':
-        return 'flag';
-      case 'MAX_TIME':
-        return 'timer';
-      case 'SETS_REPS':
-        return 'layers';
-      case 'PYRAMID':
-        return 'triangle';
-      case 'EMOM':
-        return 'alarm';
-      case 'AMRAP':
-        return 'fitness';
-      default:
-        return 'help-circle';
-    }
   };
 
   if (isLoading) {
@@ -89,36 +70,40 @@ const TrainingScreen = () => {
   );
 
   return (
-    <LinearGradient
-      colors={[appColors.background, appColors.backgroundDark]}
-      style={styles.gradientContainer}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled">
-        <AppTitle
-          greeting="🎯 Training"
-          subGreeting="Découvre les meilleures techniques"
-          showIcon={false}
-        />
+    <FadeInView>
+      <LinearGradient
+        colors={[appColors.background, appColors.backgroundDark]}
+        style={styles.gradientContainer}>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled">
+          <AppTitle
+            greeting="🎯 Training"
+            subGreeting="Découvre les meilleures techniques"
+            showIcon={false}
+          />
 
-        <QuoteCard
-          style={styles.quote}
-          quote="Commence à pousser tes limites et à découvrir tes propres techniques de pompe et de pression."
-        />
+          <QuoteCard
+            style={styles.quote}
+            quote="Commence à pousser tes limites et à découvrir tes propres techniques de pompe et de pression."
+          />
 
-        {/* Boucle sur les niveaux de difficulté */}
-        <ProgramsByDifficulty
-          difficulties={difficulties}
-          programs={programs}
-          onProgramPress={handleProgramPress}
-          getProgramIcon={getProgramIcon}
-        />
+          {/* Boucle sur les niveaux de difficulté */}
+          <ProgramsByDifficulty
+            difficulties={difficulties}
+            programs={programs}
+            onProgramPress={handleProgramPress}
+            getProgramIcon={getProgramIcon}
+          />
 
-        <View style={styles.bottomSpacing} />
-      </ScrollView>
-    </LinearGradient>
+          <Footer />
+
+          <View style={styles.bottomSpacing} />
+        </ScrollView>
+      </LinearGradient>
+    </FadeInView>
   );
 };
 
@@ -172,7 +157,7 @@ const styles = StyleSheet.create({
     color: appColors.textSecondary,
   },
   bottomSpacing: {
-    height: 100,
+    height: 60,
   },
   loaderContainer: {
     flex: 1,

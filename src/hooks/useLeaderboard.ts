@@ -9,7 +9,7 @@ import {useAuth} from './useAuth';
 
 export const useLeaderboard = (
   period: LeaderboardPeriod = 'all-time',
-  limit: number = 50,
+  limit: number = 20,
 ) => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);

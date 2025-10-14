@@ -4,7 +4,6 @@ import Toast from 'react-native-toast-message';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import AppTitle from '../../components/AppTitle/AppTitle';
-import WorkoutChart from '../../components/WorkoutChart/WorkoutChart';
 import Footer from '../../components/Footer';
 import appColors from '../../assets/colors';
 import {useImagePicker} from '../../hooks/useImagePicker';
@@ -16,59 +15,36 @@ import PersonalInfoSection from './component/PersonalInfoSection';
 import StatsSection from './component/StatsSection';
 import AccountActionsSection from './component/AccountActionsSection';
 import {AppStackParamList} from '../../types/navigation.types';
-import {userService} from '../../services/api';
-import {Stats} from '../../types/user.types';
+import {RefreshControl} from 'react-native-gesture-handler';
+import {useUser} from '../../hooks';
+import {WorkoutChart} from '../../components';
 
 type ProfileScreenNavigationProp = StackNavigationProp<AppStackParamList>;
 
 const ProfileScreen = () => {
+  const {logout} = useAuth();
+  const {user, updateUser, deleteAccount, getUser, setStatsPeriod} = useUser();
+
   const navigation = useNavigation<ProfileScreenNavigationProp>();
-  const {user, logout, updateUser, deleteAccount, getToken} = useAuth();
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [isLoadingStats, setIsLoadingStats] = useState(true);
+
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState<
     'today' | 'week' | 'month' | 'year'
   >('week');
 
   const {pickAndUploadImage, isUploading} = useImagePicker();
 
-  const loadStats = useCallback(async () => {
-    if (!user) return;
+  const handleLoadProfile = async () => {
+    setIsLoading(true);
 
-    const token = await getToken();
-    try {
-      setIsLoadingStats(true);
-      const stats = await userService.getStats(
-        user.id,
-        selectedPeriod,
-        token || undefined,
-      );
-      setStats(stats);
-    } catch (error) {
-      console.error('Error loading user stats:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Impossible de charger les statistiques',
-      });
-    } finally {
-      setIsLoadingStats(false);
-    }
-  }, [user, getToken, selectedPeriod]);
+    await Promise.all([getUser(), setStatsPeriod(selectedPeriod)]);
+    setIsLoading(false);
+  };
 
   // Charger les statistiques utilisateur
   useEffect(() => {
-    loadStats();
-  }, [loadStats]);
-
-  const currentStats = stats || {
-    totalPushUps: 0,
-    totalWorkouts: 0,
-    totalCalories: 0,
-    totalTime: 0,
-    averagePushUps: 0,
-    bestSession: 0,
-  };
+    handleLoadProfile();
+  }, []);
 
   const handleChangeAvatar = async () => {
     const imageUrl = await pickAndUploadImage();
@@ -156,7 +132,14 @@ const ProfileScreen = () => {
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled">
+        keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={handleLoadProfile}
+            tintColor={appColors.primary}
+          />
+        }>
         <AppTitle
           greeting="👤 Mon profil"
           subGreeting="Mon compte personnel"
@@ -182,10 +165,8 @@ const ProfileScreen = () => {
 
         {/* Statistiques - Sélecteur de période */}
         <StatsSection
-          currentStats={currentStats}
           selectedPeriod={selectedPeriod}
           onPeriodChange={setSelectedPeriod}
-          isLoading={isLoadingStats}
         />
 
         {/* Graphique de progression */}
@@ -215,8 +196,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 80,
-    paddingBottom: 120,
+    paddingBottom: 60,
   },
   quote: {
     marginVertical: 20,

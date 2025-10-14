@@ -18,6 +18,8 @@ import ChallengeHeader from './component/ChallengeHeader';
 import SearchBar from './component/SearchBar';
 import FiltersSection from './component/FiltersSection';
 import LoaderScreen from '../LoaderScreen/LoaderScreen';
+import {FadeInView} from '../../components';
+import Footer from '../../components/Footer';
 
 const ChallengeScreen = () => {
   const navigation = useNavigation<ChallengeScreenNavigationProp>();
@@ -69,12 +71,27 @@ const ChallengeScreen = () => {
             />
           }>
           <ChallengeHeader stats={stats} />
+
+          <SearchBar value={searchQuery} onChangeText={handleSearch} />
+
+          <FiltersSection
+            filters={filters}
+            showFilters={showFilters}
+            onToggleFilters={() => setShowFilters(!showFilters)}
+            onResetFilters={resetFilters}
+            onSortByChange={setSortBy}
+            onCategoryToggle={toggleCategory}
+            onDifficultyToggle={toggleDifficulty}
+          />
+
           <EmptyState
             icon="trophy-outline"
             title="Bientôt disponible"
             message="Les challenges arrivent bientôt ! Nous travaillons dessus pour vous offrir la meilleure expérience."
             isLoading={isLoading}
           />
+
+          <Footer />
         </ScrollView>
       </LinearGradient>
     );
@@ -84,47 +101,51 @@ const ChallengeScreen = () => {
     <LinearGradient
       colors={[appColors.background, appColors.backgroundDark]}
       style={styles.gradient}>
-      <ScrollView
-        style={styles.container}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={refreshChallenges}
-            tintColor={appColors.primary}
-          />
-        }>
-        {/* Header */}
-        <ChallengeHeader stats={stats} />
-
-        {/* Search Bar */}
-        <SearchBar value={searchQuery} onChangeText={handleSearch} />
-
-        {/* Filters */}
-        <FiltersSection
-          filters={filters}
-          showFilters={showFilters}
-          onToggleFilters={() => setShowFilters(!showFilters)}
-          onResetFilters={resetFilters}
-          onSortByChange={setSortBy}
-          onCategoryToggle={toggleCategory}
-          onDifficultyToggle={toggleDifficulty}
-        />
-
-        {/* Challenges List */}
-        <View style={styles.challengesList}>
-          {challenges.map(challenge => (
-            <ChallengeCard
-              key={challenge.id}
-              challenge={challenge}
-              onPress={handleChallengePress}
-              onLike={toggleLike}
+      <FadeInView>
+        <ScrollView
+          style={styles.container}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={refreshChallenges}
+              tintColor={appColors.primary}
             />
-          ))}
-        </View>
+          }>
+          {/* Header */}
+          <ChallengeHeader stats={stats} />
 
-        <View style={styles.bottomSpacing} />
-      </ScrollView>
+          {/* Search Bar */}
+          <SearchBar value={searchQuery} onChangeText={handleSearch} />
+
+          {/* Filters */}
+          <FiltersSection
+            filters={filters}
+            showFilters={showFilters}
+            onToggleFilters={() => setShowFilters(!showFilters)}
+            onResetFilters={resetFilters}
+            onSortByChange={setSortBy}
+            onCategoryToggle={toggleCategory}
+            onDifficultyToggle={toggleDifficulty}
+          />
+
+          {/* Challenges List */}
+          <View style={styles.challengesList}>
+            {challenges.map(challenge => (
+              <ChallengeCard
+                key={challenge.id}
+                challenge={challenge}
+                onPress={handleChallengePress}
+                onLike={toggleLike}
+              />
+            ))}
+          </View>
+
+          <Footer />
+
+          <View style={styles.bottomSpacing} />
+        </ScrollView>
+      </FadeInView>
     </LinearGradient>
   );
 };
@@ -263,7 +284,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   bottomSpacing: {
-    height: 40,
+    height: 60,
   },
 });
 

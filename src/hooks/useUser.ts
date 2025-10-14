@@ -1,227 +1,212 @@
-/**
- * useUser Hook
- *
- * Custom hook that encapsulates all user-related operations
- * Uses useAuth for authentication context and userService for API calls
- */
-
-import {useState} from 'react';
-import {useAuth} from './useAuth';
+import {useState, useEffect, useCallback} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
+import {
+  ChartData,
+  RawChartItem,
+  Stats,
+  User,
+  UserProfile,
+} from '../types/user.types';
 import {userService} from '../services/api';
-import {UserProfile, ChartData, Stats} from '../types/user.types';
+import {useAuth} from './useAuth';
 
-interface UseUserReturn {
-  user: UserProfile | null;
-  isLoading: boolean;
-  error: string | null;
-  updateProfile: (data: Partial<UserProfile>) => Promise<UserProfile>;
-  uploadAvatar: (imageUri: string) => Promise<UserProfile>;
-  deleteAccount: () => Promise<{success: boolean}>;
-  getStats: (selectedPeriod: string) => Promise<Stats>;
-  getChartData: (period: 'week' | 'month' | 'year') => Promise<ChartData>;
-}
+const USER_DATA_KEY = '@pompeurpro:user_data';
 
-export const useUser = (): UseUserReturn => {
-  const {user, updateUser, getToken} = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const initChartData: ChartData = {
+  labels: [],
+  datasets: [{data: [0]}],
+};
 
-  /**
-   * Update user profile
-   * @param data - Partial user data to update
-   * @returns Updated user profile
-   */
-  const updateProfile = async (
-    data: Partial<UserProfile>,
-  ): Promise<UserProfile> => {
-    if (!user) {
-      throw new Error('No user logged in');
+export const useUser = () => {
+  const {token} = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [statsByPeriod, setStatsByPeriod] = useState<Stats | null>(null);
+
+  const [rawChartData, setRawChartData] = useState<RawChartItem[]>([]);
+  const [chartData, setChartData] = useState<ChartData>(initChartData);
+  const [isChartLoading, setIsChartLoading] = useState(false);
+
+  /** ----- USER ----- */
+  useEffect(() => {
+    getUser();
+  }, [token]);
+
+  const getUser = useCallback(async () => {
+    if (!token) {
+      setUser(null);
+      setIsLoading(false);
+      return;
     }
 
-    console.log('[useUser] updateProfile:', user.id, data);
     setIsLoading(true);
-    setError(null);
-
-    const token = await getToken();
-
     try {
-      // Call API service to update profile
-      const updatedUser = await userService.updateProfile(
-        user.id,
-        data,
-        token || undefined,
-      );
-
-      // Update auth context with new user data
-      await updateUser(updatedUser);
-
-      console.log('[useUser] Profile updated successfully');
-      return updatedUser;
+      const storedUser = await AsyncStorage.getItem(USER_DATA_KEY);
+      if (storedUser) setUser(JSON.parse(storedUser));
+      else {
+        const fetchedUser = await userService.getProfile(token);
+        setUser(fetchedUser);
+        await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(fetchedUser));
+      }
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Unknown error occurred';
-      console.error('[useUser] Error updating profile:', message);
-      setError(message);
+      console.error('[useUser] getUser error', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [token]);
+
+  const getStats = async (selectedPeriod: string): Promise<Stats> => {
+    if (!user) throw new Error('No user logged in');
+
+    setIsLoading(true);
+    try {
+      return await userService.getStats(user.id, selectedPeriod, token);
+    } catch (err) {
+      console.error('[useUser] Error getting stats:', err);
       throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
-  /**
-   * Upload user avatar
-   * @param imageUri - Local image URI
-   * @returns Updated user profile with new avatar
-   */
-  const uploadAvatar = async (imageUri: string): Promise<UserProfile> => {
-    if (!user) {
-      throw new Error('No user logged in');
-    }
+  const updateUser = async (updates: Partial<User>) => {
+    if (!token || !user) return;
 
-    console.log('[useUser] uploadAvatar:', user.id, imageUri);
     setIsLoading(true);
-    setError(null);
-
     try {
-      // Call API service to upload avatar
-      const token = await getToken();
+      const updated = await userService.updateProfile(user.id, updates, token);
+      setUser(updated);
+      await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(updated));
+    } catch (err) {
+      console.error('[useUser] updateUser error', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const uploadAvatar = async (imageUri: string): Promise<UserProfile> => {
+    if (!user) throw new Error('No user logged in');
+
+    setIsLoading(true);
+    try {
       const updatedUser = await userService.uploadAvatar(
         user.id,
         imageUri,
-        token || undefined,
+        token,
       );
-
-      // Update auth context with new user data
-      await updateUser(updatedUser);
-
-      console.log('[useUser] Avatar uploaded successfully');
+      setUser(updatedUser);
+      await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(updatedUser));
       return updatedUser;
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Unknown error occurred';
-      console.error('[useUser] Error uploading avatar:', message);
-      setError(message);
+      console.error('[useUser] Error uploading avatar:', err);
       throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
-  /**
-   * Delete user account
-   * @returns Success status
-   */
   const deleteAccount = async (): Promise<{success: boolean}> => {
-    if (!user) {
-      throw new Error('No user logged in');
-    }
+    if (!user) throw new Error('No user logged in');
 
-    console.log('[useUser] deleteAccount:', user.id);
     setIsLoading(true);
-    setError(null);
-
-    const token = await getToken();
     try {
-      // Call API service to delete account
-      const result = await userService.deleteAccount(token || undefined);
-
-      console.log('[useUser] Account deleted successfully');
+      const result = await userService.deleteAccount(user.id, token);
+      setUser(null);
+      await AsyncStorage.removeItem(USER_DATA_KEY);
       return result;
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Unknown error occurred';
-      console.error('[useUser] Error deleting account:', message);
-      setError(message);
+      console.error('[useUser] Error deleting account:', err);
       throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
-  /**
-   * Get user statistics
-   * @param selectedPeriod - Period to retrieve (today, week, month, year)
-   * @returns User workout statistics
-   */
-  const getStats = async (selectedPeriod: string): Promise<Stats> => {
-    if (!user) {
-      throw new Error('No user logged in');
-    }
+  const setStatsPeriod = useCallback(
+    async (selectedPeriod: string) => {
+      if (!user) throw new Error('No user logged in');
+      setStatsByPeriod(null);
+      setIsLoading(true);
+      try {
+        const stats = await userService.getStats(
+          user.id,
+          selectedPeriod,
+          token,
+        );
+        setStatsByPeriod(stats);
+      } catch (err) {
+        console.error('[useUser] Error getting stats:', err);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [user, token],
+  );
 
-    setIsLoading(true);
-    setError(null);
+  /** ----- CHART ----- */
+  const transformChartData = useCallback(
+    (
+      rawData: RawChartItem[],
+      key: 'pushUps' | 'duration' | 'calories',
+      showLabels = true,
+    ): ChartData => ({
+      labels: rawData.map(item => (showLabels ? item.date : '')),
+      datasets: [{data: rawData.map(item => item[key])}],
+    }),
+    [],
+  );
 
-    const token = await getToken();
-    console.log('[useUser] token:', token);
-    const userId = user.id;
-    console.log('[useUser] userId:', user);
+  const getChartData = useCallback(
+    (
+      key: 'pushUps' | 'duration' | 'calories' = 'calories',
+      showLabels = true,
+    ): ChartData => {
+      if (rawChartData && rawChartData.length > 0) {
+        return transformChartData(rawChartData, key, showLabels);
+      }
+      return {labels: [], datasets: [{data: [0]}]};
+    },
+    [rawChartData, transformChartData],
+  );
+
+  const loadChartData = async (period: 'week' | 'month' | 'year') => {
+    if (!user || isChartLoading) return;
+
+    setIsChartLoading(true);
     try {
-      // Call API service to get user stats
-      const stats = await userService.getStats(
-        userId,
-        selectedPeriod,
-        token || undefined,
-      );
-
-      console.log('[useUser] getStats:', selectedPeriod, stats);
-      return stats;
+      const data = await userService.getChartData(user.id, period, token);
+      setRawChartData(data);
+      setChartData(transformChartData(data, 'calories'));
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Unknown error occurred';
-      console.error('[useUser] Error getting stats:', message);
-      setError(message);
-      throw err;
+      console.error('[useUser] loadChartData error:', err);
+      Toast.show({
+        type: 'error',
+        text1: 'Erreur',
+        text2: 'Impossible de charger les données du graphique',
+      });
     } finally {
-      setIsLoading(false);
+      setIsChartLoading(false);
     }
   };
 
-  /**
-   * Get chart data for specific period
-   * @param period - Time period (week, month, year)
-   * @returns Chart data
-   */
-  const getChartData = async (
-    period: 'week' | 'month' | 'year',
-  ): Promise<ChartData> => {
-    if (!user) {
-      throw new Error('No user logged in');
-    }
-
-    console.log('[useUser] getChartData:', user.id, period);
-    setIsLoading(true);
-    setError(null);
-
-    const token = await getToken();
-    try {
-      // Call API service to get chart data
-      const chartData = await userService.getChartData(
-        user.id,
-        period,
-        token || undefined,
-      );
-
-      console.log('[useUser] Chart data retrieved successfully');
-      return chartData;
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Unknown error occurred';
-      console.error('[useUser] Error getting chart data:', message);
-      setError(message);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  /** ----- RETURN ----- */
   return {
     user,
+    setUser,
     isLoading,
-    error,
-    updateProfile,
+    updateUser,
     uploadAvatar,
     deleteAccount,
-    getStats,
+    rawChartData,
+    chartData,
     getChartData,
+    loadChartData,
+    isChartLoading,
+    getUser,
+    statsByPeriod,
+    setStatsPeriod,
+    getStats,
   };
 };

@@ -8,12 +8,11 @@ import {
   PushUpSummaryScreenNavigationProp,
 } from '../../types/navigation.types';
 import {workoutService} from '../../services/api';
-import Toast from 'react-native-toast-message';
 import SuccessHeader from './component/SuccessHeader';
 import MainStatsGrid from './component/MainStatsGrid';
 import SetsDetailSection from './component/SetsDetailSection';
 import MotivationCard from './component/MotivationCard';
-import {useAuth, useChallenges, useWorkout} from '../../hooks';
+import {useAuth, useChallenges} from '../../hooks';
 import useWorkoutSession from '../../hooks/useWorkoutSession';
 
 type Props = {
@@ -34,14 +33,12 @@ const PushUpSummaryScreen = ({route, navigation}: Props) => {
     completeChallenge,
   } = useChallenges();
 
-  const {saveWorkoutSession} = useWorkoutSession()
+  const {saveWorkoutSession} = useWorkoutSession();
 
   // Sauvegarder la session au backend
   useEffect(() => {
     const save = async () => {
-      
-      saveWorkoutSession(session)
-      
+      saveWorkoutSession(session);
     };
     save();
   }, [session, getToken]);

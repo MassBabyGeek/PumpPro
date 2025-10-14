@@ -5,7 +5,13 @@
 
 import {API_BASE_URL} from './api.config';
 import ApiClient from './apiClient';
-import {UserProfile, ChartData, Stats, AllStats} from '../../types/user.types';
+import {
+  UserProfile,
+  ChartData,
+  Stats,
+  AllStats,
+  RawChartItem,
+} from '../../types/user.types';
 
 const client = new ApiClient(API_BASE_URL);
 
@@ -145,7 +151,7 @@ export async function getChartData(
   userId: string,
   period: 'week' | 'month' | 'year',
   token?: string,
-): Promise<ChartData> {
+): Promise<RawChartItem[]> {
   console.log('[UserService] getChartData:', userId, period);
   return client.get(`/users/${userId}/charts/${period}`, undefined, token);
 }

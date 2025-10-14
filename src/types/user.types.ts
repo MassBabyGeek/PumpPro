@@ -39,3 +39,10 @@ export type ChartData = {
     data: number[];
   }[];
 };
+
+export type RawChartItem = {
+  date: string;
+  pushUps: number;
+  duration: number;
+  calories: number;
+};

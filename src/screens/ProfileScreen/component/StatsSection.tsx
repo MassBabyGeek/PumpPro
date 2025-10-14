@@ -1,32 +1,32 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import SectionTitle from '../../../components/SectionTitle/SectionTitle';
 import StatCard from '../../../components/StatCard/StatCard';
 import appColors from '../../../assets/colors';
 import {formatTime} from '../../../utils/workout.utils';
-
-type PeriodStats = {
-  totalPushUps: number;
-  totalCalories: number;
-  totalWorkouts: number;
-  totalTime: number;
-  bestSession: number;
-  averagePushUps: number;
-};
+import {useUser} from '../../../hooks';
 
 type StatsSectionProps = {
-  currentStats: PeriodStats;
   selectedPeriod: 'today' | 'week' | 'month' | 'year';
   onPeriodChange: (period: 'today' | 'week' | 'month' | 'year') => void;
-  isLoading: boolean;
 };
 
-const StatsSection = ({
-  currentStats,
-  selectedPeriod,
-  onPeriodChange,
-  isLoading,
-}: StatsSectionProps) => {
+const StatsSection = ({selectedPeriod, onPeriodChange}: StatsSectionProps) => {
+  const {setStatsPeriod, statsByPeriod, isLoading, user} = useUser();
+
+  useEffect(() => {
+    setStatsPeriod(selectedPeriod);
+  }, [selectedPeriod, user]);
+
+  const currentStats = statsByPeriod || {
+    totalPushUps: 0,
+    totalWorkouts: 0,
+    totalCalories: 0,
+    totalTime: 0,
+    averagePushUps: 0,
+    bestSession: 0,
+  };
+
   return (
     <View style={styles.section}>
       <SectionTitle title="Statistiques" />

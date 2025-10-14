@@ -17,6 +17,7 @@ interface UseWorkoutProgramsReturn {
   refreshPrograms: () => Promise<void>;
   getProgramById: (id: string) => Promise<WorkoutProgram | null>;
   createProgram: (program: WorkoutProgram) => Promise<WorkoutProgram>;
+  getProgramIcon: (type: string) => string;
 }
 
 export const useWorkoutPrograms = (
@@ -106,6 +107,27 @@ export const useWorkoutPrograms = (
     [loadPrograms],
   );
 
+  const getProgramIcon = (type: string) => {
+    switch (type) {
+      case 'FREE_MODE':
+        return 'infinite';
+      case 'TARGET_REPS':
+        return 'flag';
+      case 'MAX_TIME':
+        return 'timer';
+      case 'SETS_REPS':
+        return 'layers';
+      case 'PYRAMID':
+        return 'triangle';
+      case 'EMOM':
+        return 'alarm';
+      case 'AMRAP':
+        return 'fitness';
+      default:
+        return 'help-circle';
+    }
+  };
+
   return {
     programs,
     isLoading,
@@ -113,6 +135,7 @@ export const useWorkoutPrograms = (
     refreshPrograms,
     getProgramById,
     createProgram,
+    getProgramIcon,
   };
 };
 

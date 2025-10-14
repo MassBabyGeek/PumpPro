@@ -1,8 +1,13 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../assets/colors';
 import LinearGradient from 'react-native-linear-gradient';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 
 type StatCardProps = {
   icon: string;
@@ -19,21 +24,38 @@ const StatCard = ({
   unit,
   color = appColors.primary,
 }: StatCardProps) => {
+  const opacity = useSharedValue(0);
+
+  useEffect(() => {
+    // Simple fade-in animation
+    opacity.value = withTiming(1, {
+      duration: 800,
+    });
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+    };
+  });
+
   return (
-    <LinearGradient
-      colors={[`${color}10`, `${color}20`]}
-      start={{x: 0, y: 0}}
-      end={{x: 1, y: 0}}
-      style={[styles.container, {borderColor: color}]}>
-      <Icon name={icon} size={24} color={color} style={styles.icon} />
-      <View style={styles.content}>
-        <Text style={styles.label}>{label}</Text>
-        <View style={styles.valueContainer}>
-          <Text style={styles.value}>{value}</Text>
-          {unit && <Text style={styles.unit}>{unit}</Text>}
+    <Animated.View style={[animatedStyle, {width: '48%'}]}>
+      <LinearGradient
+        colors={[`${color}10`, `${color}20`]}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 0}}
+        style={[styles.container, {borderColor: color}]}>
+        <Icon name={icon} size={24} color={color} style={styles.icon} />
+        <View style={styles.content}>
+          <Text style={styles.label}>{label}</Text>
+          <View style={styles.valueContainer}>
+            <Text style={styles.value}>{value}</Text>
+            {unit && <Text style={styles.unit}>{unit}</Text>}
+          </View>
         </View>
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+    </Animated.View>
   );
 };
 
@@ -45,7 +67,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     gap: 10,
-    width: '48%',
+    width: '100%',
     minHeight: 80,
   },
   content: {

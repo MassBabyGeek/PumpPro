@@ -1,11 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
+import {StyleSheet, View, ScrollView, RefreshControl} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useNavigation} from '@react-navigation/native';
 import appColors from '../../assets/colors';
@@ -20,6 +14,7 @@ import QuickProgramsSection from './component/QuickProgramsSection';
 import WeeklyStatsSection from './component/WeeklyStatsSection';
 import LeaderboardSection from './component/LeaderboardSection';
 import {Stats} from '../../types/user.types';
+import FadeInView from '../../components/FadeInView/FadeInView';
 
 const motivationalQuotes = [
   '💪 Chaque pompe est un pas vers la meilleure version de toi-même',
@@ -34,25 +29,21 @@ const HomeScreen = () => {
   const [todayStats, setTodayStats] = useState<Stats | null>(null);
   const [weekStats, setWeekStats] = useState<Stats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
   const navigation = useNavigation<any>();
-  const {getStats} = useUser();
+  const {getStats, user} = useUser();
   const {leaderboard} = useLeaderboard();
   const [currentQuote] = useState(
     motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)],
   );
-
   useEffect(() => {
-    getStats('week')
-      .then(setWeekStats)
-      .finally(() => setIsLoading(false));
-    getStats('today')
-      .then(setTodayStats)
-      .finally(() => setIsLoading(false));
-  }, []);
+    if (user) {
+      fetchStats();
+    }
+  }, [user]); // ne s'exécute que quand user est défini
 
   const fetchStats = useCallback(async () => {
+    setIsLoading(true);
     try {
       const [week, today] = await Promise.all([
         getStats('week'),
@@ -61,7 +52,9 @@ const HomeScreen = () => {
       setWeekStats(week);
       setTodayStats(today);
     } catch (err) {
-      console.error('Error fetching stats', err);
+      console.error('[HomeScreen] Error fetching stats', err);
+    } finally {
+      setIsLoading(false);
     }
   }, [getStats]);
 
@@ -70,7 +63,7 @@ const HomeScreen = () => {
     // "PushUp" est le nom du Tab qui contient le TrainingStack
     navigation.navigate('PushUp', {
       screen: 'Libre',
-      params: {program},
+      params: {programId: program.id},
     });
   };
 
@@ -79,57 +72,59 @@ const HomeScreen = () => {
   };
 
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
+    setIsLoading(true);
     await fetchStats();
-    setRefreshing(false);
+    setIsLoading(false);
   }, [fetchStats]);
 
   return (
     <LinearGradient
       colors={[appColors.background, appColors.backgroundDark]}
       style={styles.gradientContainer}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[appColors.primary]}
-            progressBackgroundColor={'black'}
-          />
-        }>
-        {/* Header avec salutation */}
-        <View style={styles.header}>
-          <AppTitle
-            greeting="Salut Champion! 👋"
-            subGreeting="Prêt à repousser tes limites?"
-            onIconPress={handleNotificationPress}
-          />
-        </View>
+      <FadeInView>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={onRefresh}
+              colors={[appColors.primary]}
+              progressBackgroundColor={'black'}
+            />
+          }>
+          {/* Header avec salutation */}
+          <View style={styles.header}>
+            <AppTitle
+              greeting="Salut Champion! 👋"
+              subGreeting="Prêt à repousser tes limites?"
+              onIconPress={handleNotificationPress}
+            />
+          </View>
 
-        {/* Citation motivante */}
-        <MotivationalQuoteCard quote={currentQuote} />
+          {/* Citation motivante */}
+          <MotivationalQuoteCard quote={currentQuote} />
 
-        {/* Stats du jour */}
-        <TodayStatsSection stats={todayStats} />
+          {/* Stats du jour */}
+          <TodayStatsSection stats={todayStats} />
 
-        {/* Programmes rapides */}
-        <QuickProgramsSection onProgramPress={handleProgramPress} />
+          {/* Programmes rapides */}
+          <QuickProgramsSection onProgramPress={handleProgramPress} />
 
-        {/* Stats hebdomadaires */}
-        <WeeklyStatsSection stats={weekStats} />
+          {/* Stats hebdomadaires */}
+          <WeeklyStatsSection stats={weekStats} />
 
-        {/* Classement */}
-        <LeaderboardSection leaderboard={leaderboard} onViewAll={() => {}} />
+          {/* Classement */}
+          <LeaderboardSection leaderboard={leaderboard} onViewAll={() => {}} />
 
-        {/* Footer info */}
-        <Footer variant="app" />
+          {/* Footer info */}
+          <Footer variant="app" />
 
-        <View style={styles.bottomSpacing} />
-      </ScrollView>
+          <View style={styles.bottomSpacing} />
+        </ScrollView>
+      </FadeInView>
     </LinearGradient>
   );
 };
@@ -155,7 +150,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   bottomSpacing: {
-    height: 100,
+    height: 60,
   },
 });
 
