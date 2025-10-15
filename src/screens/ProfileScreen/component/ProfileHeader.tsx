@@ -22,9 +22,6 @@ const ProfileHeader = ({
   isUploading,
   onChangeAvatar,
 }: ProfileHeaderProps) => {
-  useEffect(() => {
-    console.log('[ProfileHeader] user', user);
-  }, [user]);
   return (
     <View style={styles.profileHeader}>
       {/* Left Section: Avatar + User Info */}
