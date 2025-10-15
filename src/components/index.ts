@@ -5,6 +5,7 @@
  */
 
 export {default as AppButton} from './AppButton/AppButton';
+export {default as AppRefreshControl} from './AppRefreshControl/AppRefreshControl';
 export {default as AppTitle} from './AppTitle/AppTitle';
 export {default as Card} from './Card/Card';
 export {default as ChallengeCard} from './ChallengeCard/ChallengeCard';
@@ -12,6 +13,7 @@ export {default as FadeInView} from './FadeInView/FadeInView';
 export {default as FilterChip} from './FilterChip/FilterChip';
 export {default as GradientButton} from './GradientButton/GradientButton';
 export {default as InfoCard} from './InfoCard/InfoCard';
+export {default as LoadingView} from './LoadingView/LoadingView';
 export {default as ProgressBar} from './ProgressBar/ProgressBar';
 export {default as ProgramCard} from './ProgramCard/ProgramCard';
 export {default as PushUpCamera} from './PushUpCamera/PushUpCamera';

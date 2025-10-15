@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {StyleSheet, View, ScrollView, RefreshControl} from 'react-native';
+import {StyleSheet, View, ScrollView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useNavigation} from '@react-navigation/native';
 import appColors from '../../assets/colors';
@@ -15,6 +15,7 @@ import WeeklyStatsSection from './component/WeeklyStatsSection';
 import LeaderboardSection from './component/LeaderboardSection';
 import {Stats} from '../../types/user.types';
 import FadeInView from '../../components/FadeInView/FadeInView';
+import AppRefreshControl from '../../components/AppRefreshControl/AppRefreshControl';
 
 const motivationalQuotes = [
   '💪 Chaque pompe est un pas vers la meilleure version de toi-même',
@@ -32,17 +33,17 @@ const HomeScreen = () => {
 
   const navigation = useNavigation<any>();
   const {getStats, user} = useUser();
-  const {leaderboard} = useLeaderboard();
+  const {leaderboard, refreshLeaderboard} = useLeaderboard();
   const [currentQuote] = useState(
     motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)],
   );
   useEffect(() => {
     if (user) {
-      fetchStats();
+      fetchData();
     }
   }, [user]); // ne s'exécute que quand user est défini
 
-  const fetchStats = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [week, today] = await Promise.all([
@@ -51,12 +52,13 @@ const HomeScreen = () => {
       ]);
       setWeekStats(week);
       setTodayStats(today);
+      refreshLeaderboard();
     } catch (err) {
-      console.error('[HomeScreen] Error fetching stats', err);
+      console.error('[HomeScreen] Error fetching data', err);
     } finally {
       setIsLoading(false);
     }
-  }, [getStats]);
+  }, [getStats, refreshLeaderboard]);
 
   const handleProgramPress = (program: WorkoutProgram) => {
     // Navigue vers l'écran d'entraînement avec le programme par défaut
@@ -71,11 +73,15 @@ const HomeScreen = () => {
     navigation.navigate('Notifications');
   };
 
+  const handleViewAllLeaderboard = () => {
+    navigation.navigate('LeaderboardDetail');
+  };
+
   const onRefresh = useCallback(async () => {
     setIsLoading(true);
-    await fetchStats();
+    await fetchData();
     setIsLoading(false);
-  }, [fetchStats]);
+  }, [fetchData]);
 
   return (
     <LinearGradient
@@ -88,11 +94,9 @@ const HomeScreen = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           refreshControl={
-            <RefreshControl
+            <AppRefreshControl
               refreshing={isLoading}
               onRefresh={onRefresh}
-              colors={[appColors.primary]}
-              progressBackgroundColor={'black'}
             />
           }>
           {/* Header avec salutation */}
@@ -117,7 +121,10 @@ const HomeScreen = () => {
           <WeeklyStatsSection stats={weekStats} />
 
           {/* Classement */}
-          <LeaderboardSection leaderboard={leaderboard} onViewAll={() => {}} />
+          <LeaderboardSection
+            leaderboard={leaderboard}
+            onViewAll={handleViewAllLeaderboard}
+          />
 
           {/* Footer info */}
           <Footer variant="app" />

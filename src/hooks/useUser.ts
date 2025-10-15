@@ -27,11 +27,23 @@ export const useUser = () => {
   const [rawChartData, setRawChartData] = useState<RawChartItem[]>([]);
   const [chartData, setChartData] = useState<ChartData>(initChartData);
   const [isChartLoading, setIsChartLoading] = useState(false);
+  const [currentChartPeriod, setCurrentChartPeriod] = useState<
+    'week' | 'month' | 'year'
+  >('week');
 
-  /** ----- USER ----- */
   useEffect(() => {
     getUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  const reloadUser = useCallback(async () => {
+    if (!user) {
+      return;
+    }
+    const fetchedUser = await userService.getProfile(user.id, token);
+    setUser(fetchedUser);
+    await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(fetchedUser));
+  }, [user, token]);
 
   const getUser = useCallback(async () => {
     if (!token) {
@@ -43,11 +55,8 @@ export const useUser = () => {
     setIsLoading(true);
     try {
       const storedUser = await AsyncStorage.getItem(USER_DATA_KEY);
-      if (storedUser) setUser(JSON.parse(storedUser));
-      else {
-        const fetchedUser = await userService.getProfile(token);
-        setUser(fetchedUser);
-        await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(fetchedUser));
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
       }
     } catch (err) {
       console.error('[useUser] getUser error', err);
@@ -57,7 +66,9 @@ export const useUser = () => {
   }, [token]);
 
   const getStats = async (selectedPeriod: string): Promise<Stats> => {
-    if (!user) throw new Error('No user logged in');
+    if (!user) {
+      throw new Error('No user logged in');
+    }
 
     setIsLoading(true);
     try {
@@ -71,7 +82,9 @@ export const useUser = () => {
   };
 
   const updateUser = async (updates: Partial<User>) => {
-    if (!token || !user) return;
+    if (!token || !user) {
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -86,7 +99,9 @@ export const useUser = () => {
   };
 
   const uploadAvatar = async (imageUri: string): Promise<UserProfile> => {
-    if (!user) throw new Error('No user logged in');
+    if (!user) {
+      throw new Error('No user logged in');
+    }
 
     setIsLoading(true);
     try {
@@ -107,7 +122,9 @@ export const useUser = () => {
   };
 
   const deleteAccount = async (): Promise<{success: boolean}> => {
-    if (!user) throw new Error('No user logged in');
+    if (!user) {
+      throw new Error('No user logged in');
+    }
 
     setIsLoading(true);
     try {
@@ -125,7 +142,9 @@ export const useUser = () => {
 
   const setStatsPeriod = useCallback(
     async (selectedPeriod: string) => {
-      if (!user) throw new Error('No user logged in');
+      if (!user) {
+        throw new Error('No user logged in');
+      }
       setStatsByPeriod(null);
       setIsLoading(true);
       try {
@@ -146,13 +165,54 @@ export const useUser = () => {
   );
 
   /** ----- CHART ----- */
+  const formatChartLabel = (
+    date: string,
+    index: number,
+    period: 'week' | 'month' | 'year',
+  ): string => {
+    if (period === 'week') {
+      // Pour la semaine: L, M, M, J, V, S, D
+      const dayLabels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+      return dayLabels[index % 7] || date;
+    } else if (period === 'year') {
+      // Pour l'année: J, F, M, A, M, J, J, A, S, O, N, D
+      const monthLabels = [
+        'J',
+        'F',
+        'M',
+        'A',
+        'M',
+        'J',
+        'J',
+        'A',
+        'S',
+        'O',
+        'N',
+        'D',
+      ];
+      return monthLabels[index % 12] || date;
+    } else if (period === 'month') {
+      // Pour le mois: afficher uniquement tous les 5 jours (1, 5, 10, 15, 20, 25, 30)
+      const day = index + 1; // index 0 = jour 1, index 1 = jour 2, etc.
+      // Afficher le label uniquement si c'est le jour 1 ou un multiple de 5
+      if (day === 1 || day % 5 === 0) {
+        return day.toString();
+      }
+      return ''; // Pas de label pour les autres jours
+    }
+    return date;
+  };
+
   const transformChartData = useCallback(
     (
       rawData: RawChartItem[],
       key: 'pushUps' | 'duration' | 'calories',
+      period: 'week' | 'month' | 'year',
       showLabels = true,
     ): ChartData => ({
-      labels: rawData.map(item => (showLabels ? item.date : '')),
+      labels: rawData.map((item, index) =>
+        showLabels ? formatChartLabel(item.date, index, period) : '',
+      ),
       datasets: [{data: rawData.map(item => item[key])}],
     }),
     [],
@@ -164,21 +224,29 @@ export const useUser = () => {
       showLabels = true,
     ): ChartData => {
       if (rawChartData && rawChartData.length > 0) {
-        return transformChartData(rawChartData, key, showLabels);
+        return transformChartData(
+          rawChartData,
+          key,
+          currentChartPeriod,
+          showLabels,
+        );
       }
       return {labels: [], datasets: [{data: [0]}]};
     },
-    [rawChartData, transformChartData],
+    [rawChartData, transformChartData, currentChartPeriod],
   );
 
   const loadChartData = async (period: 'week' | 'month' | 'year') => {
-    if (!user || isChartLoading) return;
+    if (!user || isChartLoading) {
+      return;
+    }
 
     setIsChartLoading(true);
+    setCurrentChartPeriod(period);
     try {
       const data = await userService.getChartData(user.id, period, token);
       setRawChartData(data);
-      setChartData(transformChartData(data, 'calories'));
+      setChartData(transformChartData(data, 'calories', period));
     } catch (err) {
       console.error('[useUser] loadChartData error:', err);
       Toast.show({
@@ -208,5 +276,6 @@ export const useUser = () => {
     statsByPeriod,
     setStatsPeriod,
     getStats,
+    reloadUser,
   };
 };

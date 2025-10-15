@@ -14,24 +14,26 @@ type ChallengeHeaderProps = {
 };
 
 const ChallengeHeader = ({stats}: ChallengeHeaderProps) => {
+  const safeStats = stats || {total: 0, completed: 0, totalPoints: 0};
+
   return (
     <View style={styles.header}>
       <View>
         <Text style={styles.title}>🏆 Challenges</Text>
         <Text style={styles.subtitle}>
-          {stats?.total
-            ? `${stats.total} challenge${stats.total > 1 ? 's' : ''} disponible${stats.total > 1 ? 's' : ''}`
-            : null}
+          {safeStats.total > 0
+            ? `${safeStats.total} challenge${safeStats.total > 1 ? 's' : ''} disponible${safeStats.total > 1 ? 's' : ''}`
+            : 'Aucun challenge disponible'}
         </Text>
       </View>
       <View style={styles.statsContainer}>
         <View style={styles.statBadge}>
           <Icon name="checkmark-circle" size={16} color={appColors.success} />
-          <Text style={styles.statBadgeText}>{stats.completed}</Text>
+          <Text style={styles.statBadgeText}>{safeStats.completed}</Text>
         </View>
         <View style={styles.statBadge}>
           <Icon name="star" size={16} color={appColors.warning} />
-          <Text style={styles.statBadgeText}>{stats.totalPoints}</Text>
+          <Text style={styles.statBadgeText}>{safeStats.totalPoints}</Text>
         </View>
       </View>
     </View>

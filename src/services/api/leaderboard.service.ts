@@ -3,7 +3,7 @@
  * Handles all leaderboard and ranking-related API operations
  */
 
-import { API_BASE_URL } from './api.config';
+import {API_BASE_URL} from './api.config';
 import ApiClient from './apiClient';
 
 const client = new ApiClient(API_BASE_URL);
@@ -14,6 +14,10 @@ export interface LeaderboardEntry {
   userName: string;
   avatar?: string;
   rank: number;
+  TotalCalories: number;
+  TotalSessions: number;
+  BestSessionReps: number;
+  CurrentStreak: number;
   score: number; // Total push-ups, points, etc.
   change?: number; // Changement de position (positif = montée, négatif = descente)
   badges?: string[];
@@ -27,22 +31,44 @@ export interface UserRank {
   percentile: number; // Top X%
 }
 
-export type LeaderboardPeriod = 'daily' | 'weekly' | 'monthly' | 'all-time';
+export type LeaderboardPeriod =
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'yearly'
+  | 'all-time';
+
+export type LeaderboardMetric =
+  | 'total-pushups' // Total de pompes
+  | 'total-workouts' // Nombre total d'entraînements
+  | 'total-calories' // Total de calories brûlées
+  | 'max-reps' // Record de répétitions en une session
+  | 'max-streak'; // Plus longue série de jours consécutifs
 
 /**
  * Get leaderboard
- * @param period - Time period (daily, weekly, monthly, all-time)
+ * @param period - Time period (daily, weekly, monthly, yearly, all-time)
+ * @param metric - Metric to rank by (total-pushups, total-workouts, total-calories, max-reps, max-streak)
  * @param limit - Number of entries to return
+ * @param offset - Offset for pagination
  * @param token - Authentication token
  * @returns List of leaderboard entries
  */
 export async function getLeaderboard(
   period: LeaderboardPeriod = 'all-time',
+  metric: LeaderboardMetric = 'total-pushups',
   limit: number = 50,
-  token?: string
+  offset: number = 0,
+  token?: string,
 ): Promise<LeaderboardEntry[]> {
-  console.log('[LeaderboardService] getLeaderboard:', period, limit);
-  return client.get('/leaderboard', { period, limit }, token);
+  console.log(
+    '[LeaderboardService] getLeaderboard:',
+    period,
+    metric,
+    limit,
+    offset,
+  );
+  return client.get('/leaderboard', {period, metric, limit, offset}, token);
 }
 
 /**
@@ -55,10 +81,10 @@ export async function getLeaderboard(
 export async function getUserRank(
   userId: string,
   period: LeaderboardPeriod = 'all-time',
-  token?: string
+  token?: string,
 ): Promise<UserRank> {
   console.log('[LeaderboardService] getUserRank:', userId, period);
-  return client.get(`/leaderboard/users/${userId}`, { period }, token);
+  return client.get(`/leaderboard/users/${userId}`, {period}, token);
 }
 
 /**
@@ -73,10 +99,14 @@ export async function getNearbyUsers(
   userId: string,
   range: number = 5,
   period: LeaderboardPeriod = 'all-time',
-  token?: string
+  token?: string,
 ): Promise<LeaderboardEntry[]> {
   console.log('[LeaderboardService] getNearbyUsers:', userId, range, period);
-  return client.get(`/leaderboard/users/${userId}/nearby`, { range, period }, token);
+  return client.get(
+    `/leaderboard/users/${userId}/nearby`,
+    {range, period},
+    token,
+  );
 }
 
 /**
@@ -87,10 +117,10 @@ export async function getNearbyUsers(
  */
 export async function getTopPerformers(
   period: LeaderboardPeriod = 'all-time',
-  token?: string
+  token?: string,
 ): Promise<LeaderboardEntry[]> {
   console.log('[LeaderboardService] getTopPerformers:', period);
-  return client.get('/leaderboard/top', { period }, token);
+  return client.get('/leaderboard/top', {period}, token);
 }
 
 /**
@@ -103,10 +133,14 @@ export async function getTopPerformers(
 export async function getChallengeLeaderboard(
   challengeId: string,
   limit: number = 50,
-  token?: string
+  token?: string,
 ): Promise<LeaderboardEntry[]> {
-  console.log('[LeaderboardService] getChallengeLeaderboard:', challengeId, limit);
-  return client.get(`/challenges/${challengeId}/leaderboard`, { limit }, token);
+  console.log(
+    '[LeaderboardService] getChallengeLeaderboard:',
+    challengeId,
+    limit,
+  );
+  return client.get(`/challenges/${challengeId}/leaderboard`, {limit}, token);
 }
 
 /**
@@ -119,10 +153,10 @@ export async function getChallengeLeaderboard(
 export async function getFriendsLeaderboard(
   userId: string,
   period: LeaderboardPeriod = 'all-time',
-  token?: string
+  token?: string,
 ): Promise<LeaderboardEntry[]> {
   console.log('[LeaderboardService] getFriendsLeaderboard:', userId, period);
-  return client.get(`/users/${userId}/friends/leaderboard`, { period }, token);
+  return client.get(`/users/${userId}/friends/leaderboard`, {period}, token);
 }
 
 export const leaderboardService = {

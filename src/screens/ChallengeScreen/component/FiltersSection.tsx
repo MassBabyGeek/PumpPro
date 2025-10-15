@@ -13,9 +13,9 @@ import {DIFFICULTY_LABELS, DifficultyLevel} from '../../../types/workout.types';
 
 type ChallengeFilters = {
   sortBy: ChallengeSortBy;
-  category: ChallengeCategory | null;
-  difficulty: DifficultyLevel | null;
-  searchQuery: string;
+  category?: ChallengeCategory;
+  difficulty?: DifficultyLevel;
+  searchQuery?: string;
 };
 
 type FiltersSectionProps = {
@@ -46,7 +46,7 @@ const FiltersSection = ({
           actionText={showFilters ? 'Masquer' : 'Afficher'}
           onActionPress={onToggleFilters}
         />
-        {(filters.category || filters.difficulty) && (
+        {(filters?.category || filters?.difficulty) && (
           <Text style={styles.resetButton} onPress={onResetFilters}>
             Réinitialiser
           </Text>
@@ -54,7 +54,7 @@ const FiltersSection = ({
       </View>
 
       {/* Filters */}
-      {showFilters && (
+      {showFilters && filters && (
         <View style={styles.filtersSection}>
           {/* Sort By */}
           <View style={styles.filterGroup}>
@@ -67,7 +67,7 @@ const FiltersSection = ({
                 <FilterChip
                   key={sort}
                   label={SORT_LABELS[sort]}
-                  selected={filters.sortBy === sort}
+                  selected={filters?.sortBy === sort}
                   onPress={() => onSortByChange(sort)}
                 />
               ))}
@@ -86,7 +86,7 @@ const FiltersSection = ({
                   <FilterChip
                     key={category}
                     label={CATEGORY_LABELS[category]}
-                    selected={filters.category === category}
+                    selected={filters?.category === category}
                     onPress={() => onCategoryToggle(category)}
                   />
                 ),
@@ -106,7 +106,7 @@ const FiltersSection = ({
                   <FilterChip
                     key={difficulty}
                     label={DIFFICULTY_LABELS[difficulty]}
-                    selected={filters.difficulty === difficulty}
+                    selected={filters?.difficulty === difficulty}
                     onPress={() => onDifficultyToggle(difficulty)}
                   />
                 ),
@@ -117,13 +117,13 @@ const FiltersSection = ({
       )}
 
       {/* Active Filters Summary */}
-      {(filters.category || filters.difficulty) && (
+      {(filters?.category || filters?.difficulty) && (
         <View style={styles.activeFilters}>
           <Text style={styles.activeFiltersText}>
             Filtres actifs:{' '}
-            {filters.category && CATEGORY_LABELS[filters.category]}
-            {filters.category && filters.difficulty && ' • '}
-            {filters.difficulty && DIFFICULTY_LABELS[filters.difficulty]}
+            {filters?.category && CATEGORY_LABELS[filters.category]}
+            {filters?.category && filters?.difficulty && ' • '}
+            {filters?.difficulty && DIFFICULTY_LABELS[filters.difficulty]}
           </Text>
         </View>
       )}

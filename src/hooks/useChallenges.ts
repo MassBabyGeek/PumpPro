@@ -28,6 +28,7 @@ export const useChallenges = (challengeId?: string) => {
     if (challengeId) {
       getChallengeById(challengeId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [challengeId]);
 
   // Charger les challenges depuis l'API
@@ -52,6 +53,8 @@ export const useChallenges = (challengeId?: string) => {
     } finally {
       setIsLoading(false);
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   // Charger les challenges au montage et quand les filtres changent
@@ -283,7 +286,9 @@ export const useChallenges = (challengeId?: string) => {
               },
             );
 
-            const allCompleted = updatedTasks?.every(t => t.userProgress?.completed);
+            const allCompleted = updatedTasks?.every(
+              t => t.userProgress?.completed,
+            );
 
             return {
               ...challenge,
@@ -348,7 +353,9 @@ export const useChallenges = (challengeId?: string) => {
       const tasks = selectedChallenge.challengeTasks ?? [];
       if (tasks.length === 0) return 0;
 
-      const completedTasks = tasks.filter(t => t.userProgress?.completed).length;
+      const completedTasks = tasks.filter(
+        t => t.userProgress?.completed,
+      ).length;
       return Math.round((completedTasks / tasks.length) * 100);
     },
     [selectedChallenge],

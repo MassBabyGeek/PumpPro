@@ -5,21 +5,23 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
 import {LineChart} from 'react-native-chart-kit';
 import appColors from '../../assets/colors';
 import {ChartPeriod} from '../../types/user.types';
 import {useUser} from '../../hooks';
+import LoadingView from '../LoadingView/LoadingView';
 
 const screenWidth = Dimensions.get('window').width;
 
 const WorkoutChart = () => {
-  const {chartData, loadChartData, isLoading, user} = useUser();
+  const {chartData, loadChartData, isChartLoading, user} = useUser();
   const [period, setPeriod] = useState<ChartPeriod>('week');
 
   useEffect(() => {
-    loadChartData(period);
+    if (user) {
+      loadChartData(period);
+    }
   }, [period, user]);
 
   const chartConfig = {
@@ -89,10 +91,8 @@ const WorkoutChart = () => {
         </View>
       </View>
 
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={appColors.primary} />
-        </View>
+      {isChartLoading ? (
+        <LoadingView />
       ) : (
         <LineChart
           data={chartData}
@@ -151,11 +151,6 @@ const styles = StyleSheet.create({
   chart: {
     borderRadius: 16,
     marginVertical: 8,
-  },
-  loadingContainer: {
-    height: 220,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
 

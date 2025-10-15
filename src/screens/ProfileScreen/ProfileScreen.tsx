@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, StyleSheet, ScrollView, Alert} from 'react-native';
 import Toast from 'react-native-toast-message';
 import {useNavigation} from '@react-navigation/native';
@@ -15,35 +15,37 @@ import PersonalInfoSection from './component/PersonalInfoSection';
 import StatsSection from './component/StatsSection';
 import AccountActionsSection from './component/AccountActionsSection';
 import {AppStackParamList} from '../../types/navigation.types';
-import {RefreshControl} from 'react-native-gesture-handler';
 import {useUser} from '../../hooks';
-import {WorkoutChart} from '../../components';
+import {WorkoutChart, AppRefreshControl} from '../../components';
 
 type ProfileScreenNavigationProp = StackNavigationProp<AppStackParamList>;
 
 const ProfileScreen = () => {
   const {logout} = useAuth();
-  const {user, updateUser, deleteAccount, getUser, setStatsPeriod} = useUser();
+  const {user, updateUser, deleteAccount, getUser, setStatsPeriod, reloadUser} =
+    useUser();
 
   const navigation = useNavigation<ProfileScreenNavigationProp>();
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<
     'today' | 'week' | 'month' | 'year'
   >('week');
 
   const {pickAndUploadImage, isUploading} = useImagePicker();
 
-  const handleLoadProfile = async () => {
-    setIsLoading(true);
-
-    await Promise.all([getUser(), setStatsPeriod(selectedPeriod)]);
-    setIsLoading(false);
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await Promise.all([reloadUser(), setStatsPeriod(selectedPeriod)]);
+    setIsRefreshing(false);
   };
 
-  // Charger les statistiques utilisateur
   useEffect(() => {
-    handleLoadProfile();
+    const loadInitialData = async () => {
+      await Promise.all([getUser(), setStatsPeriod(selectedPeriod)]);
+    };
+    loadInitialData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChangeAvatar = async () => {
@@ -134,53 +136,56 @@ const ProfileScreen = () => {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={handleLoadProfile}
-            tintColor={appColors.primary}
+          <AppRefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
           />
         }>
-        <AppTitle
-          greeting="👤 Mon profil"
-          subGreeting="Mon compte personnel"
-          showIcon={true}
-          onIconPress={handleEditProfile}
-          iconName="create-outline"
-        />
-
-        <QuoteCard
-          style={styles.quote}
-          quote="“ Le plus grand bien-être est la force de vivre. ” — Lao Tzu"
-        />
-
-        {/* Avatar et Info utilisateur */}
-        <ProfileHeader
-          user={user}
-          isUploading={isUploading}
-          onChangeAvatar={handleChangeAvatar}
-        />
-
-        {/* Infos personnelles */}
-        <PersonalInfoSection user={user} />
-
-        {/* Statistiques - Sélecteur de période */}
-        <StatsSection
-          selectedPeriod={selectedPeriod}
-          onPeriodChange={setSelectedPeriod}
-        />
-
-        {/* Graphique de progression */}
-        <View style={styles.section}>
-          <WorkoutChart />
+        <View style={styles.header}>
+          <AppTitle
+            greeting="👤 Mon profil"
+            subGreeting="Mon compte personnel"
+            showIcon={true}
+            onIconPress={handleEditProfile}
+            iconName="create-outline"
+          />
         </View>
 
-        {/* Actions du compte */}
-        <AccountActionsSection
-          onLogout={handleLogout}
-          onDeleteAccount={handleDeleteAccount}
-        />
+        <View style={styles.content}>
+          <QuoteCard
+            style={styles.quote}
+            quote="« Le plus grand bien-être est la force de vivre. » — Lao Tzu"
+          />
 
-        <Footer />
+          {/* Avatar et Info utilisateur */}
+          <ProfileHeader
+            user={user}
+            isUploading={isUploading}
+            onChangeAvatar={handleChangeAvatar}
+          />
+
+          {/* Infos personnelles */}
+          <PersonalInfoSection user={user} />
+
+          {/* Statistiques - Sélecteur de période */}
+          <StatsSection
+            selectedPeriod={selectedPeriod}
+            onPeriodChange={setSelectedPeriod}
+          />
+
+          {/* Graphique de progression */}
+          <View style={styles.section}>
+            <WorkoutChart />
+          </View>
+
+          {/* Actions du compte */}
+          <AccountActionsSection
+            onLogout={handleLogout}
+            onDeleteAccount={handleDeleteAccount}
+          />
+
+          <Footer />
+        </View>
       </ScrollView>
     </LinearGradient>
   );
@@ -195,8 +200,15 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 20,
     paddingBottom: 60,
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+  },
+  content: {
+    paddingHorizontal: 20,
   },
   quote: {
     marginVertical: 20,

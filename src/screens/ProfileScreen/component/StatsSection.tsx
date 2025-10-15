@@ -2,6 +2,7 @@ import React, {useEffect} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import SectionTitle from '../../../components/SectionTitle/SectionTitle';
 import StatCard from '../../../components/StatCard/StatCard';
+import LoadingView from '../../../components/LoadingView/LoadingView';
 import appColors from '../../../assets/colors';
 import {formatTime} from '../../../utils/workout.utils';
 import {useUser} from '../../../hooks';
@@ -56,73 +57,56 @@ const StatsSection = ({selectedPeriod, onPeriodChange}: StatsSectionProps) => {
         ))}
       </View>
 
-      <View style={styles.statsGrid}>
-        {isLoading ? (
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>Chargement...</Text>
-          </View>
-        ) : (
-          <>
-            <StatCard
-              icon="fitness"
-              label="Total pompes"
-              value={currentStats.totalPushUps}
-              color={appColors.primary}
-            />
-            <StatCard
-              icon="flame"
-              label="Calories"
-              value={currentStats.totalCalories.toFixed(0)}
-              unit="kcal"
-              color={appColors.accent}
-            />
-            <StatCard
-              icon="barbell"
-              label="Séances"
-              value={currentStats.totalWorkouts}
-              color={appColors.success}
-            />
-            <StatCard
-              icon="time"
-              label="Temps total"
-              value={formatTime(currentStats.totalTime)}
-              color={appColors.warning}
-            />
-            <StatCard
-              icon="trophy"
-              label="Meilleure session"
-              value={currentStats.bestSession}
-              unit="pompes"
-              color={appColors.primary}
-            />
-            <StatCard
-              icon="stats-chart"
-              label="Moyenne"
-              value={currentStats.averagePushUps.toFixed(1)}
-              unit="pompes"
-              color={appColors.accent}
-            />
-          </>
-        )}
-      </View>
+      {isLoading ? (
+        <LoadingView height={200} />
+      ) : (
+        <View style={styles.statsGrid}>
+          <StatCard
+            icon="fitness"
+            label="Total pompes"
+            value={Number(currentStats.totalPushUps).toFixed(0)}
+            color={appColors.primary}
+          />
+          <StatCard
+            icon="flame"
+            label="Calories"
+            value={Number(currentStats.totalCalories).toFixed(1)}
+            unit="kcal"
+            color={appColors.accent}
+          />
+          <StatCard
+            icon="barbell"
+            label="Séances"
+            value={Number(currentStats.totalWorkouts).toFixed(0)}
+            color={appColors.success}
+          />
+          <StatCard
+            icon="time"
+            label="Temps total"
+            value={formatTime(currentStats.totalTime)}
+            color={appColors.warning}
+          />
+          <StatCard
+            icon="trophy"
+            label="Meilleure session"
+            value={Number(currentStats.bestSession).toFixed(0)}
+            unit="pompes"
+            color={appColors.primary}
+          />
+          <StatCard
+            icon="stats-chart"
+            label="Moyenne"
+            value={Number(currentStats.averagePushUps).toFixed(1)}
+            unit="pompes"
+            color={appColors.accent}
+          />
+        </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  statCard: {
-    flex: 1,
-    backgroundColor: `${appColors.border}30`,
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-    gap: 8,
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: appColors.textPrimary,
-  },
   section: {
     marginBottom: 40,
   },

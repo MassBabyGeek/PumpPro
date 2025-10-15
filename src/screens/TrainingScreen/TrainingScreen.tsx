@@ -1,10 +1,4 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  ActivityIndicator,
-} from 'react-native';
+import {StyleSheet, Text, View, ScrollView} from 'react-native';
 import AppTitle from '../../components/AppTitle/AppTitle';
 import appColors from '../../assets/colors';
 import {TrainingScreenNavigationProp} from '../../types/navigation.types';

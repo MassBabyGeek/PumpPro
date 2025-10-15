@@ -14,7 +14,7 @@ export { programService } from './program.service';
 export { leaderboardService } from './leaderboard.service';
 
 // Types from services
-export type { LeaderboardEntry, UserRank, LeaderboardPeriod } from './leaderboard.service';
+export type { LeaderboardEntry, UserRank, LeaderboardPeriod, LeaderboardMetric } from './leaderboard.service';
 
 // Re-export commonly used functions for convenience
 export {

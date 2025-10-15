@@ -1,11 +1,5 @@
 import React, {useState} from 'react';
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-  ActivityIndicator,
-} from 'react-native';
+import {View, StyleSheet, ScrollView, RefreshControl} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import appColors from '../../assets/colors';
 import {useChallenges} from '../../hooks';
@@ -51,11 +45,22 @@ const ChallengeScreen = () => {
     navigation.navigate('ChallengeDetail', {challengeId: challenge.id});
   };
 
+  // Vérifie si aucun filtre n'est actif (sauf sortBy qui est toujours présent)
+  const hasActiveFilters =
+    !!filters?.category ||
+    !!filters?.difficulty ||
+    !!filters?.status ||
+    !!filters?.searchQuery;
+
+  // Affiche l'EmptyState uniquement si aucun challenge ET aucun filtre actif
+  const shouldShowEmptyState =
+    (!challenges || challenges.length === 0) && !hasActiveFilters;
+
   if (isLoading) {
     return <LoaderScreen />;
   }
 
-  if (!challenges || challenges?.length === 0) {
+  if (shouldShowEmptyState) {
     return (
       <LinearGradient
         colors={[appColors.background, appColors.backgroundDark]}
@@ -71,18 +76,6 @@ const ChallengeScreen = () => {
             />
           }>
           <ChallengeHeader stats={stats} />
-
-          <SearchBar value={searchQuery} onChangeText={handleSearch} />
-
-          <FiltersSection
-            filters={filters}
-            showFilters={showFilters}
-            onToggleFilters={() => setShowFilters(!showFilters)}
-            onResetFilters={resetFilters}
-            onSortByChange={setSortBy}
-            onCategoryToggle={toggleCategory}
-            onDifficultyToggle={toggleDifficulty}
-          />
 
           <EmptyState
             icon="trophy-outline"
@@ -131,14 +124,22 @@ const ChallengeScreen = () => {
 
           {/* Challenges List */}
           <View style={styles.challengesList}>
-            {challenges.map(challenge => (
-              <ChallengeCard
-                key={challenge.id}
-                challenge={challenge}
-                onPress={handleChallengePress}
-                onLike={toggleLike}
+            {challenges && challenges.length > 0 ? (
+              challenges.map(challenge => (
+                <ChallengeCard
+                  key={challenge.id}
+                  challenge={challenge}
+                  onPress={handleChallengePress}
+                  onLike={toggleLike}
+                />
+              ))
+            ) : (
+              <EmptyState
+                icon="filter-outline"
+                title="Aucun résultat"
+                message="Aucun challenge ne correspond à vos critères. Essayez de modifier vos filtres."
               />
-            ))}
+            )}
           </View>
 
           <Footer />

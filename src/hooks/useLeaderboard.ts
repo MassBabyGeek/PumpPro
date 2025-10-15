@@ -8,7 +8,7 @@ import Toast from 'react-native-toast-message';
 import {useAuth} from './useAuth';
 
 export const useLeaderboard = (
-  period: LeaderboardPeriod = 'all-time',
+  period: LeaderboardPeriod = 'weekly',
   limit: number = 20,
 ) => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
@@ -24,7 +24,9 @@ export const useLeaderboard = (
     try {
       const data = await leaderboardService.getLeaderboard(
         period,
+        'total-pushups',
         limit,
+        0,
         token || undefined,
       );
       setLeaderboard(data);

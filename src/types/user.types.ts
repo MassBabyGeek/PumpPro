@@ -10,6 +10,7 @@ export interface UserProfile extends BaseEntity {
   height?: number;
   goal?: string;
   joinDate: string;
+  score: number;
 }
 
 // Alias for backward compatibility
