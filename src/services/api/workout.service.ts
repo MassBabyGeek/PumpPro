@@ -163,6 +163,34 @@ export async function getPersonalRecords(
   return client.get(`/users/${userId}/workouts/records`, undefined, token);
 }
 
+/**
+ * Like a workout session
+ * @param workoutId - Workout session ID
+ * @param token - Authentication token
+ * @returns Updated workout session
+ */
+export async function likeWorkout(
+  workoutId: string,
+  token?: string,
+): Promise<WorkoutSession> {
+  console.log('[WorkoutService] likeWorkout:', workoutId);
+  return client.post(`/workouts/${workoutId}/like`, {}, token);
+}
+
+/**
+ * Unlike a workout session
+ * @param workoutId - Workout session ID
+ * @param token - Authentication token
+ * @returns Updated workout session
+ */
+export async function unlikeWorkout(
+  workoutId: string,
+  token?: string,
+): Promise<WorkoutSession> {
+  console.log('[WorkoutService] unlikeWorkout:', workoutId);
+  return client.delete(`/workouts/${workoutId}/like`, token);
+}
+
 export const workoutService = {
   saveWorkoutSession,
   getWorkoutSessions,
@@ -172,4 +200,6 @@ export const workoutService = {
   updateWorkoutSession,
   getWorkoutSummary,
   getPersonalRecords,
+  likeWorkout,
+  unlikeWorkout,
 };

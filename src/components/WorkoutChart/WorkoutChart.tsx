@@ -35,9 +35,7 @@ const WorkoutChart = () => {
       borderRadius: 16,
     },
     propsForDots: {
-      r: '6',
-      strokeWidth: '2',
-      stroke: appColors.primary,
+      r: '0',
     },
   };
 

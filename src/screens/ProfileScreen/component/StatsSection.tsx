@@ -16,8 +16,10 @@ const StatsSection = ({selectedPeriod, onPeriodChange}: StatsSectionProps) => {
   const {setStatsPeriod, statsByPeriod, isLoading, user} = useUser();
 
   useEffect(() => {
-    setStatsPeriod(selectedPeriod);
-  }, [selectedPeriod, user]);
+    if (user) {
+      setStatsPeriod(selectedPeriod);
+    }
+  }, [selectedPeriod, user, setStatsPeriod]);
 
   const currentStats = statsByPeriod || {
     totalPushUps: 0,

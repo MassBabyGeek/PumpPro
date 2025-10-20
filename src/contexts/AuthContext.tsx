@@ -7,6 +7,7 @@ import {GOOGLE_WEB_CLIENT_ID, GOOGLE_IOS_CLIENT_ID} from '@env';
 import {userService} from '../services/api';
 
 const AUTH_TOKEN_KEY = '@pompeurpro:auth_token';
+const USER_DATA_KEY = '@pompeurpro:user_data';
 
 interface AuthContextType {
   token: string | undefined;
@@ -70,12 +71,20 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
     const response = await userService.login(email, password);
     if (!response?.token) throw new Error('Login failed');
     await saveToken(response.token);
+    // Save user data
+    if (response.user) {
+      await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(response.user));
+    }
   };
 
   const register = async (email: string, password: string, name: string) => {
     const response = await userService.register(email, password, name);
     if (!response?.token) throw new Error('Registration failed');
     await saveToken(response.token);
+    // Save user data
+    if (response.user) {
+      await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(response.user));
+    }
   };
 
   const loginWithGoogle = async () => {
@@ -85,6 +94,10 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
     const response = await userService.loginWithGoogle(result.data?.idToken);
     if (!response?.token) throw new Error('Google login failed');
     await saveToken(response.token);
+    // Save user data
+    if (response.user) {
+      await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(response.user));
+    }
   };
 
   const loginWithApple = async () => {
@@ -104,11 +117,17 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
     );
     if (!response?.token) throw new Error('Apple login failed');
     await saveToken(response.token);
+    // Save user data
+    if (response.user) {
+      await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(response.user));
+    }
   };
 
   const logout = async () => {
     if (token) await userService.logout(token);
     await removeToken();
+    // Clear user data
+    await AsyncStorage.removeItem(USER_DATA_KEY);
   };
 
   const getToken = async () => token;

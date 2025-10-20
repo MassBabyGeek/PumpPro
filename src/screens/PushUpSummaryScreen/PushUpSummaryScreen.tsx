@@ -1,5 +1,5 @@
-import React, {useEffect} from 'react';
-import {View, StyleSheet, ScrollView} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, StyleSheet, ScrollView, Text, TextInput} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import GradientButton from '../../components/GradientButton/GradientButton';
 import appColors from '../../assets/colors';
@@ -25,23 +25,18 @@ const PushUpSummaryScreen = ({route, navigation}: Props) => {
   const {session, challengeId, taskId} = route.params;
   const {programId, totalReps, totalDuration, completed, sets} = session;
   const calories = Math.round(totalReps * 0.5);
+  const [notes, setNotes] = useState('');
 
+  // Only use challenge hooks if there's a challengeId
+  const challengeHooks = useChallenges(challengeId);
   const {
     completeTask,
     isChallengeCompleted,
     getChallengeById,
     completeChallenge,
-  } = useChallenges();
+  } = challengeHooks || {};
 
   const {saveWorkoutSession} = useWorkoutSession();
-
-  // Sauvegarder la session au backend
-  useEffect(() => {
-    const save = async () => {
-      saveWorkoutSession(session);
-    };
-    save();
-  }, [session, getToken]);
 
   const handleDone = async () => {
     const token = await getToken();
@@ -114,6 +109,7 @@ const PushUpSummaryScreen = ({route, navigation}: Props) => {
         {
           endTime: new Date(),
           ...session,
+          notes,
         },
         token || undefined,
       );
@@ -144,6 +140,21 @@ const PushUpSummaryScreen = ({route, navigation}: Props) => {
 
         {/* Motivation */}
         <MotivationCard totalReps={totalReps} />
+
+        {/* Notes section */}
+        <View style={styles.notesContainer}>
+          <Text style={styles.notesLabel}>Notes sur la session</Text>
+          <TextInput
+            style={styles.notesInput}
+            placeholder="Ajoutez une note sur votre session... (optionnel)"
+            placeholderTextColor={`${appColors.textSecondary}80`}
+            multiline
+            numberOfLines={4}
+            value={notes}
+            onChangeText={setNotes}
+            textAlignVertical="top"
+          />
+        </View>
 
         {/* Boutons */}
         <View style={styles.buttonContainer}>
@@ -271,6 +282,29 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: '100%',
     marginBottom: 20,
+  },
+  notesContainer: {
+    width: '100%',
+    backgroundColor: `${appColors.border}30`,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+  },
+  notesLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: appColors.textPrimary,
+    marginBottom: 12,
+  },
+  notesInput: {
+    backgroundColor: `${appColors.background}80`,
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 14,
+    color: appColors.textPrimary,
+    minHeight: 100,
+    borderWidth: 1,
+    borderColor: `${appColors.border}50`,
   },
 });
 

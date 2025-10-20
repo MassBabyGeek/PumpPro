@@ -2,7 +2,7 @@ import React from 'react';
 import {View, ScrollView, StyleSheet} from 'react-native';
 import SectionTitle from '../../../components/SectionTitle/SectionTitle';
 import ProgramCard from '../../../components/ProgramCard/ProgramCard';
-import {useWorkoutPrograms} from '../../../hooks';
+import {useWorkoutPrograms, usePrograms} from '../../../hooks';
 import appColors from '../../../assets/colors';
 import {WorkoutProgram} from '../../../types/workout.types';
 
@@ -11,10 +11,11 @@ type Props = {
 };
 
 const QuickProgramsSection = ({onProgramPress}: Props) => {
-  const {programs, getProgramIcon} = useWorkoutPrograms();
+  const {programs, getProgramIcon, updateProgramLike} = useWorkoutPrograms();
+  const {toggleLike} = usePrograms(programs, updateProgramLike);
 
-  // je veux 1 de chaque difficulté
-  const quickPrograms = programs.filter(p => p.difficulty);
+  // je veux 1 de chaque difficulté - Max 5 programmes
+  const quickPrograms = programs.filter(p => p.difficulty).slice(0, 5);
 
   return (
     <View style={styles.section}>
@@ -32,6 +33,9 @@ const QuickProgramsSection = ({onProgramPress}: Props) => {
             icon={getProgramIcon(program.type)}
             color={appColors.primary}
             usageCount={program.usageCount}
+            likes={program.likes}
+            userLiked={program.userLiked}
+            onLike={() => toggleLike(program.id)}
             onPress={() => onProgramPress(program)}
           />
         ))}

@@ -14,7 +14,7 @@ import {
 
 const EditProfileScreen = () => {
   const navigation = useNavigation();
-  const { user, updateProfile, isLoading } = useUser();
+  const { user, updateUser, isLoading } = useUser();
 
   // Form data state
   const [formData, setFormData] = useState({
@@ -117,7 +117,7 @@ const EditProfileScreen = () => {
       };
 
       // Call useUser hook to update profile
-      await updateProfile(updatedData);
+      await updateUser(updatedData);
 
       Toast.show({
         type: 'success',

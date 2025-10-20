@@ -5,6 +5,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../assets/colors';
 import {Challenge} from '../../types/challenge.types';
 import {DIFFICULTY_LABELS, VARIANT_LABELS} from '../../types/workout.types';
+import LikeButton from '../LikeButton';
 
 interface ChallengeCardProps {
   challenge: Challenge;
@@ -139,22 +140,14 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
               </Text>
             </View>
 
-            <TouchableOpacity
+            <LikeButton
+              likes={challenge.likes}
+              userLiked={challenge.userLiked || false}
+              onPress={() => onLike?.(challenge.id)}
+              size="medium"
+              variant="inline"
               style={styles.statItem}
-              onPress={() => onLike?.(challenge.id)}>
-              <Icon
-                name={challenge.userLiked ? 'heart' : 'heart-outline'}
-                size={16}
-                color={
-                  challenge.userLiked
-                    ? appColors.error
-                    : appColors.textSecondary
-                }
-              />
-              <Text style={styles.statText}>
-                {formatNumber(challenge.likes)}
-              </Text>
-            </TouchableOpacity>
+            />
 
             <View style={styles.pointsContainer}>
               <Icon name="star" size={14} color={appColors.warning} />

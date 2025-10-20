@@ -58,9 +58,12 @@ export const useChallenges = (challengeId?: string) => {
   }, [filters]);
 
   // Charger les challenges au montage et quand les filtres changent
+  // Ne pas charger si on utilise le hook uniquement pour un challenge spécifique
   useEffect(() => {
-    loadChallenges();
-  }, [loadChallenges]);
+    if (!challengeId) {
+      loadChallenges();
+    }
+  }, [loadChallenges, challengeId]);
 
   // Filtrer et trier les challenges (côté client pour performance)
   const filteredChallenges = useMemo(() => {

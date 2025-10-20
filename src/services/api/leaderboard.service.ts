@@ -14,10 +14,10 @@ export interface LeaderboardEntry {
   userName: string;
   avatar?: string;
   rank: number;
-  TotalCalories: number;
-  TotalSessions: number;
-  BestSessionReps: number;
-  CurrentStreak: number;
+  totalCalories: number;
+  totalSessions: number;
+  bestSessionReps: number;
+  currentStreak: number;
   score: number; // Total push-ups, points, etc.
   change?: number; // Changement de position (positif = montée, négatif = descente)
   badges?: string[];

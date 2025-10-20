@@ -1,48 +1,62 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {View, Text, StyleSheet, ScrollView, Alert} from 'react-native';
-import Toast from 'react-native-toast-message';
 import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
 import AppTitle from '../../components/AppTitle/AppTitle';
 import Footer from '../../components/Footer';
 import appColors from '../../assets/colors';
 import {useImagePicker} from '../../hooks/useImagePicker';
-import {useAuth} from '../../hooks/useAuth';
+import {useAuth, useUser, useToast, useWorkouts} from '../../hooks';
 import QuoteCard from '../../components/QuoteCard/QuoteCard';
 import LinearGradient from 'react-native-linear-gradient';
 import ProfileHeader from './component/ProfileHeader';
 import PersonalInfoSection from './component/PersonalInfoSection';
 import StatsSection from './component/StatsSection';
 import AccountActionsSection from './component/AccountActionsSection';
-import {AppStackParamList} from '../../types/navigation.types';
-import {useUser} from '../../hooks';
 import {WorkoutChart, AppRefreshControl} from '../../components';
-
-type ProfileScreenNavigationProp = StackNavigationProp<AppStackParamList>;
+import FeedbackModal from '../../components/FeedbackModal/FeedbackModal';
+import EditProfileModal from '../../components/EditProfileModal/EditProfileModal';
+import RecentWorkoutsSection from '../HomeScreen/component/RecentWorkoutsSection';
 
 const ProfileScreen = () => {
   const {logout} = useAuth();
   const {user, updateUser, deleteAccount, getUser, setStatsPeriod, reloadUser} =
     useUser();
-
-  const navigation = useNavigation<ProfileScreenNavigationProp>();
+  const {toastError, toastSuccess} = useToast();
+  const navigation = useNavigation<any>();
+  const {
+    workouts,
+    isLoading: workoutsLoading,
+    loadWorkouts,
+    toggleLike,
+  } = useWorkouts();
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<
     'today' | 'week' | 'month' | 'year'
   >('week');
+  const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
+  const [isEditProfileModalVisible, setIsEditProfileModalVisible] =
+    useState(false);
 
   const {pickAndUploadImage, isUploading} = useImagePicker();
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await Promise.all([reloadUser(), setStatsPeriod(selectedPeriod)]);
+    await Promise.all([
+      reloadUser(),
+      setStatsPeriod(selectedPeriod),
+      user?.id ? loadWorkouts(user.id) : null,
+    ]);
     setIsRefreshing(false);
   };
 
   useEffect(() => {
     const loadInitialData = async () => {
-      await Promise.all([getUser(), setStatsPeriod(selectedPeriod)]);
+      await Promise.all([
+        getUser(),
+        setStatsPeriod(selectedPeriod),
+        user?.id ? loadWorkouts(user.id) : null,
+      ]);
     };
     loadInitialData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -54,23 +68,15 @@ const ProfileScreen = () => {
       // Mettre à jour l'avatar via le contexte
       try {
         await updateUser({avatar: imageUrl});
-        Toast.show({
-          type: 'success',
-          text1: 'Succès',
-          text2: 'Photo de profil mise à jour !',
-        });
+        toastSuccess('Succès', 'Photo de profil mise à jour !');
       } catch (error) {
-        Toast.show({
-          type: 'error',
-          text1: 'Erreur',
-          text2: 'Impossible de mettre à jour la photo de profil',
-        });
+        toastError('Erreur', 'Impossible de mettre à jour la photo de profil');
       }
     }
   };
 
   const handleEditProfile = () => {
-    navigation.navigate('EditProfile');
+    setIsEditProfileModalVisible(true);
   };
 
   const handleDeleteAccount = () => {
@@ -101,22 +107,22 @@ const ProfileScreen = () => {
         onPress: async () => {
           try {
             await logout();
-            Toast.show({
-              type: 'success',
-              text1: 'Déconnexion réussie',
-              text2: 'À bientôt !',
-            });
+            toastSuccess('Déconnexion réussie', 'À bientôt !');
           } catch (error) {
-            Toast.show({
-              type: 'error',
-              text1: 'Erreur',
-              text2: 'Impossible de se déconnecter',
-            });
+            toastError('Erreur', 'Impossible de se déconnecter');
           }
         },
       },
     ]);
   };
+
+  const handleOpenFeedback = () => {
+    setIsFeedbackModalVisible(true);
+  };
+
+  const handleViewAllWorkouts = useCallback(() => {
+    navigation.navigate('WorkoutSessions');
+  }, [navigation]);
 
   if (!user) {
     return (
@@ -178,15 +184,34 @@ const ProfileScreen = () => {
             <WorkoutChart />
           </View>
 
+          {/* Mes dernières séances */}
+          <RecentWorkoutsSection
+            sessions={workouts}
+            isLoading={workoutsLoading}
+            onLike={toggleLike}
+            onViewAll={handleViewAllWorkouts}
+          />
+
           {/* Actions du compte */}
           <AccountActionsSection
             onLogout={handleLogout}
             onDeleteAccount={handleDeleteAccount}
+            onFeedback={handleOpenFeedback}
           />
 
           <Footer />
         </View>
       </ScrollView>
+
+      <FeedbackModal
+        visible={isFeedbackModalVisible}
+        onClose={() => setIsFeedbackModalVisible(false)}
+      />
+
+      <EditProfileModal
+        visible={isEditProfileModalVisible}
+        onClose={() => setIsEditProfileModalVisible(false)}
+      />
     </LinearGradient>
   );
 };

@@ -18,6 +18,7 @@ interface UseWorkoutProgramsReturn {
   getProgramById: (id: string) => Promise<WorkoutProgram | null>;
   createProgram: (program: WorkoutProgram) => Promise<WorkoutProgram>;
   getProgramIcon: (type: string) => string;
+  updateProgramLike: (programId: string, userLiked: boolean, likes: number) => void;
 }
 
 export const useWorkoutPrograms = (
@@ -128,6 +129,19 @@ export const useWorkoutPrograms = (
     }
   };
 
+  const updateProgramLike = useCallback(
+    (programId: string, userLiked: boolean, likes: number) => {
+      setPrograms(prev =>
+        prev.map(p =>
+          p.id === programId
+            ? {...p, userLiked, likes}
+            : p
+        )
+      );
+    },
+    []
+  );
+
   return {
     programs,
     isLoading,
@@ -136,6 +150,7 @@ export const useWorkoutPrograms = (
     getProgramById,
     createProgram,
     getProgramIcon,
+    updateProgramLike,
   };
 };
 

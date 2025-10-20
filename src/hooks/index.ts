@@ -19,3 +19,5 @@ export {useLeaderboardDetail} from './useLeaderboardDetail';
 export {useUser} from './useUser';
 export {useWorkout} from './useWorkout';
 export {useChallenges} from './useChallenges';
+export {usePrograms} from './usePrograms';
+export {useWorkouts} from './useWorkouts';

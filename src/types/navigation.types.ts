@@ -49,6 +49,7 @@ export type TabsParamList = {
 export type AppStackParamList = {
   HomeTabs: undefined;
   EditProfile: undefined;
+  WorkoutSessions: undefined;
 };
 
 export type ChallengeScreenNavigationProp = StackNavigationProp<

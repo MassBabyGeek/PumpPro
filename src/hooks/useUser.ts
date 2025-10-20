@@ -47,16 +47,43 @@ export const useUser = () => {
 
   const getUser = useCallback(async () => {
     if (!token) {
+      console.log('[useUser] No token, clearing user');
       setUser(null);
       setIsLoading(false);
       return;
     }
 
+    console.log('[useUser] Loading user data...');
     setIsLoading(true);
     try {
+      // First load from cache for immediate UI update
       const storedUser = await AsyncStorage.getItem(USER_DATA_KEY);
+      console.log(
+        '[useUser] Cached user data:',
+        storedUser ? 'found' : 'not found',
+      );
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const cachedUser = JSON.parse(storedUser);
+        console.log(
+          '[useUser] Setting cached user:',
+          cachedUser.id,
+          cachedUser.email,
+        );
+        setUser(cachedUser);
+
+        // Then fetch fresh data from API
+        try {
+          const freshUser = await userService.getProfile(cachedUser.id, token);
+          console.log('[useUser] Fresh user data fetched:', freshUser.id);
+          setUser(freshUser);
+          await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(freshUser));
+        } catch (apiErr) {
+          console.error('[useUser] Error fetching fresh user data', apiErr);
+          // Keep using cached user if API fails
+        }
+      } else {
+        // No cached user - try to fetch from API using /me endpoint if available
+        console.warn('[useUser] No cached user data found');
       }
     } catch (err) {
       console.error('[useUser] getUser error', err);
@@ -67,9 +94,16 @@ export const useUser = () => {
 
   const getStats = async (selectedPeriod: string): Promise<Stats> => {
     if (!user) {
+      console.error('[useUser] getStats called but user is null!');
       throw new Error('No user logged in');
     }
 
+    console.log(
+      '[useUser] getStats for user:',
+      user.id,
+      'period:',
+      selectedPeriod,
+    );
     setIsLoading(true);
     try {
       return await userService.getStats(user.id, selectedPeriod, token);
@@ -143,8 +177,15 @@ export const useUser = () => {
   const setStatsPeriod = useCallback(
     async (selectedPeriod: string) => {
       if (!user) {
+        console.error('[useUser] setStatsPeriod called but user is null!');
         throw new Error('No user logged in');
       }
+      console.log(
+        '[useUser] setStatsPeriod for user:',
+        user.id,
+        'period:',
+        selectedPeriod,
+      );
       setStatsByPeriod(null);
       setIsLoading(true);
       try {
@@ -238,9 +279,21 @@ export const useUser = () => {
 
   const loadChartData = async (period: 'week' | 'month' | 'year') => {
     if (!user || isChartLoading) {
+      console.log(
+        '[useUser] loadChartData skipped - user:',
+        !!user,
+        'isChartLoading:',
+        isChartLoading,
+      );
       return;
     }
 
+    console.log(
+      '[useUser] loadChartData for user:',
+      user.id,
+      'period:',
+      period,
+    );
     setIsChartLoading(true);
     setCurrentChartPeriod(period);
     try {

@@ -43,6 +43,8 @@ export interface BaseProgramConfig {
   createdBy?: string;
   isCustom?: boolean;
   usageCount?: number; // Nombre de fois que le programme a été utilisé
+  likes?: number; // Nombre de likes
+  userLiked?: boolean; // Si l'utilisateur actuel a liké
 }
 
 export interface FreeModeConfig extends BaseProgramConfig {
@@ -110,6 +112,15 @@ export interface SetResult extends BaseEntity {
 export interface WorkoutSession extends BaseEntity {
   sessionId: string;
   programId: string;
+  program?: WorkoutProgram; // Données complètes du programme
+  challengeId?: string;
+  challenge?: {
+    id: string;
+    title: string;
+    points: number;
+    iconName: string;
+    iconColor: string;
+  }; // Données du challenge si applicable
   startTime: Date;
   endTime?: Date;
   sets: SetResult[];
@@ -118,6 +129,15 @@ export interface WorkoutSession extends BaseEntity {
   completed: boolean; // objectif atteint ou non
   notes?: string;
   userId?: string;
+  user?: {
+    id: string;
+    name: string;
+    avatar?: string;
+    score: number;
+  }; // Données de l'utilisateur qui a fait la session
+  likes?: number; // Nombre de likes
+  userLiked?: boolean; // Si l'utilisateur actuel a liké
+  points?: number; // Points gagnés pour cette session
 }
 
 // ============================================================================

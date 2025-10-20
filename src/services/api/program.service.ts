@@ -176,6 +176,34 @@ export async function getPopularPrograms(
   return client.get('/programs/popular', { limit }, token);
 }
 
+/**
+ * Like a program
+ * @param programId - Program ID
+ * @param token - Authentication token
+ * @returns Updated program
+ */
+export async function likeProgram(
+  programId: string,
+  token?: string
+): Promise<WorkoutProgram> {
+  console.log('[ProgramService] likeProgram:', programId);
+  return client.post(`/programs/${programId}/like`, {}, token);
+}
+
+/**
+ * Unlike a program
+ * @param programId - Program ID
+ * @param token - Authentication token
+ * @returns Updated program
+ */
+export async function unlikeProgram(
+  programId: string,
+  token?: string
+): Promise<WorkoutProgram> {
+  console.log('[ProgramService] unlikeProgram:', programId);
+  return client.delete(`/programs/${programId}/like`, token);
+}
+
 export const programService = {
   getPrograms,
   getProgramById,
@@ -188,4 +216,6 @@ export const programService = {
   duplicateProgram,
   getFeaturedPrograms,
   getPopularPrograms,
+  likeProgram,
+  unlikeProgram,
 };

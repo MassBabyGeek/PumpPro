@@ -1,24 +1,23 @@
 import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import SectionTitle from '../../../components/SectionTitle/SectionTitle';
 import appColors from '../../../assets/colors';
 
 type AccountActionsSectionProps = {
   onLogout: () => void;
   onDeleteAccount: () => void;
+  onFeedback: () => void;
 };
 
-const AccountActionsSection = ({onLogout, onDeleteAccount}: AccountActionsSectionProps) => {
+const AccountActionsSection = ({
+  onLogout,
+  onDeleteAccount,
+  onFeedback,
+}: AccountActionsSectionProps) => {
   return (
     <View style={styles.section}>
-      <SectionTitle title="Compte" />
       <TouchableOpacity style={styles.actionButton} onPress={onLogout}>
-        <Icon
-          name="log-out-outline"
-          size={20}
-          color={appColors.textPrimary}
-        />
+        <Icon name="log-out-outline" size={20} color={appColors.textPrimary} />
         <Text style={styles.actionButtonText}>Se déconnecter</Text>
         <Icon
           name="chevron-forward"
@@ -36,6 +35,13 @@ const AccountActionsSection = ({onLogout, onDeleteAccount}: AccountActionsSectio
         </Text>
         <Icon name="chevron-forward" size={20} color={appColors.error} />
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.feedbackButton} onPress={onFeedback}>
+        <Icon name="chatbubbles-outline" size={18} color={appColors.primary} />
+        <Text style={styles.feedbackButtonText}>
+          Signaler un bug ou proposer une amélioration
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -43,6 +49,19 @@ const AccountActionsSection = ({onLogout, onDeleteAccount}: AccountActionsSectio
 const styles = StyleSheet.create({
   section: {
     marginBottom: 40,
+  },
+  feedbackButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    marginBottom: 16,
+  },
+  feedbackButtonText: {
+    flex: 1,
+    fontSize: 14,
+    color: appColors.primary,
+    fontWeight: '500',
   },
   actionButton: {
     flexDirection: 'row',

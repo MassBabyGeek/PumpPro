@@ -4,6 +4,7 @@ import TabsNavigator from '../../TabsNavigator/TabsNavigator';
 import EditProfileScreen from '../../../screens/EditProfileScreen/EditProfileScreen';
 import NotificationScreen from '../../../screens/NotificationScreen';
 import LeaderboardDetailScreen from '../../../screens/LeaderboardDetailScreen/LeaderboardDetailScreen';
+import WorkoutSessionsScreen from '../../../screens/WorkoutSessionsScreen/WorkoutSessionsScreen';
 
 const Stack = createStackNavigator();
 
@@ -28,6 +29,11 @@ const AppStack = () => {
       <Stack.Screen
         name="LeaderboardDetail"
         component={LeaderboardDetailScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="WorkoutSessions"
+        component={WorkoutSessionsScreen}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

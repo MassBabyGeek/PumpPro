@@ -6,6 +6,7 @@ import {useAuth} from './src/hooks/useAuth';
 import AuthStack from './src/components/Stacks/AuthStack/AuthStack';
 import AppStack from './src/components/Stacks/AppStack/AppStack';
 import SplashScreen from './src/screens/SplashScreen/SplashScreen';
+import {toastConfig} from './src/components/CustomToast/CustomToast';
 
 const AppNavigator = () => {
   const {isAuthenticated, isLoading} = useAuth();
@@ -27,7 +28,7 @@ export default function App() {
   return (
     <AuthProvider>
       <AppNavigator />
-      <Toast />
+      <Toast config={toastConfig} />
     </AuthProvider>
   );
 }

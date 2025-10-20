@@ -15,11 +15,13 @@ type Props = {
   password: string;
   showPassword: boolean;
   isLoading: boolean;
+  rememberMe: boolean;
   onEmailChange: (text: string) => void;
   onPasswordChange: (text: string) => void;
   onTogglePassword: () => void;
   onForgotPassword: () => void;
   onLogin: () => void;
+  onRememberMeChange: (value: boolean) => void;
 };
 
 const LoginForm = ({
@@ -27,11 +29,13 @@ const LoginForm = ({
   password,
   showPassword,
   isLoading,
+  rememberMe,
   onEmailChange,
   onPasswordChange,
   onTogglePassword,
   onForgotPassword,
   onLogin,
+  onRememberMeChange,
 }: Props) => {
   return (
     <View style={styles.form}>
@@ -84,9 +88,23 @@ const LoginForm = ({
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity onPress={onForgotPassword} disabled={isLoading}>
-        <Text style={styles.forgotPassword}>Mot de passe oublié?</Text>
-      </TouchableOpacity>
+      <View style={styles.optionsRow}>
+        <TouchableOpacity
+          style={styles.rememberMeContainer}
+          onPress={() => onRememberMeChange(!rememberMe)}
+          disabled={isLoading}>
+          <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+            {rememberMe && (
+              <Icon name="checkmark" size={16} color={appColors.background} />
+            )}
+          </View>
+          <Text style={styles.rememberMeText}>Se souvenir de moi</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={onForgotPassword} disabled={isLoading}>
+          <Text style={styles.forgotPassword}>Mot de passe oublié?</Text>
+        </TouchableOpacity>
+      </View>
 
       <GradientButton
         text="Se connecter"
@@ -133,12 +151,40 @@ const styles = StyleSheet.create({
   eyeIcon: {
     padding: 8,
   },
+  optionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  rememberMeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: appColors.border,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: appColors.primary,
+    borderColor: appColors.primary,
+  },
+  rememberMeText: {
+    fontSize: 14,
+    color: appColors.textPrimary,
+    fontWeight: '500',
+  },
   forgotPassword: {
     fontSize: 14,
     color: appColors.primary,
-    textAlign: 'right',
     fontWeight: '600',
-    marginBottom: 24,
   },
   loginButtonContainer: {
     marginBottom: 16,

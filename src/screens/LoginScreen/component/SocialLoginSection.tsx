@@ -1,68 +1,9 @@
-import React, {useState} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Platform} from 'react-native';
-import Toast from 'react-native-toast-message';
+import React from 'react';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../../assets/colors';
-import {useAuth} from '../../../hooks/useAuth';
 
-type Props = {
-  isLoading: boolean;
-};
-
-const SocialLoginSection = ({isLoading}: Props) => {
-  const {loginWithGoogle, loginWithApple} = useAuth();
-  const [loadingGoogle, setLoadingGoogle] = useState(false);
-  const [loadingApple, setLoadingApple] = useState(false);
-
-  const handleGoogleLogin = async () => {
-    setLoadingGoogle(true);
-    try {
-      await loginWithGoogle();
-      Toast.show({
-        type: 'success',
-        text1: 'Connexion réussie! 🎉',
-        text2: 'Bienvenue',
-      });
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: error instanceof Error ? error.message : 'Connexion avec Google échouée',
-      });
-    } finally {
-      setLoadingGoogle(false);
-    }
-  };
-
-  const handleAppleLogin = async () => {
-    if (Platform.OS !== 'ios') {
-      Toast.show({
-        type: 'error',
-        text1: 'Non disponible',
-        text2: 'La connexion Apple n\'est disponible que sur iOS',
-      });
-      return;
-    }
-
-    setLoadingApple(true);
-    try {
-      await loginWithApple();
-      Toast.show({
-        type: 'success',
-        text1: 'Connexion réussie! 🎉',
-        text2: 'Bienvenue',
-      });
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: error instanceof Error ? error.message : 'Connexion avec Apple échouée',
-      });
-    } finally {
-      setLoadingApple(false);
-    }
-  };
-
+const SocialLoginSection = () => {
   return (
     <>
       {/* Divider */}
@@ -72,24 +13,18 @@ const SocialLoginSection = ({isLoading}: Props) => {
         <View style={styles.dividerLine} />
       </View>
 
-      {/* Social buttons */}
-      <TouchableOpacity
-        style={styles.socialButton}
-        disabled={isLoading || loadingGoogle}
-        onPress={handleGoogleLogin}>
-        <Icon name="logo-google" size={20} color={appColors.textPrimary} />
-        <Text style={styles.socialButtonText}>
-          {loadingGoogle ? 'Connexion...' : 'Continuer avec Google'}
+      {/* Social buttons désactivés */}
+      <TouchableOpacity style={styles.socialButtonDisabled} disabled>
+        <Icon name="logo-google" size={20} color={appColors.textSecondary} />
+        <Text style={styles.socialButtonTextDisabled}>
+          Continuer avec Google
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.socialButton}
-        disabled={isLoading || loadingApple}
-        onPress={handleAppleLogin}>
-        <Icon name="logo-apple" size={20} color={appColors.textPrimary} />
-        <Text style={styles.socialButtonText}>
-          {loadingApple ? 'Connexion...' : 'Continuer avec Apple'}
+      <TouchableOpacity style={styles.socialButtonDisabled} disabled>
+        <Icon name="logo-apple" size={20} color={appColors.textSecondary} />
+        <Text style={styles.socialButtonTextDisabled}>
+          Continuer avec Apple
         </Text>
       </TouchableOpacity>
     </>
@@ -113,21 +48,21 @@ const styles = StyleSheet.create({
     color: appColors.textSecondary,
     fontWeight: '600',
   },
-  socialButton: {
+  socialButtonDisabled: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
     borderRadius: 14,
-    backgroundColor: `${appColors.border}40`,
+    backgroundColor: `${appColors.border}30`, // gris clair
     borderWidth: 1.5,
-    borderColor: appColors.border,
+    borderColor: `${appColors.border}50`, // bordure gris clair
     gap: 12,
     marginBottom: 12,
   },
-  socialButtonText: {
+  socialButtonTextDisabled: {
     fontSize: 15,
-    color: appColors.textPrimary,
+    color: appColors.textSecondary, // texte gris
     fontWeight: '600',
   },
 });

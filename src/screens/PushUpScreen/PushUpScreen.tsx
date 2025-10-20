@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {Text, View, StyleSheet} from 'react-native';
+import {Text, View, StyleSheet, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import GradientButton from '../../components/GradientButton/GradientButton';
 import appColors from '../../assets/colors';
@@ -55,6 +55,26 @@ const PushUpScreen = () => {
       return;
     }
     navigation.navigate('PushUpSummary', {session, challengeId, taskId});
+  };
+
+  const handleCancel = () => {
+    Alert.alert(
+      'Annuler l\'entraînement',
+      'Êtes-vous sûr de vouloir annuler cet entraînement ? Votre progression ne sera pas sauvegardée.',
+      [
+        {
+          text: 'Continuer',
+          style: 'cancel',
+        },
+        {
+          text: 'Annuler',
+          style: 'destructive',
+          onPress: () => {
+            navigation.goBack();
+          },
+        },
+      ],
+    );
   };
 
   if (!workoutState || !program || workoutState === null) {
@@ -164,15 +184,27 @@ const PushUpScreen = () => {
             </View>
           )}
 
-          <GradientButton
-            text="Terminer l'entraînement"
-            icon="checkmark-circle"
-            fontSize={15}
-            paddingHorizontal={30}
-            paddingVertical={16}
-            onPress={handleStop}
-            style={styles.stopButton}
-          />
+          <View style={styles.finalButtonsRow}>
+            <GradientButton
+              text="Annuler"
+              icon="close-circle"
+              fontSize={15}
+              outlined={true}
+              paddingHorizontal={30}
+              paddingVertical={16}
+              onPress={handleCancel}
+              style={styles.cancelButton}
+            />
+            <GradientButton
+              text="Terminer"
+              icon="checkmark-circle"
+              fontSize={15}
+              paddingHorizontal={30}
+              paddingVertical={16}
+              onPress={handleStop}
+              style={styles.stopButton}
+            />
+          </View>
         </View>
 
         <View style={styles.bottomSpacing} />
@@ -220,8 +252,16 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
   },
-  stopButton: {
+  finalButtonsRow: {
+    flexDirection: 'row',
+    gap: 10,
     marginTop: 4,
+  },
+  cancelButton: {
+    flex: 1,
+  },
+  stopButton: {
+    flex: 1,
   },
   bottomSpacing: {
     height: 20,

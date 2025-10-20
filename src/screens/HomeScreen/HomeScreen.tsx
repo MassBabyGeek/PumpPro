@@ -5,7 +5,7 @@ import {useNavigation} from '@react-navigation/native';
 import appColors from '../../assets/colors';
 import AppTitle from '../../components/AppTitle/AppTitle';
 import Footer from '../../components/Footer';
-import {useLeaderboard, useUser} from '../../hooks';
+import {useLeaderboard, useUser, useWorkouts} from '../../hooks';
 
 import {WorkoutProgram} from '../../types/workout.types';
 import MotivationalQuoteCard from './component/MotivationalQuoteCard';
@@ -13,6 +13,7 @@ import TodayStatsSection from './component/TodayStatsSection';
 import QuickProgramsSection from './component/QuickProgramsSection';
 import WeeklyStatsSection from './component/WeeklyStatsSection';
 import LeaderboardSection from './component/LeaderboardSection';
+import RecentWorkoutsSection from './component/RecentWorkoutsSection';
 import {Stats} from '../../types/user.types';
 import FadeInView from '../../components/FadeInView/FadeInView';
 import AppRefreshControl from '../../components/AppRefreshControl/AppRefreshControl';
@@ -34,35 +35,47 @@ const HomeScreen = () => {
   const navigation = useNavigation<any>();
   const {getStats, user} = useUser();
   const {leaderboard, refreshLeaderboard} = useLeaderboard();
+  const {
+    workouts,
+    isLoading: workoutsLoading,
+    loadWorkouts,
+    toggleLike,
+  } = useWorkouts();
   const [currentQuote] = useState(
     motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)],
   );
-  useEffect(() => {
-    if (user) {
-      fetchData();
-    }
-  }, [user]); // ne s'exécute que quand user est défini
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const [week, today] = await Promise.all([
-        getStats('week'),
-        getStats('today'),
-      ]);
-      setWeekStats(week);
-      setTodayStats(today);
-      refreshLeaderboard();
-    } catch (err) {
-      console.error('[HomeScreen] Error fetching data', err);
-    } finally {
-      setIsLoading(false);
+  useEffect(() => {
+    if (user?.id) {
+      fetchData(user?.id);
     }
-  }, [getStats, refreshLeaderboard]);
+  }, [user]);
+
+  const fetchData = useCallback(
+    async (userId: string) => {
+      setIsLoading(true);
+      try {
+        const [week, today] = await Promise.all([
+          getStats('week'),
+          getStats('today'),
+        ]);
+        setWeekStats(week);
+        setTodayStats(today);
+
+        // Charger les workouts uniquement si userId est dispo
+        await loadWorkouts(userId);
+
+        refreshLeaderboard();
+      } catch (err) {
+        console.error('[HomeScreen] Error fetching data', err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [getStats, loadWorkouts, refreshLeaderboard],
+  );
 
   const handleProgramPress = (program: WorkoutProgram) => {
-    // Navigue vers l'écran d'entraînement avec le programme par défaut
-    // "PushUp" est le nom du Tab qui contient le TrainingStack
     navigation.navigate('PushUp', {
       screen: 'Libre',
       params: {programId: program.id},
@@ -77,11 +90,16 @@ const HomeScreen = () => {
     navigation.navigate('LeaderboardDetail');
   };
 
+  const handleViewAllWorkouts = () => {
+    navigation.navigate('WorkoutSessions');
+  };
+
   const onRefresh = useCallback(async () => {
+    if (!user?.id) return;
     setIsLoading(true);
-    await fetchData();
+    await fetchData(user.id);
     setIsLoading(false);
-  }, [fetchData]);
+  }, [fetchData, user]);
 
   return (
     <LinearGradient
@@ -94,12 +112,8 @@ const HomeScreen = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           refreshControl={
-            <AppRefreshControl
-              refreshing={isLoading}
-              onRefresh={onRefresh}
-            />
+            <AppRefreshControl refreshing={isLoading} onRefresh={onRefresh} />
           }>
-          {/* Header avec salutation */}
           <View style={styles.header}>
             <AppTitle
               greeting="Salut Champion! 👋"
@@ -108,25 +122,27 @@ const HomeScreen = () => {
             />
           </View>
 
-          {/* Citation motivante */}
           <MotivationalQuoteCard quote={currentQuote} />
 
-          {/* Stats du jour */}
           <TodayStatsSection stats={todayStats} />
 
-          {/* Programmes rapides */}
           <QuickProgramsSection onProgramPress={handleProgramPress} />
 
-          {/* Stats hebdomadaires */}
           <WeeklyStatsSection stats={weekStats} />
 
-          {/* Classement */}
+          <RecentWorkoutsSection
+            sessions={workouts}
+            isLoading={workoutsLoading}
+            onLike={toggleLike}
+            onViewAll={handleViewAllWorkouts}
+            classname={styles.workoutsSection}
+          />
+
           <LeaderboardSection
             leaderboard={leaderboard}
             onViewAll={handleViewAllLeaderboard}
           />
 
-          {/* Footer info */}
           <Footer variant="app" />
 
           <View style={styles.bottomSpacing} />
@@ -158,6 +174,9 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 60,
+  },
+  workoutsSection: {
+    paddingHorizontal: 20,
   },
 });
 

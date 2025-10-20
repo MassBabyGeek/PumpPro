@@ -19,14 +19,14 @@ const WeeklyStatsSection = ({stats}: Props) => {
           <View style={styles.statsGrid}>
             <StatCard
               icon="bar-chart"
-              label="Total"
+              label="Total d'entraînements"
               value={stats.totalWorkouts}
               color={appColors.success}
             />
             <StatCard
               icon="trending-up"
               label="Moyenne/jour"
-              value={stats.averagePushUps}
+              value={stats.averagePushUps?.toFixed(0) || 0}
               color={appColors.accent}
             />
           </View>
@@ -39,8 +39,8 @@ const WeeklyStatsSection = ({stats}: Props) => {
             />
             <StatCard
               icon="stats-chart"
-              label="Total"
-              value={stats?.totalPushUps}
+              label="Total de pompes"
+              value={stats?.totalPushUps?.toFixed(0) ?? 0}
               color={appColors.primary}
             />
           </View>

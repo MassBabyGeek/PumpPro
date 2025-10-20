@@ -9,6 +9,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../assets/colors';
+import LikeButton from '../LikeButton';
 
 const {width} = Dimensions.get('window');
 
@@ -21,6 +22,9 @@ type ProgramCardProps = {
   onPress?: () => void;
   style?: any;
   usageCount?: number;
+  likes?: number;
+  userLiked?: boolean;
+  onLike?: () => void;
 };
 
 const ProgramCard = ({
@@ -32,6 +36,9 @@ const ProgramCard = ({
   onPress,
   style,
   usageCount,
+  likes,
+  userLiked,
+  onLike,
 }: ProgramCardProps) => {
   return (
     <TouchableOpacity
@@ -39,6 +46,24 @@ const ProgramCard = ({
       activeOpacity={0.8}
       style={[styles.touchable, style]}>
       <LinearGradient colors={[`${color}00`, `${color}80`]} style={styles.card}>
+        {/* Top badges */}
+        <View style={styles.topBadges}>
+          <View style={[styles.badge, styles.usageBadge]}>
+            <Icon name="people" size={12} color={appColors.textSecondary} />
+            <Text style={styles.usageText}>{usageCount || 0}</Text>
+          </View>
+
+          {likes !== undefined && onLike && (
+            <LikeButton
+              likes={likes}
+              userLiked={userLiked || false}
+              onPress={onLike}
+              size="small"
+              variant="badge"
+            />
+          )}
+        </View>
+
         <View style={styles.content}>
           <Icon name={icon} size={32} color={color} style={styles.icon} />
           <Text style={styles.title}>{title}</Text>
@@ -47,12 +72,6 @@ const ProgramCard = ({
             {difficulty && (
               <View style={styles.badge}>
                 <Text style={[styles.reps, {color}]}>{difficulty}</Text>
-              </View>
-            )}
-            {usageCount !== undefined && usageCount > 0 && (
-              <View style={[styles.badge, styles.usageBadge]}>
-                <Icon name="people" size={12} color={appColors.textSecondary} />
-                <Text style={styles.usageText}>{usageCount}</Text>
               </View>
             )}
           </View>
@@ -73,12 +92,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 16,
+    position: 'relative',
+  },
+  topBadges: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    right: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    zIndex: 10,
   },
   content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 10,
+    paddingHorizontal: 8,
   },
   icon: {
     marginBottom: 8,
@@ -88,6 +119,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: appColors.textPrimary,
     marginBottom: 4,
+    textAlign: 'center',
   },
   description: {
     fontSize: 12,
@@ -110,6 +142,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minHeight: 32,
   },
   reps: {
     fontSize: 13,

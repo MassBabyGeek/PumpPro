@@ -12,9 +12,11 @@ export { challengeService } from './challenge.service';
 export { workoutService } from './workout.service';
 export { programService } from './program.service';
 export { leaderboardService } from './leaderboard.service';
+export { feedbackService } from './feedback.service';
 
 // Types from services
 export type { LeaderboardEntry, UserRank, LeaderboardPeriod, LeaderboardMetric } from './leaderboard.service';
+export type { BugReportCategory, BugReportSeverity, BugReportPayload, BugReportResponse } from './feedback.service';
 
 // Re-export commonly used functions for convenience
 export {
@@ -59,6 +61,11 @@ export {
   getUserRank,
   getTopPerformers,
 } from './leaderboard.service';
+
+export {
+  // Feedback
+  submitBugReport,
+} from './feedback.service';
 
 /**
  * API Service Summary:

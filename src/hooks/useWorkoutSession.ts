@@ -1,4 +1,3 @@
-import {useEffect, useState} from 'react';
 import {WorkoutSession} from '../types/workout.types';
 import {useAuth} from './useAuth';
 import {workoutService} from '../services/api';
@@ -7,22 +6,16 @@ import Toast from 'react-native-toast-message';
 const useWorkoutSession = () => {
   const {getToken} = useAuth();
 
-  const [token, setToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    const init = async () => {
-      const token = await getToken();
-      setToken(token);
-    };
-    init();
-  }, [getToken]);
-
   const saveWorkoutSession = async (
     session: WorkoutSession,
     challengeId?: string,
     taskId?: string,
   ) => {
     try {
+      // Get token at call time, not at hook initialization
+      const token = await getToken();
+      console.log('[useWorkoutSession] Saving session with token:', token ? 'present' : 'missing');
+
       await workoutService.saveWorkoutSession(
         {
           endTime: new Date(),
@@ -31,7 +24,7 @@ const useWorkoutSession = () => {
         token || undefined,
       );
     } catch (error) {
-      console.error('Error saving session:', error);
+      console.error('[useWorkoutSession] Error saving session:', error);
       Toast.show({
         type: 'error',
         text1: 'Erreur',

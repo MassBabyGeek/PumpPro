@@ -11,9 +11,11 @@ import {useAuth} from './useAuth';
 const PAGE_SIZE = 20;
 
 export const useLeaderboardDetail = (
-  period: LeaderboardPeriod = 'all-time',
-  metric: LeaderboardMetric = 'total-pushups',
+  initialPeriod: LeaderboardPeriod = 'all-time',
+  initialMetric: LeaderboardMetric = 'total-pushups',
 ) => {
+  const [period, setPeriod] = useState<LeaderboardPeriod>(initialPeriod);
+  const [metric, setMetric] = useState<LeaderboardMetric>(initialMetric);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -23,32 +25,26 @@ export const useLeaderboardDetail = (
   const {getToken} = useAuth();
 
   const fetchLeaderboard = useCallback(
-    async (pageNum: number = 0, append: boolean = false) => {
+    async (pageNum: number, append: boolean, currentPeriod: LeaderboardPeriod, currentMetric: LeaderboardMetric) => {
       if (pageNum === 0) {
         setIsLoading(true);
       } else {
         setIsLoadingMore(true);
       }
       setError(null);
-      const token = await getToken();
 
       try {
+        const token = await getToken();
         const offset = pageNum * PAGE_SIZE;
         const data = await leaderboardService.getLeaderboard(
-          period,
-          metric,
+          currentPeriod,
+          currentMetric,
           PAGE_SIZE,
           offset,
           token || undefined,
         );
 
-        if (append) {
-          setLeaderboard(prev => [...prev, ...data]);
-        } else {
-          setLeaderboard(data);
-        }
-
-        // Si on reçoit moins d'éléments que la page size, on a atteint la fin
+        setLeaderboard(prev => (append ? [...prev, ...data] : data));
         setHasMore(data.length === PAGE_SIZE);
         setPage(pageNum);
       } catch (err) {
@@ -57,39 +53,34 @@ export const useLeaderboardDetail = (
             ? err.message
             : 'Erreur de chargement du classement';
         setError(errorMessage);
-        Toast.show({
-          type: 'error',
-          text1: 'Erreur',
-          text2: errorMessage,
-        });
+        Toast.show({type: 'error', text1: 'Erreur', text2: errorMessage});
       } finally {
         setIsLoading(false);
         setIsLoadingMore(false);
       }
     },
-    [period, metric, getToken],
+    [getToken],
   );
 
   useEffect(() => {
     setLeaderboard([]);
     setPage(0);
     setHasMore(true);
-    fetchLeaderboard(0, false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period, metric]);
+    fetchLeaderboard(0, false, period, metric);
+  }, [period, metric, fetchLeaderboard]);
 
   const loadMore = useCallback(() => {
     if (!isLoadingMore && hasMore) {
-      fetchLeaderboard(page + 1, true);
+      fetchLeaderboard(page + 1, true, period, metric);
     }
-  }, [page, isLoadingMore, hasMore, fetchLeaderboard]);
+  }, [page, isLoadingMore, hasMore, fetchLeaderboard, period, metric]);
 
-  const refreshLeaderboard = useCallback(() => {
+  const refresh = useCallback(() => {
     setLeaderboard([]);
     setPage(0);
     setHasMore(true);
-    fetchLeaderboard(0, false);
-  }, [fetchLeaderboard]);
+    fetchLeaderboard(0, false, period, metric);
+  }, [fetchLeaderboard, period, metric]);
 
   return {
     leaderboard,
@@ -98,6 +89,10 @@ export const useLeaderboardDetail = (
     error,
     hasMore,
     loadMore,
-    refreshLeaderboard,
+    period,
+    setPeriod,
+    metric,
+    setMetric,
+    refresh,
   };
 };

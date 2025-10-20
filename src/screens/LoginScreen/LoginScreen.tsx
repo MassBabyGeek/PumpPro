@@ -1,6 +1,6 @@
-import React, {useState} from 'react';
+/* eslint-disable no-catch-shadow */
+import React, {useState, useEffect} from 'react';
 import {StyleSheet, ScrollView} from 'react-native';
-import Toast from 'react-native-toast-message';
 import LinearGradient from 'react-native-linear-gradient';
 import appColors from '../../assets/colors';
 import {useAuth} from '../../hooks/useAuth';
@@ -8,6 +8,8 @@ import AuthFooter from '../../components/AuthFooter';
 import LoginHeader from './component/LoginHeader';
 import LoginForm from './component/LoginForm';
 import SocialLoginSection from './component/SocialLoginSection';
+import {useToast} from '../../hooks';
+import {credentialsStorage} from '../../services/credentialsStorage';
 
 type LoginScreenProps = {
   navigation: any;
@@ -15,18 +17,37 @@ type LoginScreenProps = {
 
 const LoginScreen = ({navigation}: LoginScreenProps) => {
   const {login} = useAuth();
-  const [email, setEmail] = useState('l@outlook.fr');
-  const [password, setPassword] = useState('aaaaaa');
+  const toast = useToast();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // Load saved credentials on mount
+  useEffect(() => {
+    loadSavedCredentials();
+  }, []);
+
+  const loadSavedCredentials = async () => {
+    try {
+      const shouldRemember = await credentialsStorage.getRememberMe();
+      if (shouldRemember) {
+        const credentials = await credentialsStorage.getSavedCredentials();
+        if (credentials) {
+          setEmail(credentials.email);
+          setPassword(credentials.password);
+          setRememberMe(true);
+        }
+      }
+    } catch (error) {
+      console.error('[LoginScreen] Error loading credentials:', error);
+    }
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Veuillez remplir tous les champs',
-      });
+      toast.toastWarning('Champs requis', 'Veuillez remplir tous les champs');
       return;
     }
 
@@ -34,17 +55,22 @@ const LoginScreen = ({navigation}: LoginScreenProps) => {
 
     try {
       await login(email, password);
-      Toast.show({
-        type: 'success',
-        text1: 'Connexion réussie! 🎉',
-        text2: 'Bienvenue',
-      });
+
+      // Save or clear credentials based on remember me checkbox
+      if (rememberMe) {
+        await credentialsStorage.saveCredentials(email, password);
+        await credentialsStorage.setRememberMe(true);
+      } else {
+        await credentialsStorage.clearCredentials();
+        await credentialsStorage.setRememberMe(false);
+      }
+
+      toast.toastSuccess('Connexion réussie !', 'Bienvenue 🎉');
     } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: error instanceof Error ? error.message : 'Connexion échouée',
-      });
+      toast.toastError(
+        'Connexion échouée',
+        error instanceof Error ? error.message : 'Erreur inconnue',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -69,11 +95,13 @@ const LoginScreen = ({navigation}: LoginScreenProps) => {
           password={password}
           showPassword={showPassword}
           isLoading={isLoading}
+          rememberMe={rememberMe}
           onEmailChange={setEmail}
           onPasswordChange={setPassword}
           onTogglePassword={() => setShowPassword(!showPassword)}
           onForgotPassword={handleForgotPassword}
           onLogin={handleLogin}
+          onRememberMeChange={setRememberMe}
         />
 
         <SocialLoginSection isLoading={isLoading} />

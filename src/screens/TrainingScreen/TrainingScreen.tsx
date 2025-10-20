@@ -8,17 +8,22 @@ import QuoteCard from '../../components/QuoteCard/QuoteCard';
 import EmptyState from '../../components/EmptyState/EmptyState';
 import LinearGradient from 'react-native-linear-gradient';
 import ProgramsByDifficulty from './component/ProgramsByDifficulty';
-import {useWorkoutPrograms} from '../../hooks';
+import {useWorkoutPrograms, usePrograms} from '../../hooks';
 import LoaderScreen from '../LoaderScreen/LoaderScreen';
 import FadeInView from '../../components/FadeInView/FadeInView';
 import Footer from '../../components/Footer';
 
 const TrainingScreen = () => {
   const navigation = useNavigation<TrainingScreenNavigationProp>();
-  const {programs, isLoading, error, getProgramIcon} = useWorkoutPrograms();
+  const {programs, isLoading, error, getProgramIcon, updateProgramLike} = useWorkoutPrograms();
+  const {toggleLike} = usePrograms(programs, updateProgramLike);
 
   const handleProgramPress = (program: WorkoutProgram) => {
     navigation.navigate('Libre', {programId: program.id});
+  };
+
+  const handleProgramLike = (programId: string) => {
+    toggleLike(programId);
   };
 
   if (isLoading) {
@@ -89,6 +94,7 @@ const TrainingScreen = () => {
             difficulties={difficulties}
             programs={programs}
             onProgramPress={handleProgramPress}
+            onProgramLike={handleProgramLike}
             getProgramIcon={getProgramIcon}
           />
 
