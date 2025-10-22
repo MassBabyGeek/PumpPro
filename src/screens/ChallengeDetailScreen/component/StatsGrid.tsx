@@ -13,7 +13,7 @@ type StatsGridProps = {
 const StatsGrid = ({participants, completions, likes}: StatsGridProps) => {
   return (
     <View style={styles.statsGrid}>
-      {participants && (
+      {participants != null && (
         <View style={styles.statCard}>
           <LinearGradient
             colors={[`${appColors.primary}15`, `${appColors.accent}10`]}
@@ -29,7 +29,7 @@ const StatsGrid = ({participants, completions, likes}: StatsGridProps) => {
         </View>
       )}
 
-      {completions && (
+      {completions != null && (
         <View style={styles.statCard}>
           <LinearGradient
             colors={[`${appColors.success}15`, `${appColors.success}10`]}
@@ -37,7 +37,7 @@ const StatsGrid = ({participants, completions, likes}: StatsGridProps) => {
             <View style={styles.statGradientContainer}>
               <Icon name="checkmark-done" size={24} color={appColors.success} />
               <Text style={styles.statValue}>
-                {completions?.toLocaleString()}
+                {completions.toLocaleString()}
               </Text>
               <Text style={styles.statLabel}>Complétés</Text>
             </View>
@@ -45,14 +45,14 @@ const StatsGrid = ({participants, completions, likes}: StatsGridProps) => {
         </View>
       )}
 
-      {likes && (
+      {likes != null && (
         <View style={styles.statCard}>
           <LinearGradient
             colors={[`${appColors.error}15`, `${appColors.error}10`]}
             style={styles.statGradient}>
             <View style={styles.statGradientContainer}>
               <Icon name="heart" size={24} color={appColors.error} />
-              <Text style={styles.statValue}>{likes?.toLocaleString()}</Text>
+              <Text style={styles.statValue}>{likes.toLocaleString()}</Text>
               <Text style={styles.statLabel}>Likes</Text>
             </View>
           </LinearGradient>

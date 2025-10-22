@@ -38,15 +38,11 @@ export interface BugReportResponse {
 /**
  * Submit bug report or feedback
  * @param report - Bug report data
- * @param token - Authentication token
  * @returns Bug report response
  */
 export async function submitBugReport(
   report: BugReportPayload,
-  token?: string,
 ): Promise<BugReportResponse> {
-  console.log('[FeedbackService] submitBugReport:', report.category, report.title);
-
   // Convert deviceInfo to JSON string if present
   const payload = {
     title: report.title,
@@ -61,7 +57,7 @@ export async function submitBugReport(
     userEmail: report.userEmail,
   };
 
-  return client.post('/bug-reports', payload, token);
+  return client.post('/bug-reports', payload);
 }
 
 export const feedbackService = {

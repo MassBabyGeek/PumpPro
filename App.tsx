@@ -2,10 +2,12 @@ import React, {useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import {AuthProvider} from './src/contexts/AuthContext';
+import {OfflineProvider} from './src/contexts/OfflineContext';
 import {useAuth} from './src/hooks/useAuth';
 import AuthStack from './src/components/Stacks/AuthStack/AuthStack';
 import AppStack from './src/components/Stacks/AppStack/AppStack';
 import SplashScreen from './src/screens/SplashScreen/SplashScreen';
+import OfflineBanner from './src/components/OfflineBanner';
 import {toastConfig} from './src/components/CustomToast/CustomToast';
 
 const AppNavigator = () => {
@@ -18,17 +20,22 @@ const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer>
-      {isAuthenticated ? <AppStack /> : <AuthStack />}
-    </NavigationContainer>
+    <>
+      <OfflineBanner />
+      <NavigationContainer>
+        {isAuthenticated ? <AppStack /> : <AuthStack />}
+      </NavigationContainer>
+    </>
   );
 };
 
 export default function App() {
   return (
     <AuthProvider>
-      <AppNavigator />
-      <Toast config={toastConfig} />
+      <OfflineProvider>
+        <AppNavigator />
+        <Toast config={toastConfig} />
+      </OfflineProvider>
     </AuthProvider>
   );
 }

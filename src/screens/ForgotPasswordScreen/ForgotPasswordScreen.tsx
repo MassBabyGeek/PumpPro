@@ -6,11 +6,11 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../assets/colors';
 import GradientButton from '../../components/GradientButton/GradientButton';
+import {useToast} from '../../hooks/useToast';
 
 type ForgotPasswordScreenProps = {
   navigation: any;
@@ -19,24 +19,17 @@ type ForgotPasswordScreenProps = {
 const ForgotPasswordScreen = ({navigation}: ForgotPasswordScreenProps) => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const {toastError, toastSuccess} = useToast();
 
   const handleResetPassword = () => {
     if (!email) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Veuillez entrer votre email',
-      });
+      toastError('Erreur', 'Veuillez entrer votre email');
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Veuillez entrer un email valide',
-      });
+      toastError('Erreur', 'Veuillez entrer un email valide');
       return;
     }
 
@@ -45,11 +38,7 @@ const ForgotPasswordScreen = ({navigation}: ForgotPasswordScreenProps) => {
     // Simulation d'appel API
     setTimeout(() => {
       setIsLoading(false);
-      Toast.show({
-        type: 'success',
-        text1: 'Email envoyé! 📧',
-        text2: 'Un lien de réinitialisation a été envoyé à votre adresse email.',
-      });
+      toastSuccess('Email envoyé! 📧', 'Un lien de réinitialisation a été envoyé à votre adresse email.');
       navigation.goBack();
     }, 1500);
   };

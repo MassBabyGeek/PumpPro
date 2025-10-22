@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import Toast from 'react-native-toast-message';
 import { useNavigation } from '@react-navigation/native';
 import appColors from '../../assets/colors';
 import { useUser } from '../../hooks/useUser';
+import { useToast } from '../../hooks/useToast';
 import LinearGradient from 'react-native-linear-gradient';
 import {
   EditProfileHeader,
@@ -15,33 +15,64 @@ import {
 const EditProfileScreen = () => {
   const navigation = useNavigation();
   const { user, updateUser, isLoading } = useUser();
+  const { toastError, toastSuccess, toastInfo } = useToast();
+
+  // Stocker les valeurs initiales dans une ref pour éviter la boucle infinie
+  const initialValues = useRef({
+    name: '',
+    email: '',
+    age: '',
+    weight: '',
+    height: '',
+    goal: '',
+  });
+
+  // Flag pour savoir si on a déjà initialisé
+  const isInitialized = useRef(false);
 
   // Form data state
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    age: user?.age?.toString() || '',
-    weight: user?.weight?.toString() || '',
-    height: user?.height?.toString() || '',
-    goal: user?.goal || '',
+    name: '',
+    email: '',
+    age: '',
+    weight: '',
+    height: '',
+    goal: '',
   });
+
+  // Initialiser les valeurs quand le user se charge
+  useEffect(() => {
+    if (user && !isInitialized.current) {
+      const initial = {
+        name: user.name || '',
+        email: user.email || '',
+        age: user.age?.toString() || '',
+        weight: user.weight?.toString() || '',
+        height: user.height?.toString() || '',
+        goal: user.goal || '',
+      };
+      initialValues.current = initial;
+      setFormData(initial);
+      isInitialized.current = true;
+    }
+  }, [user]);
 
   // Validation and UI states
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Detect changes
+  // Detect changes (comparé aux valeurs INITIALES, pas au user actuel)
   useEffect(() => {
     const changed =
-      formData.name !== (user?.name || '') ||
-      formData.email !== (user?.email || '') ||
-      formData.age !== (user?.age?.toString() || '') ||
-      formData.weight !== (user?.weight?.toString() || '') ||
-      formData.height !== (user?.height?.toString() || '') ||
-      formData.goal !== (user?.goal || '');
+      formData.name !== initialValues.current.name ||
+      formData.email !== initialValues.current.email ||
+      formData.age !== initialValues.current.age ||
+      formData.weight !== initialValues.current.weight ||
+      formData.height !== initialValues.current.height ||
+      formData.goal !== initialValues.current.goal;
 
     setHasChanges(changed);
-  }, [formData, user]);
+  }, [formData]);
 
   // Update form field helper
   const updateField = (field: keyof typeof formData, value: string) => {
@@ -88,20 +119,12 @@ const EditProfileScreen = () => {
   // Save changes
   const handleSave = async () => {
     if (!validateForm()) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Veuillez corriger les erreurs du formulaire',
-      });
+      toastError('Erreur', 'Veuillez corriger les erreurs du formulaire');
       return;
     }
 
     if (!hasChanges) {
-      Toast.show({
-        type: 'info',
-        text1: 'Info',
-        text2: 'Aucune modification à enregistrer',
-      });
+      toastInfo('Info', 'Aucune modification à enregistrer');
       return;
     }
 
@@ -119,19 +142,11 @@ const EditProfileScreen = () => {
       // Call useUser hook to update profile
       await updateUser(updatedData);
 
-      Toast.show({
-        type: 'success',
-        text1: 'Succès',
-        text2: 'Profil mis à jour avec succès !',
-      });
+      toastSuccess('Succès', 'Profil mis à jour avec succès !');
       navigation.goBack();
     } catch (error) {
       console.error('Error updating profile:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: error instanceof Error ? error.message : 'Impossible de mettre à jour le profil',
-      });
+      toastError('Erreur', error instanceof Error ? error.message : 'Impossible de mettre à jour le profil');
     }
   };
 

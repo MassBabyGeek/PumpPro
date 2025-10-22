@@ -10,6 +10,7 @@ interface PushUpProgressBarProps {
   width?: number | string;
   height?: number;
   labels: string[]; // [ok, ajustez, non détecté]
+  shouldReset?: boolean; // Si true, affiche 0 au lieu de value
 }
 
 const PushUpProgressBar: React.FC<PushUpProgressBarProps> = ({
@@ -18,7 +19,10 @@ const PushUpProgressBar: React.FC<PushUpProgressBarProps> = ({
   width = '100%',
   height = 8,
   labels,
+  shouldReset = false,
 }) => {
+  // Si shouldReset est true, on affiche 0, sinon la valeur normale
+  const displayValue = shouldReset ? 0 : value;
   // Conversion hex → rgb
   const hexToRgb = (hex: string) => {
     const cleaned = hex.replace('#', '');
@@ -40,21 +44,30 @@ const PushUpProgressBar: React.FC<PushUpProgressBarProps> = ({
     return `rgb(${r},${g},${b})`;
   };
 
-  // Couleur linéaire bleu → jaune → rouge
+  // ✨ Couleur INVERSÉE : rouge → jaune → bleu (au lieu de bleu → jaune → rouge)
   const getBarColor = (val: number) => {
     if (val <= 50) {
-      return interpolateColor(appColors.primary, appColors.warning, val / 50);
+      // 0-50% : rouge → jaune
+      return interpolateColor(appColors.error, appColors.warning, val / 50);
     } else {
+      // 50-100% : jaune → bleu
       return interpolateColor(
         appColors.warning,
-        appColors.error,
+        appColors.primary,
         (val - 50) / 50,
       );
     }
   };
 
   const displayText =
-    value !== null ? (value > 70 ? labels[0] : labels[1]) : labels[2];
+    displayValue !== null
+      ? displayValue > 70
+        ? labels[0]
+        : labels[1]
+      : labels[2];
+
+  const barWidth = `${displayValue}%`;
+  const barColor = getBarColor(displayValue);
 
   return (
     <View style={[styles.container, {width: width as number}]}>
@@ -68,11 +81,15 @@ const PushUpProgressBar: React.FC<PushUpProgressBarProps> = ({
         {label && <Text style={styles.label}>{label}</Text>}
       </View>
       <View style={[styles.barBackground, {height}]}>
-        <LinearGradient
-          colors={[getBarColor(value), getBarColor(value)]}
-          start={{x: 0, y: 0}}
-          end={{x: 1, y: 0}}
-          style={[styles.barFill, {width: `${value}%`, height}]}
+        <View
+          style={[
+            styles.barFill,
+            {
+              width: barWidth,
+              height,
+              backgroundColor: barColor,
+            },
+          ]}
         />
         <Text style={styles.distanceText}>{displayText}</Text>
       </View>

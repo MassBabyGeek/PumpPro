@@ -1,9 +1,9 @@
 import React, {useState} from 'react';
 import {StyleSheet, ScrollView} from 'react-native';
-import Toast from 'react-native-toast-message';
 import LinearGradient from 'react-native-linear-gradient';
 import appColors from '../../assets/colors';
 import {useAuth} from '../../hooks/useAuth';
+import {useToast} from '../../hooks/useToast';
 import AuthFooter from '../../components/AuthFooter';
 import SignUpHeader from './component/SignUpHeader';
 import SignUpForm from './component/SignUpForm';
@@ -15,6 +15,7 @@ type SignUpScreenProps = {
 
 const SignUpScreen = ({navigation}: SignUpScreenProps) => {
   const {register} = useAuth();
+  const {toastError, toastSuccess} = useToast();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,38 +27,22 @@ const SignUpScreen = ({navigation}: SignUpScreenProps) => {
 
   const handleSignUp = async () => {
     if (!name || !email || !password || !confirmPassword) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Veuillez remplir tous les champs',
-      });
+      toastError('Erreur', 'Veuillez remplir tous les champs');
       return;
     }
 
     if (password !== confirmPassword) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Les mots de passe ne correspondent pas',
-      });
+      toastError('Erreur', 'Les mots de passe ne correspondent pas');
       return;
     }
 
     if (password.length < 6) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Le mot de passe doit contenir au moins 6 caractères',
-      });
+      toastError('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
       return;
     }
 
     if (!acceptTerms) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Veuillez accepter les conditions d\'utilisation',
-      });
+      toastError('Erreur', 'Veuillez accepter les conditions d\'utilisation');
       return;
     }
 
@@ -65,17 +50,9 @@ const SignUpScreen = ({navigation}: SignUpScreenProps) => {
 
     try {
       await register(email, password, name);
-      Toast.show({
-        type: 'success',
-        text1: 'Bienvenue! 🎉',
-        text2: 'Votre compte a été créé avec succès',
-      });
+      toastSuccess('Bienvenue! 🎉', 'Votre compte a été créé avec succès');
     } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: error instanceof Error ? error.message : 'Inscription échouée',
-      });
+      toastError('Erreur', error instanceof Error ? error.message : 'Inscription échouée');
     } finally {
       setIsLoading(false);
     }

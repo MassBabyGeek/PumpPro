@@ -30,8 +30,17 @@ const RecentWorkoutsSection = ({
   onViewAll,
   classname,
 }: Props) => {
-  // Prendre seulement les 5 dernières
-  const recentSessions = sessions.slice(0, 3);
+  // Debug
+  console.log('[RecentWorkoutsSection] Received:', {
+    hasSessions: !!sessions,
+    sessionsType: typeof sessions,
+    isArray: Array.isArray(sessions),
+    length: sessions?.length,
+    hasOnLike: typeof onLike === 'function',
+  });
+
+  // Prendre seulement les 3 dernières - avec vérification stricte
+  const recentSessions = Array.isArray(sessions) ? sessions.slice(0, 3) : [];
 
   return (
     <View style={[styles.section, classname]}>

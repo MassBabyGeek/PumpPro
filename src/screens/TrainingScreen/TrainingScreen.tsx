@@ -1,4 +1,5 @@
-import {StyleSheet, Text, View, ScrollView} from 'react-native';
+import {StyleSheet, Text, View, ScrollView, RefreshControl} from 'react-native';
+import {useState} from 'react';
 import AppTitle from '../../components/AppTitle/AppTitle';
 import appColors from '../../assets/colors';
 import {TrainingScreenNavigationProp} from '../../types/navigation.types';
@@ -15,8 +16,9 @@ import Footer from '../../components/Footer';
 
 const TrainingScreen = () => {
   const navigation = useNavigation<TrainingScreenNavigationProp>();
-  const {programs, isLoading, error, getProgramIcon, updateProgramLike} = useWorkoutPrograms();
+  const {programs, isLoading, error, getProgramIcon, updateProgramLike, refreshPrograms} = useWorkoutPrograms();
   const {toggleLike} = usePrograms(programs, updateProgramLike);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleProgramPress = (program: WorkoutProgram) => {
     navigation.navigate('Libre', {programId: program.id});
@@ -26,15 +28,46 @@ const TrainingScreen = () => {
     toggleLike(programId);
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshPrograms();
+    setIsRefreshing(false);
+  };
+
   if (isLoading) {
     return <LoaderScreen />;
   }
 
   if (error) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{error}</Text>
-      </View>
+      <LinearGradient
+        colors={[appColors.background, appColors.backgroundDark]}
+        style={styles.gradientContainer}>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={appColors.primary}
+              colors={[appColors.primary]}
+            />
+          }>
+          <AppTitle
+            greeting="🎯 Training"
+            subGreeting="Découvre les meilleures techniques"
+            showIcon={false}
+          />
+          <EmptyState
+            icon="alert-circle-outline"
+            title="Erreur de chargement"
+            message={error}
+            isLoading={false}
+          />
+        </ScrollView>
+      </LinearGradient>
     );
   }
 
@@ -46,7 +79,15 @@ const TrainingScreen = () => {
         <ScrollView
           style={styles.container}
           contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}>
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={appColors.primary}
+              colors={[appColors.primary]}
+            />
+          }>
           <AppTitle
             greeting="🎯 Training"
             subGreeting="Découvre les meilleures techniques"
@@ -77,7 +118,15 @@ const TrainingScreen = () => {
           style={styles.container}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled">
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={appColors.primary}
+              colors={[appColors.primary]}
+            />
+          }>
           <AppTitle
             greeting="🎯 Training"
             subGreeting="Découvre les meilleures techniques"

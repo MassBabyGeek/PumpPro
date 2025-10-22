@@ -1,9 +1,52 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Platform} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../../assets/colors';
+import {useAuth} from '../../../hooks/useAuth';
+import {useToast} from '../../../hooks';
 
-const SocialLoginSection = () => {
+type SocialLoginSectionProps = {
+  isLoading: boolean;
+};
+
+const SocialLoginSection = ({isLoading}: SocialLoginSectionProps) => {
+  const {loginWithGoogle, loginWithApple} = useAuth();
+  const {toastError, toastSuccess} = useToast();
+
+  const handleGoogleLogin = async () => {
+    try {
+      await loginWithGoogle();
+      toastSuccess('Connexion réussie !', 'Bienvenue avec Google 🎉');
+    } catch (error) {
+      console.error('[SocialLogin] Google error:', error);
+      toastError(
+        'Connexion Google échouée',
+        error instanceof Error ? error.message : 'Erreur inconnue',
+      );
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    try {
+      await loginWithApple();
+      toastSuccess('Connexion réussie !', 'Bienvenue avec Apple 🎉');
+    } catch (error) {
+      console.error('[SocialLogin] Apple error:', error);
+
+      // Error 1000 = configuration issue or cancelled
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+
+      if (errorMessage.includes('1000') || errorMessage.includes('authorization')) {
+        toastError(
+          'Apple Sign-In non disponible',
+          'Configuration en cours. Utilisez Google ou email pour vous connecter.',
+        );
+      } else {
+        toastError('Connexion Apple échouée', errorMessage);
+      }
+    }
+  };
+
   return (
     <>
       {/* Divider */}
@@ -13,20 +56,39 @@ const SocialLoginSection = () => {
         <View style={styles.dividerLine} />
       </View>
 
-      {/* Social buttons désactivés */}
-      <TouchableOpacity style={styles.socialButtonDisabled} disabled>
-        <Icon name="logo-google" size={20} color={appColors.textSecondary} />
-        <Text style={styles.socialButtonTextDisabled}>
+      {/* Google Login */}
+      <TouchableOpacity
+        style={[styles.socialButton, isLoading && styles.socialButtonDisabled]}
+        onPress={handleGoogleLogin}
+        disabled={isLoading}>
+        <Icon
+          name="logo-google"
+          size={20}
+          color={isLoading ? appColors.textSecondary : '#DB4437'}
+        />
+        <Text style={[styles.socialButtonText, isLoading && styles.socialButtonTextDisabled]}>
           Continuer avec Google
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.socialButtonDisabled} disabled>
-        <Icon name="logo-apple" size={20} color={appColors.textSecondary} />
-        <Text style={styles.socialButtonTextDisabled}>
-          Continuer avec Apple
-        </Text>
-      </TouchableOpacity>
+      {/* Apple Login - Disabled: Requires paid Apple Developer account */}
+      {/* Sign In with Apple is not supported with Personal Team (free) accounts */}
+      {/* Uncomment when you have a paid Apple Developer account (99$/year) */}
+      {/* Platform.OS === 'ios' && (
+        <TouchableOpacity
+          style={[styles.socialButton, isLoading && styles.socialButtonDisabled]}
+          onPress={handleAppleLogin}
+          disabled={isLoading}>
+          <Icon
+            name="logo-apple"
+            size={20}
+            color={isLoading ? appColors.textSecondary : appColors.textPrimary}
+          />
+          <Text style={[styles.socialButtonText, isLoading && styles.socialButtonTextDisabled]}>
+            Continuer avec Apple
+          </Text>
+        </TouchableOpacity>
+      ) */}
     </>
   );
 };
@@ -48,22 +110,29 @@ const styles = StyleSheet.create({
     color: appColors.textSecondary,
     fontWeight: '600',
   },
-  socialButtonDisabled: {
+  socialButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
     borderRadius: 14,
-    backgroundColor: `${appColors.border}30`, // gris clair
+    backgroundColor: appColors.backgroundLight,
     borderWidth: 1.5,
-    borderColor: `${appColors.border}50`, // bordure gris clair
+    borderColor: appColors.border,
     gap: 12,
     marginBottom: 12,
   },
-  socialButtonTextDisabled: {
+  socialButtonText: {
     fontSize: 15,
-    color: appColors.textSecondary, // texte gris
+    color: appColors.textPrimary,
     fontWeight: '600',
+  },
+  socialButtonDisabled: {
+    backgroundColor: `${appColors.border}30`,
+    borderColor: `${appColors.border}50`,
+  },
+  socialButtonTextDisabled: {
+    color: appColors.textSecondary,
   },
 });
 

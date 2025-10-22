@@ -30,91 +30,73 @@ interface WorkoutStatsResponse {
 /**
  * Save a workout session
  * @param session - Workout session data
- * @param token - Authentication token
  * @returns Saved workout session with ID
  */
 export async function saveWorkoutSession(
   session: Omit<WorkoutSession, 'sessionId'>,
-  token?: string,
 ): Promise<WorkoutSession> {
-  console.log('[WorkoutService] saveWorkoutSession:', session);
-  return client.post('/workouts', session, token);
+  return client.post('/workouts', session);
 }
 
 /**
  * Get workout sessions for a user
  * @param userId - User ID
  * @param filters - Optional filters (date range, program type, pagination)
- * @param token - Authentication token
  * @returns List of workout sessions
  */
 export async function getWorkoutSessions(
   userId: string,
   filters?: WorkoutFilters,
-  token?: string,
 ): Promise<WorkoutSession[]> {
-  console.log('[WorkoutService] getWorkoutSessions:', userId, filters);
-  return client.get(`/users/${userId}/workouts`, filters as any, token);
+  return client.get(`/users/${userId}/workouts`, filters as any);
 }
 
 /**
  * Get workout statistics for a user
  * @param userId - User ID
  * @param period - Time period (today, week, month, year)
- * @param token - Authentication token
  * @returns Workout statistics
  */
 export async function getWorkoutStats(
   userId: string,
   period: 'today' | 'week' | 'month' | 'year',
-  token?: string,
 ): Promise<DayStats> {
-  console.log('[WorkoutService] getWorkoutStats:', userId, period);
-  return client.get(`/users/${userId}/workouts/stats`, {period}, token);
+  return client.get(`/users/${userId}/workouts/stats`, {period});
 }
 
 /**
  * Delete a workout session
  * @param sessionId - Session ID
- * @param token - Authentication token
  * @returns Success status
  */
 export async function deleteWorkoutSession(
   sessionId: string,
-  token?: string,
 ): Promise<{success: boolean}> {
-  console.log('[WorkoutService] deleteWorkoutSession:', sessionId);
-  return client.delete(`/workouts/${sessionId}`, token);
+  return client.delete(`/workouts/${sessionId}`);
 }
 
 /**
  * Get a single workout session by ID
  * @param sessionId - Session ID
- * @param token - Authentication token
  * @returns Workout session
  */
 export async function getWorkoutSession(
   sessionId: string,
-  token?: string,
 ): Promise<WorkoutSession | null> {
-  console.log('[WorkoutService] getWorkoutSession:', sessionId);
-  return client.get(`/workouts/${sessionId}`, undefined, token);
+  return client.get(`/workouts/${sessionId}`);
 }
 
 /**
  * Update a workout session
  * @param sessionId - Session ID
  * @param data - Partial session data to update
- * @param token - Authentication token
  * @returns Updated workout session
  */
 export async function updateWorkoutSession(
   sessionId: string,
   data: Partial<WorkoutSession>,
-  token?: string,
 ): Promise<WorkoutSession> {
-  console.log('[WorkoutService] updateWorkoutSession:', sessionId, data);
-  return client.patch(`/workouts/${sessionId}`, data, token);
+  return client.patch(`/workouts/${sessionId}`, data);
 }
 
 /**
@@ -122,73 +104,48 @@ export async function updateWorkoutSession(
  * @param userId - User ID
  * @param startDate - Start date (ISO string)
  * @param endDate - End date (ISO string)
- * @param token - Authentication token
  * @returns Workout summary
  */
 export async function getWorkoutSummary(
   userId: string,
   startDate: string,
   endDate: string,
-  token?: string,
 ): Promise<WorkoutStatsResponse> {
-  console.log(
-    '[WorkoutService] getWorkoutSummary:',
-    userId,
-    startDate,
-    endDate,
-  );
-  return client.get(
-    `/users/${userId}/workouts/summary`,
-    {startDate, endDate},
-    token,
-  );
+  return client.get(`/users/${userId}/workouts/summary`, {startDate, endDate});
 }
 
 /**
  * Get personal records
  * @param userId - User ID
- * @param token - Authentication token
  * @returns Personal records
  */
-export async function getPersonalRecords(
-  userId: string,
-  token?: string,
-): Promise<{
+export async function getPersonalRecords(userId: string): Promise<{
   maxRepsInSession: number;
   maxRepsInSet: number;
   longestSession: number;
   totalLifetimeReps: number;
 }> {
-  console.log('[WorkoutService] getPersonalRecords:', userId);
-  return client.get(`/users/${userId}/workouts/records`, undefined, token);
+  return client.get(`/users/${userId}/workouts/records`);
 }
 
 /**
  * Like a workout session
  * @param workoutId - Workout session ID
- * @param token - Authentication token
  * @returns Updated workout session
  */
-export async function likeWorkout(
-  workoutId: string,
-  token?: string,
-): Promise<WorkoutSession> {
-  console.log('[WorkoutService] likeWorkout:', workoutId);
-  return client.post(`/workouts/${workoutId}/like`, {}, token);
+export async function likeWorkout(workoutId: string): Promise<WorkoutSession> {
+  return client.post(`/workouts/${workoutId}/like`, {});
 }
 
 /**
  * Unlike a workout session
  * @param workoutId - Workout session ID
- * @param token - Authentication token
  * @returns Updated workout session
  */
 export async function unlikeWorkout(
   workoutId: string,
-  token?: string,
 ): Promise<WorkoutSession> {
-  console.log('[WorkoutService] unlikeWorkout:', workoutId);
-  return client.delete(`/workouts/${workoutId}/like`, token);
+  return client.delete(`/workouts/${workoutId}/like`);
 }
 
 export const workoutService = {

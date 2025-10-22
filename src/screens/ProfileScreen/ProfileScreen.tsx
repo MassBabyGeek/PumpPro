@@ -42,25 +42,50 @@ const ProfileScreen = () => {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await Promise.all([
-      reloadUser(),
-      setStatsPeriod(selectedPeriod),
-      user?.id ? loadWorkouts(user.id) : null,
-    ]);
+
+    // Reload user first and get the fresh user data
+    const freshUser = await reloadUser();
+
+    // Then reload stats and workouts with the fresh user
+    if (freshUser?.id) {
+      await Promise.all([
+        setStatsPeriod(selectedPeriod),
+        loadWorkouts(freshUser.id),
+      ]);
+    }
+
     setIsRefreshing(false);
   };
 
+  // Load user on mount
   useEffect(() => {
-    const loadInitialData = async () => {
-      await Promise.all([
-        getUser(),
-        setStatsPeriod(selectedPeriod),
-        user?.id ? loadWorkouts(user.id) : null,
-      ]);
-    };
-    loadInitialData();
+    getUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Reload user when screen comes into focus (après avoir édité le profil)
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // Recharger le user à chaque fois qu'on revient sur l'écran
+      reloadUser();
+    });
+
+    return unsubscribe;
+  }, [navigation, reloadUser]);
+
+  // Load stats and workouts when user is available
+  useEffect(() => {
+    if (user?.id) {
+      const loadUserData = async () => {
+        await Promise.all([
+          setStatsPeriod(selectedPeriod),
+          loadWorkouts(user.id),
+        ]);
+      };
+      loadUserData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const handleChangeAvatar = async () => {
     const imageUrl = await pickAndUploadImage();

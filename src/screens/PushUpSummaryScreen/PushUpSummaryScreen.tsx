@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {View, StyleSheet, ScrollView, Text, TextInput} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import GradientButton from '../../components/GradientButton/GradientButton';
@@ -12,8 +12,7 @@ import SuccessHeader from './component/SuccessHeader';
 import MainStatsGrid from './component/MainStatsGrid';
 import SetsDetailSection from './component/SetsDetailSection';
 import MotivationCard from './component/MotivationCard';
-import {useAuth, useChallenges} from '../../hooks';
-import useWorkoutSession from '../../hooks/useWorkoutSession';
+import {useChallenges} from '../../hooks';
 
 type Props = {
   route: PushUpSummaryScreenRouteProp;
@@ -21,7 +20,6 @@ type Props = {
 };
 
 const PushUpSummaryScreen = ({route, navigation}: Props) => {
-  const {getToken} = useAuth();
   const {session, challengeId, taskId} = route.params;
   const {programId, totalReps, totalDuration, completed, sets} = session;
   const calories = Math.round(totalReps * 0.5);
@@ -36,10 +34,7 @@ const PushUpSummaryScreen = ({route, navigation}: Props) => {
     completeChallenge,
   } = challengeHooks || {};
 
-  const {saveWorkoutSession} = useWorkoutSession();
-
   const handleDone = async () => {
-    const token = await getToken();
     if (challengeId) {
       // ⚠️ Vérifier si l'objectif a été atteint
       if (!completed) {
@@ -105,14 +100,11 @@ const PushUpSummaryScreen = ({route, navigation}: Props) => {
     } else {
       // Mode normal (pas de challenge): retour au training
       console.log('[PushUpSummary] Normal mode, navigating to Training');
-      await workoutService.saveWorkoutSession(
-        {
-          endTime: new Date(),
-          ...session,
-          notes,
-        },
-        token || undefined,
-      );
+      await workoutService.saveWorkoutSession({
+        endTime: new Date(),
+        ...session,
+        notes,
+      });
       navigation.navigate('Training');
     }
   };

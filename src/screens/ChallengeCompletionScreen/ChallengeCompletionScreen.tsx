@@ -23,8 +23,8 @@ const ChallengeCompletionScreen = () => {
   const navigation = useNavigation<ChallengeScreenNavigationProp>();
   const {challengeId, totalReps, totalDuration} = route.params;
 
-  const {getChallengeById} = useChallenges();
-  const challenge = getChallengeById(challengeId);
+  const {selectedChallenge} = useChallenges(challengeId);
+  const challenge = selectedChallenge;
 
   const HandleDone = () => {
     console.log(

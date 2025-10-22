@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Text, View, StyleSheet, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import GradientButton from '../../components/GradientButton/GradientButton';
@@ -100,6 +100,9 @@ const PushUpScreen = () => {
         ) / 10
       : 0;
 
+  // La barre est à 0 si la session est en pause ou en repos
+  const shouldResetProgressBar = workoutState.isPaused || isResting;
+
   return (
     <LinearGradient
       colors={[appColors.background, appColors.backgroundDark]}
@@ -146,6 +149,7 @@ const PushUpScreen = () => {
             'Ajustez votre position',
             '⚠ Visage non détecté',
           ]}
+          shouldReset={shouldResetProgressBar}
         />
 
         {/* Statistiques en grille */}

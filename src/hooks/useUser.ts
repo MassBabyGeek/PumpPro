@@ -1,6 +1,5 @@
 import {useState, useEffect, useCallback} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Toast from 'react-native-toast-message';
 import {
   ChartData,
   RawChartItem,
@@ -10,6 +9,7 @@ import {
 } from '../types/user.types';
 import {userService} from '../services/api';
 import {useAuth} from './useAuth';
+import {useToast} from './useToast';
 
 const USER_DATA_KEY = '@pompeurpro:user_data';
 
@@ -19,7 +19,7 @@ const initChartData: ChartData = {
 };
 
 export const useUser = () => {
-  const {token} = useAuth();
+  const {toastError} = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [statsByPeriod, setStatsByPeriod] = useState<Stats | null>(null);
@@ -34,81 +34,52 @@ export const useUser = () => {
   useEffect(() => {
     getUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, []);
 
   const reloadUser = useCallback(async () => {
     if (!user) {
-      return;
+      return null;
     }
-    const fetchedUser = await userService.getProfile(user.id, token);
+    const fetchedUser = await userService.getProfile(user.id);
     setUser(fetchedUser);
     await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(fetchedUser));
-  }, [user, token]);
+    return fetchedUser;
+  }, [user]);
 
   const getUser = useCallback(async () => {
-    if (!token) {
-      console.log('[useUser] No token, clearing user');
-      setUser(null);
-      setIsLoading(false);
-      return;
-    }
-
-    console.log('[useUser] Loading user data...');
     setIsLoading(true);
     try {
       // First load from cache for immediate UI update
       const storedUser = await AsyncStorage.getItem(USER_DATA_KEY);
-      console.log(
-        '[useUser] Cached user data:',
-        storedUser ? 'found' : 'not found',
-      );
       if (storedUser) {
         const cachedUser = JSON.parse(storedUser);
-        console.log(
-          '[useUser] Setting cached user:',
-          cachedUser.id,
-          cachedUser.email,
-        );
         setUser(cachedUser);
 
         // Then fetch fresh data from API
         try {
-          const freshUser = await userService.getProfile(cachedUser.id, token);
-          console.log('[useUser] Fresh user data fetched:', freshUser.id);
+          const freshUser = await userService.getProfile(cachedUser.id);
           setUser(freshUser);
           await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(freshUser));
         } catch (apiErr) {
-          console.error('[useUser] Error fetching fresh user data', apiErr);
           // Keep using cached user if API fails
         }
-      } else {
-        // No cached user - try to fetch from API using /me endpoint if available
-        console.warn('[useUser] No cached user data found');
       }
     } catch (err) {
-      console.error('[useUser] getUser error', err);
+      // Error loading user
     } finally {
       setIsLoading(false);
     }
-  }, [token]);
+  }, []);
 
   const getStats = async (selectedPeriod: string): Promise<Stats> => {
     if (!user) {
-      console.error('[useUser] getStats called but user is null!');
       throw new Error('No user logged in');
     }
 
-    console.log(
-      '[useUser] getStats for user:',
-      user.id,
-      'period:',
-      selectedPeriod,
-    );
     setIsLoading(true);
     try {
-      return await userService.getStats(user.id, selectedPeriod, token);
+      return await userService.getStats(user.id, selectedPeriod);
     } catch (err) {
-      console.error('[useUser] Error getting stats:', err);
       throw err;
     } finally {
       setIsLoading(false);
@@ -116,17 +87,17 @@ export const useUser = () => {
   };
 
   const updateUser = async (updates: Partial<User>) => {
-    if (!token || !user) {
+    if (!user) {
       return;
     }
 
     setIsLoading(true);
     try {
-      const updated = await userService.updateProfile(user.id, updates, token);
+      const updated = await userService.updateProfile(user.id, updates);
       setUser(updated);
       await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(updated));
     } catch (err) {
-      console.error('[useUser] updateUser error', err);
+      // Error updating user
     } finally {
       setIsLoading(false);
     }
@@ -139,16 +110,11 @@ export const useUser = () => {
 
     setIsLoading(true);
     try {
-      const updatedUser = await userService.uploadAvatar(
-        user.id,
-        imageUri,
-        token,
-      );
+      const updatedUser = await userService.uploadAvatar(user.id, imageUri);
       setUser(updatedUser);
       await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(updatedUser));
       return updatedUser;
     } catch (err) {
-      console.error('[useUser] Error uploading avatar:', err);
       throw err;
     } finally {
       setIsLoading(false);
@@ -162,12 +128,11 @@ export const useUser = () => {
 
     setIsLoading(true);
     try {
-      const result = await userService.deleteAccount(user.id, token);
+      const result = await userService.deleteAccount(user.id);
       setUser(null);
       await AsyncStorage.removeItem(USER_DATA_KEY);
       return result;
     } catch (err) {
-      console.error('[useUser] Error deleting account:', err);
       throw err;
     } finally {
       setIsLoading(false);
@@ -177,32 +142,20 @@ export const useUser = () => {
   const setStatsPeriod = useCallback(
     async (selectedPeriod: string) => {
       if (!user) {
-        console.error('[useUser] setStatsPeriod called but user is null!');
         throw new Error('No user logged in');
       }
-      console.log(
-        '[useUser] setStatsPeriod for user:',
-        user.id,
-        'period:',
-        selectedPeriod,
-      );
       setStatsByPeriod(null);
       setIsLoading(true);
       try {
-        const stats = await userService.getStats(
-          user.id,
-          selectedPeriod,
-          token,
-        );
+        const stats = await userService.getStats(user.id, selectedPeriod);
         setStatsByPeriod(stats);
       } catch (err) {
-        console.error('[useUser] Error getting stats:', err);
         throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    [user, token],
+    [user],
   );
 
   /** ----- CHART ----- */
@@ -279,34 +232,17 @@ export const useUser = () => {
 
   const loadChartData = async (period: 'week' | 'month' | 'year') => {
     if (!user || isChartLoading) {
-      console.log(
-        '[useUser] loadChartData skipped - user:',
-        !!user,
-        'isChartLoading:',
-        isChartLoading,
-      );
       return;
     }
 
-    console.log(
-      '[useUser] loadChartData for user:',
-      user.id,
-      'period:',
-      period,
-    );
     setIsChartLoading(true);
     setCurrentChartPeriod(period);
     try {
-      const data = await userService.getChartData(user.id, period, token);
+      const data = await userService.getChartData(user.id, period);
       setRawChartData(data);
       setChartData(transformChartData(data, 'calories', period));
     } catch (err) {
-      console.error('[useUser] loadChartData error:', err);
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Impossible de charger les données du graphique',
-      });
+      toastError('Erreur', 'Impossible de charger les données du graphique');
     } finally {
       setIsChartLoading(false);
     }

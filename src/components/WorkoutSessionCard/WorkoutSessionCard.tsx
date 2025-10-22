@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../assets/colors';
 import {WorkoutSession, WorkoutProgram, VARIANT_LABELS, TYPE_LABELS} from '../../types/workout.types';
@@ -10,11 +10,13 @@ import {programService} from '../../services/api';
 interface WorkoutSessionCardProps {
   session: WorkoutSession;
   onLike?: () => void;
+  onPress?: () => void;
 }
 
 const WorkoutSessionCard: React.FC<WorkoutSessionCardProps> = ({
   session,
   onLike,
+  onPress,
 }) => {
   const [program, setProgram] = useState<WorkoutProgram | null>(null);
 
@@ -63,8 +65,10 @@ const WorkoutSessionCard: React.FC<WorkoutSessionCardProps> = ({
   // Use either the program from session or the fetched program
   const displayProgram = session.program || program;
 
+  const CardWrapper = onPress ? TouchableOpacity : View;
+
   return (
-    <View style={styles.container}>
+    <CardWrapper style={styles.container} onPress={onPress} activeOpacity={onPress ? 0.7 : 1}>
       <View style={styles.header}>
         <View style={styles.dateContainer}>
           <Icon name="calendar" size={16} color={appColors.primary} />
@@ -213,7 +217,7 @@ const WorkoutSessionCard: React.FC<WorkoutSessionCardProps> = ({
           )}
         </View>
       </View>
-    </View>
+    </CardWrapper>
   );
 };
 

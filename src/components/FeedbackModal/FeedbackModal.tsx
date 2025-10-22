@@ -55,7 +55,6 @@ const FeedbackModal = ({visible, onClose}: FeedbackModalProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const {getToken} = useAuth();
   const {user} = useUser();
   const {toastError, toastSuccess} = useToast();
 
@@ -70,30 +69,25 @@ const FeedbackModal = ({visible, onClose}: FeedbackModalProps) => {
 
     setIsSubmitting(true);
     try {
-      const token = await getToken();
-
       // Get device info
       const appVersion = await DeviceInfo.getVersion();
       const systemVersion = await DeviceInfo.getSystemVersion();
       const deviceModel = await DeviceInfo.getModel();
 
-      await feedbackService.submitBugReport(
-        {
-          title: title.trim(),
-          description: description.trim(),
-          category: selectedType,
-          severity: selectedType === 'bug' ? selectedSeverity : undefined,
-          deviceInfo: {
-            platform: Platform.OS,
-            version: Platform.Version.toString(),
-            model: deviceModel,
-            osVersion: systemVersion,
-          },
-          appVersion: appVersion,
-          userEmail: user?.email,
+      await feedbackService.submitBugReport({
+        title: title.trim(),
+        description: description.trim(),
+        category: selectedType,
+        severity: selectedType === 'bug' ? selectedSeverity : undefined,
+        deviceInfo: {
+          platform: Platform.OS,
+          version: Platform.Version.toString(),
+          model: deviceModel,
+          osVersion: systemVersion,
         },
-        token || undefined,
-      );
+        appVersion: appVersion,
+        userEmail: user?.email,
+      });
 
       toastSuccess('Merci !', 'Votre signalement a été envoyé');
 

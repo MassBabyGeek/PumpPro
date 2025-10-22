@@ -1,37 +1,81 @@
 import {WorkoutSession} from '../types/workout.types';
-import {useAuth} from './useAuth';
+import {useOffline} from './useOffline';
 import {workoutService} from '../services/api';
-import Toast from 'react-native-toast-message';
+import {syncService} from '../services/sync.service';
+import {storageService} from '../services/storage.service';
+import {STORAGE_KEYS} from '../types/offline.types';
+import {useToast} from './useToast';
 
 const useWorkoutSession = () => {
-  const {getToken} = useAuth();
+  const {isOnline} = useOffline();
+  const {toastSuccess, toastInfo} = useToast();
 
   const saveWorkoutSession = async (
     session: WorkoutSession,
     challengeId?: string,
     taskId?: string,
   ) => {
-    try {
-      // Get token at call time, not at hook initialization
-      const token = await getToken();
-      console.log('[useWorkoutSession] Saving session with token:', token ? 'present' : 'missing');
+    const sessionData = {
+      endTime: new Date(),
+      ...session,
+    };
 
-      await workoutService.saveWorkoutSession(
-        {
-          endTime: new Date(),
-          ...session,
-        },
-        token || undefined,
-      );
-    } catch (error) {
-      console.error('[useWorkoutSession] Error saving session:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Impossible de sauvegarder la session',
+    if (isOnline) {
+      // Online: save directly to server
+      try {
+        await workoutService.saveWorkoutSession(sessionData);
+
+        toastSuccess('Session sauvegardée !');
+
+        // Update local cache
+        try {
+          const cached =
+            (await storageService.getCache<WorkoutSession[]>(
+              STORAGE_KEYS.WORKOUTS,
+            )) || [];
+          await storageService.setCache(STORAGE_KEYS.WORKOUTS, [
+            sessionData,
+            ...cached,
+          ]);
+        } catch (err) {
+          // Failed to update cache
+        }
+      } catch (error) {
+        // Fallback to offline queue if API fails
+        await syncService.addAction('CREATE_SESSION', {
+          session: sessionData,
+          challengeId,
+          taskId,
+        });
+
+        toastInfo('Session sauvegardée localement', 'Sera synchronisée plus tard');
+      }
+    } else {
+      // Offline: add to sync queue
+      await syncService.addAction('CREATE_SESSION', {
+        session: sessionData,
+        challengeId,
+        taskId,
       });
+
+      // Add to local cache immediately
+      try {
+        const cached =
+          (await storageService.getCache<WorkoutSession[]>(
+            STORAGE_KEYS.WORKOUTS,
+          )) || [];
+        await storageService.setCache(STORAGE_KEYS.WORKOUTS, [
+          sessionData,
+          ...cached,
+        ]);
+      } catch (err) {
+        // Failed to update cache
+      }
+
+      toastSuccess('Session sauvegardée (hors ligne)', 'Sera synchronisée plus tard');
     }
   };
+
   return {
     saveWorkoutSession,
   };

@@ -4,8 +4,7 @@ import {
   LeaderboardEntry,
   LeaderboardPeriod,
 } from '../services/api';
-import Toast from 'react-native-toast-message';
-import {useAuth} from './useAuth';
+import {useToast} from './useToast';
 
 export const useLeaderboard = (
   period: LeaderboardPeriod = 'weekly',
@@ -14,12 +13,11 @@ export const useLeaderboard = (
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const {getToken} = useAuth();
+  const {toastError} = useToast();
 
   const fetchLeaderboard = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    const token = await getToken();
 
     try {
       const data = await leaderboardService.getLeaderboard(
@@ -27,7 +25,6 @@ export const useLeaderboard = (
         'total-pushups',
         limit,
         0,
-        token || undefined,
       );
       setLeaderboard(data);
     } catch (err) {
@@ -36,15 +33,11 @@ export const useLeaderboard = (
           ? err.message
           : 'Erreur de chargement du classement';
       setError(errorMessage);
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: errorMessage,
-      });
+      toastError('Erreur', errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [period, limit, getToken]);
+  }, [period, limit, toastError]);
 
   useEffect(() => {
     fetchLeaderboard();

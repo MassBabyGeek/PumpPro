@@ -7,8 +7,7 @@
 import {useState, useEffect, useCallback} from 'react';
 import {WorkoutProgram} from '../types/workout.types';
 import {programService} from '../services/api';
-import Toast from 'react-native-toast-message';
-import {useAuth} from './useAuth';
+import {useToast} from './useToast';
 
 interface UseWorkoutProgramsReturn {
   programs: WorkoutProgram[];
@@ -24,7 +23,7 @@ interface UseWorkoutProgramsReturn {
 export const useWorkoutPrograms = (
   difficulty?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED',
 ): UseWorkoutProgramsReturn => {
-  const {getToken} = useAuth();
+  const {toastError, toastSuccess} = useToast();
   const [programs, setPrograms] = useState<WorkoutProgram[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,29 +32,20 @@ export const useWorkoutPrograms = (
     try {
       setIsLoading(true);
       setError(null);
-      const token = await getToken();
       const data = await programService.getPrograms(
         difficulty ? {difficulty} : undefined,
-        token || undefined,
       );
-
-      console.log('[usePrograms] Loaded programs:', data);
 
       setPrograms(data);
     } catch (err) {
-      console.error('Error loading programs:', err);
       const errorMessage =
         err instanceof Error ? err.message : 'Erreur lors du chargement';
       setError(errorMessage);
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: errorMessage,
-      });
+      toastError('Erreur', errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [difficulty]);
+  }, [difficulty, toastError]);
 
   useEffect(() => {
     loadPrograms();
@@ -67,45 +57,26 @@ export const useWorkoutPrograms = (
 
   const getProgramById = useCallback(async (id: string) => {
     try {
-      const token = await getToken();
-      return await programService.getProgramById(id, token || undefined);
+      return await programService.getProgramById(id);
     } catch (err) {
-      console.error('Error fetching program:', err);
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Impossible de charger le programme',
-      });
+      toastError('Erreur', 'Impossible de charger le programme');
       return null;
     }
-  }, []);
+  }, [toastError]);
 
   const createProgram = useCallback(
     async (program: WorkoutProgram) => {
-      const token = await getToken();
       try {
-        const result = await programService.createProgram(
-          program,
-          token || undefined,
-        );
+        const result = await programService.createProgram(program);
         await loadPrograms(); // Refresh after creating
-        Toast.show({
-          type: 'success',
-          text1: 'Succès',
-          text2: 'Programme créé avec succès',
-        });
+        toastSuccess('Succès', 'Programme créé avec succès');
         return result;
       } catch (err) {
-        console.error('Error creating program:', err);
-        Toast.show({
-          type: 'error',
-          text1: 'Erreur',
-          text2: 'Impossible de créer le programme',
-        });
+        toastError('Erreur', 'Impossible de créer le programme');
         throw err;
       }
     },
-    [loadPrograms],
+    [loadPrograms, toastSuccess, toastError],
   );
 
   const getProgramIcon = (type: string) => {
@@ -170,7 +141,7 @@ export const useProgram = (id?: string): UseProgramReturn => {
   const [program, setProgram] = useState<WorkoutProgram | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const {getToken} = useAuth();
+  const {toastError} = useToast();
 
   useEffect(() => {
     // Don't load if no ID provided
@@ -183,29 +154,20 @@ export const useProgram = (id?: string): UseProgramReturn => {
       try {
         setIsLoading(true);
         setError(null);
-        const token = await getToken();
-        const data = await programService.getProgramById(
-          id,
-          token || undefined,
-        );
+        const data = await programService.getProgramById(id);
         setProgram(data);
       } catch (err) {
-        console.error('Error loading program:', err);
         const errorMessage =
           err instanceof Error ? err.message : 'Erreur lors du chargement';
         setError(errorMessage);
-        Toast.show({
-          type: 'error',
-          text1: 'Erreur',
-          text2: errorMessage,
-        });
+        toastError('Erreur', errorMessage);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadProgram();
-  }, [id]);
+  }, [id, toastError]);
 
   return {program, isLoading, error};
 };

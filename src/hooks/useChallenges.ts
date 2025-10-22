@@ -8,11 +8,10 @@ import {
 } from '../types/challenge.types';
 import {DifficultyLevel, WorkoutProgram} from '../types/workout.types';
 import {challengeService} from '../services/api';
-import Toast from 'react-native-toast-message';
-import {useAuth} from './useAuth';
+import {useToast} from './useToast';
 
 export const useChallenges = (challengeId?: string) => {
-  const {getToken} = useAuth();
+  const {toastError, toastSuccess} = useToast();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(
     null,
@@ -35,27 +34,17 @@ export const useChallenges = (challengeId?: string) => {
   const loadChallenges = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    const token = await getToken();
     try {
-      const data = await challengeService.getChallenges(
-        filters,
-        token || undefined,
-      );
+      const data = await challengeService.getChallenges(filters);
       setChallenges(data);
     } catch (err) {
       const errorMessage = 'Erreur lors du chargement des challenges';
       setError(errorMessage);
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: errorMessage,
-      });
+      toastError('Erreur', errorMessage);
     } finally {
       setIsLoading(false);
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [filters, toastError]);
 
   // Charger les challenges au montage et quand les filtres changent
   // Ne pas charger si on utilise le hook uniquement pour un challenge spécifique
@@ -183,12 +172,11 @@ export const useChallenges = (challengeId?: string) => {
     const challenge = challenges?.find(c => c.id === challengeId);
     if (!challenge) return;
 
-    const token = await getToken();
     try {
       if (challenge.userLiked) {
-        await challengeService.unlikeChallenge(challengeId, token || undefined);
+        await challengeService.unlikeChallenge(challengeId);
       } else {
-        await challengeService.likeChallenge(challengeId, token || undefined);
+        await challengeService.likeChallenge(challengeId);
       }
 
       // Mettre à jour localement
@@ -206,19 +194,14 @@ export const useChallenges = (challengeId?: string) => {
         }),
       );
     } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Impossible de modifier le like',
-      });
+      toastError('Erreur', 'Impossible de modifier le like');
     }
   };
 
   // Marquer un challenge comme complété
   const completeChallenge = async (challengeId: string) => {
-    const token = await getToken();
     try {
-      await challengeService.completeChallenge(challengeId, token || undefined);
+      await challengeService.completeChallenge(challengeId);
 
       setChallenges(prev =>
         prev.map(c => {
@@ -233,17 +216,9 @@ export const useChallenges = (challengeId?: string) => {
         }),
       );
 
-      Toast.show({
-        type: 'success',
-        text1: 'Félicitations! 🎉',
-        text2: 'Challenge complété',
-      });
+      toastSuccess('Félicitations! 🎉', 'Challenge complété');
     } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Impossible de compléter le challenge',
-      });
+      toastError('Erreur', 'Impossible de compléter le challenge');
     }
   };
 
@@ -253,14 +228,8 @@ export const useChallenges = (challengeId?: string) => {
     taskId: string,
     score: number,
   ) => {
-    const token = await getToken();
     try {
-      await challengeService.completeTask(
-        challengeId,
-        taskId,
-        score,
-        token || undefined,
-      );
+      await challengeService.completeTask(challengeId, taskId, score);
 
       // Mettre à jour localement
       setChallenges(prev =>
@@ -303,17 +272,9 @@ export const useChallenges = (challengeId?: string) => {
         }),
       );
 
-      Toast.show({
-        type: 'success',
-        text1: 'Tâche complétée! ✅',
-        text2: `Score: ${score}`,
-      });
+      toastSuccess('Tâche complétée! ✅', `Score: ${score}`);
     } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur',
-        text2: 'Impossible de compléter la tâche',
-      });
+      toastError('Erreur', 'Impossible de compléter la tâche');
     }
   };
 
@@ -335,11 +296,7 @@ export const useChallenges = (challengeId?: string) => {
     if (!challengeId) return null;
     if (!selectedChallenge || selectedChallenge.id !== challengeId) {
       setIsLoading(true);
-      const token = await getToken();
-      const challenge = await challengeService.getChallengeById(
-        challengeId,
-        token || undefined,
-      );
+      const challenge = await challengeService.getChallengeById(challengeId);
       setSelectedChallenge(challenge);
       setIsLoading(false);
     }
