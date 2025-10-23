@@ -5,6 +5,8 @@ import EditProfileScreen from '../../../screens/EditProfileScreen/EditProfileScr
 import NotificationScreen from '../../../screens/NotificationScreen';
 import LeaderboardDetailScreen from '../../../screens/LeaderboardDetailScreen/LeaderboardDetailScreen';
 import WorkoutSessionsScreen from '../../../screens/WorkoutSessionsScreen/WorkoutSessionsScreen';
+import UserProfileScreen from '../../../screens/UserProfileScreen/UserProfileScreen';
+import UserWorkoutSessionsScreen from '../../../screens/UserWorkoutSessionsScreen/UserWorkoutSessionsScreen';
 
 const Stack = createStackNavigator();
 
@@ -34,6 +36,16 @@ const AppStack = () => {
       <Stack.Screen
         name="WorkoutSessions"
         component={WorkoutSessionsScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="UserProfile"
+        component={UserProfileScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="UserWorkoutSessions"
+        component={UserWorkoutSessionsScreen}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

@@ -10,9 +10,20 @@ type Props = {
   targetReps?: number;
   progress: number;
   elapsedTime: number;
+  timeLimit?: number; // Durée limite en secondes (pour MAX_TIME, AMRAP, etc.)
 };
 
-const WorkoutCounter = ({currentReps, targetReps, progress, elapsedTime}: Props) => {
+const WorkoutCounter = ({
+  currentReps,
+  targetReps,
+  progress,
+  elapsedTime,
+  timeLimit,
+}: Props) => {
+  // Si on a une limite de temps, afficher le compte à rebours
+  const timeRemaining = timeLimit ? timeLimit - elapsedTime : null;
+  const isTimeBasedProgram = timeLimit !== undefined;
+
   return (
     <View style={styles.mainContent}>
       {/* Compteur principal circulaire */}
@@ -44,10 +55,27 @@ const WorkoutCounter = ({currentReps, targetReps, progress, elapsedTime}: Props)
         <Icon
           name="time-outline"
           size={32}
-          color={appColors.primary}
+          color={
+            isTimeBasedProgram && timeRemaining !== null && timeRemaining < 30
+              ? appColors.error
+              : appColors.primary
+          }
           style={styles.timerIcon}
         />
-        <Text style={styles.timer}>{formatTime(elapsedTime)}</Text>
+        {isTimeBasedProgram && timeRemaining !== null ? (
+          <View style={styles.timerContent}>
+            <Text
+              style={[
+                styles.timer,
+                timeRemaining < 30 && styles.timerUrgent,
+              ]}>
+              {formatTime(Math.max(0, timeRemaining))}
+            </Text>
+            <Text style={styles.timerLabel}>restant</Text>
+          </View>
+        ) : (
+          <Text style={styles.timer}>{formatTime(elapsedTime)}</Text>
+        )}
       </View>
     </View>
   );
@@ -112,9 +140,20 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   timerIcon: {},
+  timerContent: {
+    alignItems: 'center',
+  },
   timer: {
     fontSize: 50,
     color: appColors.primary,
+  },
+  timerUrgent: {
+    color: appColors.error,
+  },
+  timerLabel: {
+    fontSize: 14,
+    color: appColors.textSecondary,
+    marginTop: 4,
   },
 });
 

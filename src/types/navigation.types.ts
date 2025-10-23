@@ -50,6 +50,14 @@ export type AppStackParamList = {
   HomeTabs: undefined;
   EditProfile: undefined;
   WorkoutSessions: undefined;
+  UserProfile: {
+    userId: string;
+    userName?: string;
+  };
+  UserWorkoutSessions: {
+    userId: string;
+    userName?: string;
+  };
 };
 
 export type ChallengeScreenNavigationProp = StackNavigationProp<

@@ -9,6 +9,7 @@ export {default as AppRefreshControl} from './AppRefreshControl/AppRefreshContro
 export {default as AppTitle} from './AppTitle/AppTitle';
 export {default as Card} from './Card/Card';
 export {default as ChallengeCard} from './ChallengeCard/ChallengeCard';
+export {default as CreatorBadge} from './CreatorBadge';
 export {default as FadeInView} from './FadeInView/FadeInView';
 export {default as FilterChip} from './FilterChip/FilterChip';
 export {default as GradientButton} from './GradientButton/GradientButton';

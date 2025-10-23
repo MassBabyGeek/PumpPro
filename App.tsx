@@ -9,6 +9,7 @@ import AppStack from './src/components/Stacks/AppStack/AppStack';
 import SplashScreen from './src/screens/SplashScreen/SplashScreen';
 import OfflineBanner from './src/components/OfflineBanner';
 import {toastConfig} from './src/components/CustomToast/CustomToast';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 const AppNavigator = () => {
   const {isAuthenticated, isLoading} = useAuth();
@@ -31,11 +32,13 @@ const AppNavigator = () => {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <OfflineProvider>
-        <AppNavigator />
-        <Toast config={toastConfig} />
-      </OfflineProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <OfflineProvider>
+          <AppNavigator />
+          <Toast config={toastConfig} />
+        </OfflineProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

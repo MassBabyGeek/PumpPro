@@ -11,6 +11,7 @@ import {
   Stats,
   AllStats,
   RawChartItem,
+  StreakData,
 } from '../../types/user.types';
 
 const client = new ApiClient(API_BASE_URL);
@@ -196,6 +197,23 @@ export async function refreshToken(
   return client.post('/auth/refresh', {refreshToken}, true); // skipAuth
 }
 
+/**
+ * Get user streak data
+ * @param userId - User ID
+ * @returns Streak data with current and max streak
+ */
+export async function getStreak(userId: string): Promise<StreakData> {
+  // TODO: Uncomment when backend is ready
+  // return client.get(`/users/${userId}/streak`);
+
+  // Mock data temporaire (à retirer quand le backend est prêt)
+  return Promise.resolve({
+    currentStreak: 7,
+    maxStreak: 15,
+    lastWorkoutDate: new Date().toISOString(),
+  });
+}
+
 export const userService = {
   login,
   register,
@@ -212,4 +230,5 @@ export const userService = {
   loginWithApple,
   getAllStats,
   refreshToken,
+  getStreak,
 };

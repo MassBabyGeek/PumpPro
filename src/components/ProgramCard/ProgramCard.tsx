@@ -10,6 +10,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../assets/colors';
 import LikeButton from '../LikeButton';
+import CreatorBadge from '../CreatorBadge';
+import {UserCreator} from '../../types/user.types';
 
 const {width} = Dimensions.get('window');
 
@@ -25,6 +27,8 @@ type ProgramCardProps = {
   likes?: number;
   userLiked?: boolean;
   onLike?: () => void;
+  creator?: UserCreator;
+  isOfficial?: boolean;
 };
 
 const ProgramCard = ({
@@ -39,6 +43,8 @@ const ProgramCard = ({
   likes,
   userLiked,
   onLike,
+  creator,
+  isOfficial = false,
 }: ProgramCardProps) => {
   return (
     <TouchableOpacity
@@ -68,6 +74,17 @@ const ProgramCard = ({
           <Icon name={icon} size={32} color={color} style={styles.icon} />
           <Text style={styles.title}>{title}</Text>
           {description && <Text style={styles.description}>{description}</Text>}
+
+          {/* Creator Badge */}
+          <View style={styles.creatorContainer}>
+            <CreatorBadge
+              creator={creator}
+              isOfficial={isOfficial}
+              size="small"
+              showAvatar={false}
+            />
+          </View>
+
           <View style={styles.badgeContainer}>
             {difficulty && (
               <View style={styles.badge}>
@@ -125,7 +142,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: appColors.textSecondary,
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  creatorContainer: {
+    marginBottom: 8,
   },
   badgeContainer: {
     flexDirection: 'row',

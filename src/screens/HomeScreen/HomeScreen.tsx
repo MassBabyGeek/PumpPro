@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {StyleSheet, View, ScrollView} from 'react-native';
+import {StyleSheet, View, FlatList} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useNavigation} from '@react-navigation/native';
 import appColors from '../../assets/colors';
@@ -14,9 +14,12 @@ import QuickProgramsSection from './component/QuickProgramsSection';
 import WeeklyStatsSection from './component/WeeklyStatsSection';
 import LeaderboardSection from './component/LeaderboardSection';
 import RecentWorkoutsSection from './component/RecentWorkoutsSection';
-import {Stats} from '../../types/user.types';
+import StreakSection from './component/StreakSection';
+import {Stats, StreakData} from '../../types/user.types';
+import {userService} from '../../services/api';
 import FadeInView from '../../components/FadeInView/FadeInView';
 import AppRefreshControl from '../../components/AppRefreshControl/AppRefreshControl';
+import TestCrashButton from '../../components/ErrorBoundary/TestCrashButton';
 
 const motivationalQuotes = [
   '💪 Chaque pompe est un pas vers la meilleure version de toi-même',
@@ -30,6 +33,10 @@ const motivationalQuotes = [
 const HomeScreen = () => {
   const [todayStats, setTodayStats] = useState<Stats | null>(null);
   const [weekStats, setWeekStats] = useState<Stats | null>(null);
+  const [streakData, setStreakData] = useState<StreakData>({
+    currentStreak: 0,
+    maxStreak: 0,
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   const navigation = useNavigation<any>();
@@ -55,12 +62,14 @@ const HomeScreen = () => {
     async (userId: string) => {
       setIsLoading(true);
       try {
-        const [week, today] = await Promise.all([
+        const [week, today, streak] = await Promise.all([
           getStats('week'),
           getStats('today'),
+          userService.getStreak(userId),
         ]);
         setWeekStats(week);
         setTodayStats(today);
+        setStreakData(streak);
 
         // Charger les workouts uniquement si userId est dispo
         await loadWorkouts(userId);
@@ -101,52 +110,69 @@ const HomeScreen = () => {
     setIsLoading(false);
   }, [fetchData, user]);
 
+  const renderHeader = () => (
+    <>
+      <View style={styles.header}>
+        <AppTitle
+          greeting="Salut Champion! 👋"
+          subGreeting="Prêt à repousser tes limites?"
+          onIconPress={handleNotificationPress}
+        />
+      </View>
+
+      <MotivationalQuoteCard quote={currentQuote} />
+
+      <StreakSection
+        currentStreak={streakData.currentStreak}
+        maxStreak={streakData.maxStreak}
+        isLoading={isLoading}
+      />
+
+      <TodayStatsSection stats={todayStats} />
+
+      <QuickProgramsSection onProgramPress={handleProgramPress} />
+
+      <WeeklyStatsSection stats={weekStats} />
+
+      <RecentWorkoutsSection
+        sessions={workouts}
+        isLoading={workoutsLoading}
+        onLike={toggleLike}
+        onViewAll={handleViewAllWorkouts}
+        classname={styles.workoutsSection}
+      />
+
+      <LeaderboardSection
+        leaderboard={leaderboard}
+        onViewAll={handleViewAllLeaderboard}
+      />
+
+      <Footer variant="app" />
+
+      <View style={styles.bottomSpacing} />
+    </>
+  );
+
   return (
     <LinearGradient
       colors={[appColors.background, appColors.backgroundDark]}
       style={styles.gradientContainer}>
       <FadeInView>
-        <ScrollView
+        <FlatList
           style={styles.container}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          data={[]} // Empty data array since we only use ListHeaderComponent
+          renderItem={null} // No items to render
+          ListHeaderComponent={renderHeader}
           refreshControl={
             <AppRefreshControl refreshing={isLoading} onRefresh={onRefresh} />
-          }>
-          <View style={styles.header}>
-            <AppTitle
-              greeting="Salut Champion! 👋"
-              subGreeting="Prêt à repousser tes limites?"
-              onIconPress={handleNotificationPress}
-            />
-          </View>
+          }
+        />
 
-          <MotivationalQuoteCard quote={currentQuote} />
-
-          <TodayStatsSection stats={todayStats} />
-
-          <QuickProgramsSection onProgramPress={handleProgramPress} />
-
-          <WeeklyStatsSection stats={weekStats} />
-
-          <RecentWorkoutsSection
-            sessions={workouts}
-            isLoading={workoutsLoading}
-            onLike={toggleLike}
-            onViewAll={handleViewAllWorkouts}
-            classname={styles.workoutsSection}
-          />
-
-          <LeaderboardSection
-            leaderboard={leaderboard}
-            onViewAll={handleViewAllLeaderboard}
-          />
-
-          <Footer variant="app" />
-
-          <View style={styles.bottomSpacing} />
-        </ScrollView>
+        {/* Bouton de test crash (visible uniquement en DEV) */}
+        <TestCrashButton />
       </FadeInView>
     </LinearGradient>
   );

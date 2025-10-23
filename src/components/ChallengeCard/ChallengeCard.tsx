@@ -6,6 +6,7 @@ import appColors from '../../assets/colors';
 import {Challenge} from '../../types/challenge.types';
 import {DIFFICULTY_LABELS, VARIANT_LABELS} from '../../types/workout.types';
 import LikeButton from '../LikeButton';
+import CreatorBadge from '../CreatorBadge';
 
 interface ChallengeCardProps {
   challenge: Challenge;
@@ -81,16 +82,6 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
             </View>
 
             <View style={styles.headerRight}>
-              {challenge.isOfficial && (
-                <View style={styles.officialBadge}>
-                  <Icon
-                    name="checkmark-circle"
-                    size={14}
-                    color={appColors.primary}
-                  />
-                  <Text style={styles.officialText}>Officiel</Text>
-                </View>
-              )}
               <View
                 style={[
                   styles.difficultyBadge,
@@ -122,6 +113,16 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
               <Icon name="target" size={14} color={appColors.textSecondary} />
               <Text style={styles.detailText}>{getTargetText()}</Text>
             </View>
+          </View>
+
+          {/* Creator Badge */}
+          <View style={styles.creatorSection}>
+            <CreatorBadge
+              creator={challenge.creator}
+              isOfficial={challenge.isOfficial}
+              size="small"
+              showAvatar={true}
+            />
           </View>
 
           {/* Stats */}
@@ -231,20 +232,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: 6,
   },
-  officialBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: `${appColors.primary}20`,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  officialText: {
-    fontSize: 10,
-    color: appColors.primary,
-    fontWeight: '600',
-  },
   difficultyBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -281,6 +268,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: appColors.textSecondary,
     fontWeight: '500',
+  },
+  creatorSection: {
+    marginBottom: 12,
   },
   stats: {
     flexDirection: 'row',

@@ -14,7 +14,7 @@ import {UserProfile} from '../../../types/user.types';
 type ProfileHeaderProps = {
   user: UserProfile;
   isUploading: boolean;
-  onChangeAvatar: () => void;
+  onChangeAvatar?: () => void; // Optionnel pour les profils en lecture seule
 };
 
 const ProfileHeader = ({
@@ -34,16 +34,19 @@ const ProfileHeader = ({
               <Icon name="person" size={48} color={appColors.textSecondary} />
             </View>
           )}
-          <TouchableOpacity
-            style={styles.editAvatarButton}
-            onPress={onChangeAvatar}
-            disabled={isUploading}>
-            {isUploading ? (
-              <ActivityIndicator size="small" color={appColors.background} />
-            ) : (
-              <Icon name="camera" size={16} color={appColors.background} />
-            )}
-          </TouchableOpacity>
+          {/* Afficher le bouton d'édition seulement si onChangeAvatar est fourni */}
+          {onChangeAvatar && (
+            <TouchableOpacity
+              style={styles.editAvatarButton}
+              onPress={onChangeAvatar}
+              disabled={isUploading}>
+              {isUploading ? (
+                <ActivityIndicator size="small" color={appColors.background} />
+              ) : (
+                <Icon name="camera" size={16} color={appColors.background} />
+              )}
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.userInfo}>

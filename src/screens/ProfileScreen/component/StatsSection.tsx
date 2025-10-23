@@ -5,21 +5,30 @@ import StatCard from '../../../components/StatCard/StatCard';
 import LoadingView from '../../../components/LoadingView/LoadingView';
 import appColors from '../../../assets/colors';
 import {formatTime} from '../../../utils/workout.utils';
-import {useUser} from '../../../hooks';
+import {useUser, useUserProfile} from '../../../hooks';
 
 type StatsSectionProps = {
   selectedPeriod: 'today' | 'week' | 'month' | 'year';
   onPeriodChange: (period: 'today' | 'week' | 'month' | 'year') => void;
+  userId?: string; // Si fourni, charge les stats de cet utilisateur au lieu de l'utilisateur connecté
 };
 
-const StatsSection = ({selectedPeriod, onPeriodChange}: StatsSectionProps) => {
-  const {setStatsPeriod, statsByPeriod, isLoading, user} = useUser();
+const StatsSection = ({selectedPeriod, onPeriodChange, userId}: StatsSectionProps) => {
+  // Si userId est fourni, utilise useUserProfile, sinon utilise useUser
+  const currentUserData = useUser();
+  const specificUserData = useUserProfile(userId || '');
+
+  // Sélectionner les bonnes données selon si on regarde un profil spécifique ou le sien
+  const {setStatsPeriod, statsByPeriod, isLoading, user} = userId
+    ? specificUserData
+    : currentUserData;
 
   useEffect(() => {
-    if (user) {
+    if (user || userId) {
       setStatsPeriod(selectedPeriod);
     }
-  }, [selectedPeriod, user, setStatsPeriod]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPeriod, user, userId]);
 
   const currentStats = statsByPeriod || {
     totalPushUps: 0,

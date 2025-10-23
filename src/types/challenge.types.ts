@@ -4,6 +4,7 @@ import {
   DifficultyLevel,
 } from './workout.types';
 import {BaseEntity} from './base.types';
+import {UserCreator} from './user.types';
 
 // ============================================================================
 // Challenge Types
@@ -61,6 +62,9 @@ export interface ChallengeTask extends BaseEntity {
   scheduledDate?: Date;
   isLocked: boolean; // Bloqué jusqu'à ce que la tâche précédente soit complétée
   score?: number;
+
+  // Créateur
+  creator?: UserCreator;
 }
 
 // ============================================================================
@@ -104,6 +108,7 @@ export interface Challenge extends BaseEntity {
   status: ChallengeStatus;
   userCompleted?: boolean;
   userLiked?: boolean;
+  userParticipated?: boolean;
 
   // Tags
   tags: string[];
@@ -111,6 +116,7 @@ export interface Challenge extends BaseEntity {
   // Créateur (pour challenges communautaires)
   creatorName?: string;
   isOfficial: boolean;
+  creator?: UserCreator;
 
   // Tâches du challenge
   challengeTasks?: ChallengeTask[];

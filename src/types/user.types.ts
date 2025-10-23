@@ -1,5 +1,11 @@
 import {BaseEntity} from './base.types';
 
+export interface UserCreator {
+  id: string;
+  name: string;
+  avatar?: string;
+}
+
 export interface UserProfile extends BaseEntity {
   id: string;
   name: string;
@@ -46,4 +52,10 @@ export type RawChartItem = {
   pushUps: number;
   duration: number;
   calories: number;
+};
+
+export type StreakData = {
+  currentStreak: number;
+  maxStreak: number;
+  lastWorkoutDate?: string;
 };

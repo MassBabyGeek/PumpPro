@@ -8,7 +8,7 @@ import {API_URL} from '@env';
 // Configuration de l'API depuis .env
 const API_BASE_URL = API_URL || 'http://localhost:8080';
 
-const API_TIMEOUT = 10000; // 10 secondes
+const API_TIMEOUT = 60000; // 60 secondes (pour gérer le cold start sur Render)
 
 /**
  * Headers par défaut pour toutes les requêtes

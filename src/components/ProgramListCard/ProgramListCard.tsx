@@ -3,6 +3,7 @@ import {View, Text, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Card from '../Card/Card';
 import LikeButton from '../LikeButton';
+import CreatorBadge from '../CreatorBadge';
 import appColors from '../../assets/colors';
 import {WorkoutProgram, TYPE_LABELS} from '../../types/workout.types';
 
@@ -50,6 +51,16 @@ const ProgramListCard = ({
           <View style={styles.textContainer}>
             <Text style={styles.label}>{program.name}</Text>
             <Text style={styles.subLabel}>{getSubLabel()}</Text>
+
+            {/* Creator Badge */}
+            <View style={styles.creatorSection}>
+              <CreatorBadge
+                creator={program.creator}
+                isOfficial={program.isFeatured}
+                size="small"
+                showAvatar={false}
+              />
+            </View>
 
             <View style={styles.metaContainer}>
               <View style={styles.usageContainer}>
@@ -112,6 +123,9 @@ const styles = StyleSheet.create({
   subLabel: {
     fontSize: 13,
     color: appColors.textSecondary,
+  },
+  creatorSection: {
+    marginTop: 4,
   },
   metaContainer: {
     flexDirection: 'row',

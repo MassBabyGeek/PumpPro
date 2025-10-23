@@ -136,6 +136,7 @@ const PushUpScreen = () => {
             targetReps={workoutState.targetRepsForCurrentSet}
             progress={progress}
             elapsedTime={workoutState.elapsedTime}
+            timeLimit={program.duration} // Durée limite pour MAX_TIME, AMRAP, etc.
           />
         )}
 

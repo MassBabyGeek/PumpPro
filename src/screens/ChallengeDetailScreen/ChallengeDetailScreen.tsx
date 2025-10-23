@@ -141,6 +141,7 @@ const ChallengeDetailScreen = () => {
           difficulty={selectedChallenge.difficulty}
           points={selectedChallenge.points}
           isOfficial={selectedChallenge.isOfficial}
+          creator={selectedChallenge.creator}
         />
 
         {/* Progress Section */}

@@ -1,4 +1,5 @@
 import {BaseEntity} from './base.types';
+import {UserCreator} from './user.types';
 
 // ============================================================================
 // Base Types
@@ -42,9 +43,11 @@ export interface BaseProgramConfig {
   restBetweenSets?: number;
   createdBy?: string;
   isCustom?: boolean;
+  isFeatured?: boolean;
   usageCount?: number; // Nombre de fois que le programme a été utilisé
   likes?: number; // Nombre de likes
   userLiked?: boolean; // Si l'utilisateur actuel a liké
+  creator?: UserCreator; // Créateur du programme
 }
 
 export interface FreeModeConfig extends BaseProgramConfig {
@@ -138,6 +141,7 @@ export interface WorkoutSession extends BaseEntity {
   likes?: number; // Nombre de likes
   userLiked?: boolean; // Si l'utilisateur actuel a liké
   points?: number; // Points gagnés pour cette session
+  creator?: UserCreator; // Créateur de la session (qui a fait le workout)
 }
 
 // ============================================================================

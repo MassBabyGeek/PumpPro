@@ -35,6 +35,32 @@ const PushUpSummaryScreen = ({route, navigation}: Props) => {
   } = challengeHooks || {};
 
   const handleDone = async () => {
+    // Sauvegarder la session workout (même pour les challenges)
+    // Ne pas envoyer programId pour les challenges car ils n'ont pas de programme réel dans la DB
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const {programId: _pid, ...sessionWithoutProgramId} = session;
+
+      const sessionToSave = challengeId
+        ? {
+            endTime: new Date(),
+            ...sessionWithoutProgramId,
+            programId: undefined as any, // ✅ Passer undefined pour éviter l'erreur API "program not found"
+            notes,
+          }
+        : {
+            endTime: new Date(),
+            ...session,
+            notes,
+          };
+
+      await workoutService.saveWorkoutSession(sessionToSave as any);
+      console.log('[PushUpSummary] ✅ Session saved successfully');
+    } catch (error) {
+      console.error('[PushUpSummary] ❌ Error saving session:', error);
+      // Continue même si la sauvegarde échoue (l'utilisateur a quand même fait l'effort)
+    }
+
     if (challengeId) {
       // ⚠️ Vérifier si l'objectif a été atteint
       if (!completed) {
@@ -62,7 +88,7 @@ const PushUpSummaryScreen = ({route, navigation}: Props) => {
 
         if (isFullyCompleted) {
           // Challenge terminé: naviguer vers l'écran de félicitations
-          const challenge = getChallengeById(challengeId);
+          const challenge = await getChallengeById(challengeId);
           console.log(
             '[PushUpSummary] 🎉 All tasks completed! Navigating to ChallengeCompletion',
           );
@@ -87,7 +113,7 @@ const PushUpSummaryScreen = ({route, navigation}: Props) => {
         );
         completeChallenge(challengeId);
 
-        const challenge = getChallengeById(challengeId);
+        const challenge = await getChallengeById(challengeId);
         console.log('[PushUpSummary] 🎉 Navigating to ChallengeCompletion');
 
         navigation.navigate('ChallengeCompletion', {
@@ -100,11 +126,6 @@ const PushUpSummaryScreen = ({route, navigation}: Props) => {
     } else {
       // Mode normal (pas de challenge): retour au training
       console.log('[PushUpSummary] Normal mode, navigating to Training');
-      await workoutService.saveWorkoutSession({
-        endTime: new Date(),
-        ...session,
-        notes,
-      });
       navigation.navigate('Training');
     }
   };

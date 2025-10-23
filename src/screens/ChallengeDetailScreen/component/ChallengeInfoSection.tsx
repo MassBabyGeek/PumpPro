@@ -3,6 +3,8 @@ import {View, Text, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../../assets/colors';
 import {DIFFICULTY_LABELS, DifficultyLevel} from '../../../types/workout.types';
+import {UserCreator} from '../../../types/user.types';
+import {CreatorBadge} from '../../../components';
 
 type ChallengeInfoSectionProps = {
   iconName: string;
@@ -12,6 +14,7 @@ type ChallengeInfoSectionProps = {
   difficulty: DifficultyLevel;
   points: number;
   isOfficial: boolean;
+  creator?: UserCreator;
 };
 
 const ChallengeInfoSection = ({
@@ -22,6 +25,7 @@ const ChallengeInfoSection = ({
   difficulty,
   points,
   isOfficial,
+  creator,
 }: ChallengeInfoSectionProps) => {
   return (
     <View style={styles.challengeInfo}>
@@ -47,16 +51,14 @@ const ChallengeInfoSection = ({
           <Icon name="star" size={14} color={appColors.warning} />
           <Text style={styles.pointsText}>{points} pts</Text>
         </View>
-        {isOfficial && (
-          <View style={styles.officialBadge}>
-            <Icon
-              name="checkmark-circle"
-              size={14}
-              color={appColors.primary}
-            />
-            <Text style={styles.officialText}>Officiel</Text>
-          </View>
-        )}
+
+        {/* Creator Badge - remplace l'ancien badge Officiel */}
+        <CreatorBadge
+          creator={creator}
+          isOfficial={isOfficial}
+          size="medium"
+          showAvatar={true}
+        />
       </View>
     </View>
   );
@@ -112,20 +114,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: appColors.warning,
     fontWeight: 'bold',
-  },
-  officialBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: `${appColors.primary}20`,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  officialText: {
-    fontSize: 12,
-    color: appColors.primary,
-    fontWeight: '600',
   },
 });
 

@@ -1,5 +1,6 @@
 import React, {useEffect} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, TouchableOpacity} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../../assets/colors';
 import {LeaderboardEntry} from '../../../services/api';
@@ -14,6 +15,7 @@ type Props = {
 };
 
 const LeaderboardItem = ({item, index, metric, metricOptions}: Props) => {
+  const navigation = useNavigation<any>();
   const isTop3 = item.rank <= 3;
   const isEven = index % 2 === 0;
 
@@ -21,6 +23,13 @@ const LeaderboardItem = ({item, index, metric, metricOptions}: Props) => {
     console.log('[LeaderboardItem] item', metric);
     console.log('[LeaderboardItem] item', item);
   }, [metric, item]);
+
+  const handlePress = () => {
+    navigation.navigate('UserProfile', {
+      userId: item.userId,
+      userName: item.userName,
+    });
+  };
 
   const currentMetric = metricOptions.find(m => m.value === metric);
   let itemValue = item.score;
@@ -51,7 +60,9 @@ const LeaderboardItem = ({item, index, metric, metricOptions}: Props) => {
     : {backgroundColor: appColors.border};
 
   return (
-    <View
+    <TouchableOpacity
+      onPress={handlePress}
+      activeOpacity={0.7}
       style={{
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -124,12 +135,21 @@ const LeaderboardItem = ({item, index, metric, metricOptions}: Props) => {
           )}
         </View>
       </View>
-      <Text
-        style={{fontSize: 18, fontWeight: 'bold', color: appColors.primary}}>
-        {typeof itemValue === 'number' ? itemValue.toLocaleString() : itemValue}
-        {currentMetric?.suffix}
-      </Text>
-    </View>
+      <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+        <Text
+          style={{fontSize: 18, fontWeight: 'bold', color: appColors.primary}}>
+          {typeof itemValue === 'number'
+            ? itemValue.toLocaleString()
+            : itemValue}
+          {currentMetric?.suffix}
+        </Text>
+        <Icon
+          name="chevron-forward"
+          size={20}
+          color={appColors.textSecondary}
+        />
+      </View>
+    </TouchableOpacity>
   );
 };
 export default LeaderboardItem;

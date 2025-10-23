@@ -9,20 +9,33 @@ import {
 import {LineChart} from 'react-native-chart-kit';
 import appColors from '../../assets/colors';
 import {ChartPeriod} from '../../types/user.types';
-import {useUser} from '../../hooks';
+import {useUser, useUserProfile} from '../../hooks';
 import LoadingView from '../LoadingView/LoadingView';
 
 const screenWidth = Dimensions.get('window').width;
 
-const WorkoutChart = () => {
-  const {chartData, loadChartData, isChartLoading, user} = useUser();
+type WorkoutChartProps = {
+  userId?: string; // Si fourni, charge les données de cet utilisateur au lieu de l'utilisateur connecté
+};
+
+const WorkoutChart = ({userId}: WorkoutChartProps) => {
+  // Si userId est fourni, utilise useUserProfile, sinon utilise useUser
+  const currentUserData = useUser();
+  const specificUserData = useUserProfile(userId || '');
+
+  // Sélectionner les bonnes données selon si on regarde un profil spécifique ou le sien
+  const {chartData, loadChartData, isChartLoading, user} = userId
+    ? specificUserData
+    : currentUserData;
+
   const [period, setPeriod] = useState<ChartPeriod>('week');
 
   useEffect(() => {
-    if (user) {
+    if (user || userId) {
       loadChartData(period);
     }
-  }, [period, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [period, user, userId]);
 
   const chartConfig = {
     backgroundColor: appColors.background,

@@ -17,6 +17,7 @@ export {useImagePicker} from './useImagePicker';
 export {useLeaderboard} from './useLeaderboard';
 export {useLeaderboardDetail} from './useLeaderboardDetail';
 export {useUser} from './useUser';
+export {useUserProfile} from './useUserProfile';
 export {useWorkout} from './useWorkout';
 export {useChallenges} from './useChallenges';
 export {usePrograms} from './usePrograms';

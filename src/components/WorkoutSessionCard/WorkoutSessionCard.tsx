@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../assets/colors';
 import {WorkoutSession, WorkoutProgram, VARIANT_LABELS, TYPE_LABELS} from '../../types/workout.types';
 import {formatTime} from '../../utils/workout.utils';
 import LikeButton from '../LikeButton';
 import {programService} from '../../services/api';
+import CreatorBadge from '../CreatorBadge';
 
 interface WorkoutSessionCardProps {
   session: WorkoutSession;
@@ -19,6 +20,17 @@ const WorkoutSessionCard: React.FC<WorkoutSessionCardProps> = ({
   onPress,
 }) => {
   const [program, setProgram] = useState<WorkoutProgram | null>(null);
+
+  // Debug: Log session data to check creator
+  useEffect(() => {
+    console.log('[WorkoutSessionCard] Session data:', {
+      sessionId: session.sessionId,
+      hasCreator: !!session.creator,
+      creator: session.creator,
+      hasUser: !!session.user,
+      user: session.user,
+    });
+  }, [session]);
 
   const formatDate = (date: Date): string => {
     const d = new Date(date);
@@ -173,27 +185,18 @@ const WorkoutSessionCard: React.FC<WorkoutSessionCardProps> = ({
 
       <View style={styles.footer}>
         <View style={styles.footerLeft}>
-          {session.user && (
-            <View style={styles.userInfo}>
-              {session.user.avatar ? (
-                <Image source={{uri: session.user.avatar}} style={styles.userAvatar} />
-              ) : (
-                <View style={styles.userAvatarPlaceholder}>
-                  <Icon name="person" size={16} color={appColors.textSecondary} />
-                </View>
-              )}
-              <View style={styles.userDetails}>
-                <Text style={styles.userName} numberOfLines={1}>
-                  {session.user.name}
-                </Text>
-                <View style={styles.userScore}>
-                  <Icon name="trophy" size={10} color={appColors.warning} />
-                  <Text style={styles.userScoreText}>
-                    {session.user.score} pts
-                  </Text>
-                </View>
-              </View>
-            </View>
+          {/* Use CreatorBadge for displaying the user/creator */}
+          {(session.creator || session.user) && (
+            <CreatorBadge
+              creator={session.creator || (session.user ? {
+                id: session.user.id,
+                name: session.user.name,
+                avatar: session.user.avatar
+              } : undefined)}
+              isOfficial={false}
+              size="medium"
+              showAvatar={true}
+            />
           )}
         </View>
 
@@ -413,44 +416,6 @@ const styles = StyleSheet.create({
     color: appColors.textPrimary,
     lineHeight: 18,
     fontStyle: 'italic',
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  userAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: appColors.backgroundDark,
-  },
-  userAvatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: `${appColors.border}40`,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  userDetails: {
-    flex: 1,
-    gap: 2,
-  },
-  userName: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: appColors.textPrimary,
-  },
-  userScore: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  userScoreText: {
-    fontSize: 11,
-    color: appColors.textSecondary,
-    fontWeight: '500',
   },
 });
 

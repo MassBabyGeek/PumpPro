@@ -1,5 +1,7 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import SectionTitle from '../../../components/SectionTitle/SectionTitle';
 import EmptyState from '../../../components/EmptyState';
 import appColors from '../../../assets/colors';
@@ -11,6 +13,22 @@ type Props = {
 };
 
 const LeaderboardSection = ({leaderboard, onViewAll}: Props) => {
+  const navigation = useNavigation<any>();
+
+  const handleUserPress = (userId: string, userName: string) => {
+    navigation.navigate('UserProfile', {
+      userId,
+      userName,
+    });
+  };
+
+  const getRankBadgeStyle = (rank: number) => {
+    if (rank === 1) return {backgroundColor: '#FFD700'}; // Or
+    if (rank === 2) return {backgroundColor: '#C0C0C0'}; // Argent
+    if (rank === 3) return {backgroundColor: '#CD7F32'}; // Bronze
+    return {backgroundColor: appColors.border};
+  };
+
   return (
     <View style={styles.section}>
       <SectionTitle
@@ -27,8 +45,10 @@ const LeaderboardSection = ({leaderboard, onViewAll}: Props) => {
       ) : (
         <View style={styles.leaderboardCard}>
         {leaderboard.map((user, index) => (
-          <View
+          <TouchableOpacity
             key={user.userId}
+            onPress={() => handleUserPress(user.userId, user.userName)}
+            activeOpacity={0.7}
             style={[
               styles.leaderboardItem,
               index === leaderboard.length - 1 && styles.leaderboardItemLast,
@@ -37,20 +57,41 @@ const LeaderboardSection = ({leaderboard, onViewAll}: Props) => {
               <View
                 style={[
                   styles.rankBadge,
-                  user.rank <= 3 && styles.rankBadgeTop,
+                  getRankBadgeStyle(user.rank),
                 ]}>
-                <Text
-                  style={[
-                    styles.rankText,
-                    user.rank <= 3 && styles.rankTextTop,
-                  ]}>
-                  {user.rank}
-                </Text>
+                {user.rank <= 3 ? (
+                  <Text style={styles.rankEmoji}>
+                    {user.rank === 1 ? '🥇' : user.rank === 2 ? '🥈' : '🥉'}
+                  </Text>
+                ) : (
+                  <Text style={styles.rankText}>{user.rank}</Text>
+                )}
               </View>
-              <Text style={styles.leaderboardName}>{user.userName}</Text>
+              <View style={styles.userInfo}>
+                <Text style={styles.leaderboardName}>{user.userName}</Text>
+                {user.change !== 0 && user.change !== undefined && (
+                  <View style={styles.changeIndicator}>
+                    <Icon
+                      name={user.change > 0 ? 'arrow-up-outline' : 'arrow-down-outline'}
+                      size={10}
+                      color={user.change > 0 ? appColors.success : appColors.error}
+                    />
+                    <Text
+                      style={[
+                        styles.changeText,
+                        {color: user.change > 0 ? appColors.success : appColors.error},
+                      ]}>
+                      {Math.abs(user.change)}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
-            <Text style={styles.leaderboardScore}>{user.score} 💪</Text>
-          </View>
+            <View style={styles.scoreContainer}>
+              <Text style={styles.leaderboardScore}>{user.score} 💪</Text>
+              <Icon name="chevron-forward" size={18} color={appColors.textSecondary} />
+            </View>
+          </TouchableOpacity>
         ))}
         </View>
       )}
@@ -83,30 +124,45 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1,
   },
   rankBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: appColors.border,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  rankBadgeTop: {
-    backgroundColor: appColors.warning,
+  rankEmoji: {
+    fontSize: 18,
   },
   rankText: {
     fontSize: 14,
     fontWeight: 'bold',
     color: appColors.textSecondary,
   },
-  rankTextTop: {
-    color: '#fff',
+  userInfo: {
+    flex: 1,
+    gap: 2,
   },
   leaderboardName: {
     fontSize: 16,
     color: appColors.textPrimary,
     fontWeight: '500',
+  },
+  changeIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  changeText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  scoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   leaderboardScore: {
     fontSize: 16,
