@@ -20,7 +20,7 @@ const OfflineBanner: React.FC = () => {
         <Icon
           name={forcedOffline ? 'airplane' : 'cloud-offline'}
           size={16}
-          color={appColors.white}
+          color={appColors.textPrimary}
         />
         <View style={styles.textContainer}>
           <Text style={styles.title}>
@@ -28,8 +28,8 @@ const OfflineBanner: React.FC = () => {
           </Text>
           {syncStatus.pendingActions > 0 && (
             <Text style={styles.subtitle}>
-              {syncStatus.pendingActions} action{syncStatus.pendingActions > 1 ? 's' : ''} en
-              attente
+              {syncStatus.pendingActions} action
+              {syncStatus.pendingActions > 1 ? 's' : ''} en attente
             </Text>
           )}
         </View>
@@ -37,7 +37,7 @@ const OfflineBanner: React.FC = () => {
 
       {syncStatus.pendingActions > 0 && !forcedOffline && (
         <TouchableOpacity style={styles.syncButton} onPress={sync}>
-          <Icon name="refresh" size={16} color={appColors.white} />
+          <Icon name="refresh" size={16} color={appColors.textPrimary} />
         </TouchableOpacity>
       )}
     </View>
@@ -64,12 +64,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    color: appColors.white,
+    color: appColors.textPrimary,
     fontSize: 13,
     fontWeight: '600',
   },
   subtitle: {
-    color: appColors.white,
+    color: appColors.textPrimary,
     fontSize: 11,
     opacity: 0.9,
   },

@@ -15,7 +15,7 @@ export const useImagePicker = () => {
    * Ouvre la galerie photo et upload l'image sélectionnée
    * @returns L'URL de l'image uploadée ou null
    */
-  const pickAndUploadImage = async (): Promise<null> => {
+  const pickAndUploadImage = async (): Promise<string | null> => {
     try {
       // Ouvre la galerie photo
       const result: ImagePickerResponse = await launchImageLibrary({
@@ -50,15 +50,17 @@ export const useImagePicker = () => {
 
       // Upload de l'image
       setIsUploading(true);
-      await uploadAvatar(asset.uri);
+      const updatedUser = await uploadAvatar(asset.uri);
       setIsUploading(false);
+
+      // Retourner l'URL de l'avatar depuis le user mis à jour
+      return updatedUser.avatar || null;
     } catch (error) {
       console.error('❌ Erreur:', error);
       Alert.alert('Erreur', 'Une erreur est survenue');
       setIsUploading(false);
       return null;
     }
-    return null;
   };
 
   return {

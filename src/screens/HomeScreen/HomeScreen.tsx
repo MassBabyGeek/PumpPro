@@ -15,11 +15,11 @@ import WeeklyStatsSection from './component/WeeklyStatsSection';
 import LeaderboardSection from './component/LeaderboardSection';
 import RecentWorkoutsSection from './component/RecentWorkoutsSection';
 import StreakSection from './component/StreakSection';
+import HomeScreenSkeleton from './component/HomeScreenSkeleton';
 import {Stats, StreakData} from '../../types/user.types';
 import {userService} from '../../services/api';
 import FadeInView from '../../components/FadeInView/FadeInView';
 import AppRefreshControl from '../../components/AppRefreshControl/AppRefreshControl';
-import TestCrashButton from '../../components/ErrorBoundary/TestCrashButton';
 
 const motivationalQuotes = [
   '💪 Chaque pompe est un pas vers la meilleure version de toi-même',
@@ -153,6 +153,16 @@ const HomeScreen = () => {
     </>
   );
 
+  if (isLoading && !todayStats && !weekStats) {
+    return (
+      <LinearGradient
+        colors={[appColors.background, appColors.backgroundDark]}
+        style={styles.gradientContainer}>
+        <HomeScreenSkeleton />
+      </LinearGradient>
+    );
+  }
+
   return (
     <LinearGradient
       colors={[appColors.background, appColors.backgroundDark]}
@@ -170,9 +180,6 @@ const HomeScreen = () => {
             <AppRefreshControl refreshing={isLoading} onRefresh={onRefresh} />
           }
         />
-
-        {/* Bouton de test crash (visible uniquement en DEV) */}
-        <TestCrashButton />
       </FadeInView>
     </LinearGradient>
   );

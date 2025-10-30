@@ -9,9 +9,11 @@ import {useAuth, useUser, useToast, useWorkouts} from '../../hooks';
 import QuoteCard from '../../components/QuoteCard/QuoteCard';
 import LinearGradient from 'react-native-linear-gradient';
 import ProfileHeader from './component/ProfileHeader';
+import QuickStats from './component/QuickStats';
 import PersonalInfoSection from './component/PersonalInfoSection';
 import StatsSection from './component/StatsSection';
 import AccountActionsSection from './component/AccountActionsSection';
+import ProfileScreenSkeleton from './component/ProfileScreenSkeleton';
 import {WorkoutChart, AppRefreshControl} from '../../components';
 import FeedbackModal from '../../components/FeedbackModal/FeedbackModal';
 import EditProfileModal from '../../components/EditProfileModal/EditProfileModal';
@@ -88,15 +90,14 @@ const ProfileScreen = () => {
   }, [user?.id]);
 
   const handleChangeAvatar = async () => {
-    const imageUrl = await pickAndUploadImage();
-    if (imageUrl) {
-      // Mettre à jour l'avatar via le contexte
-      try {
-        await updateUser({avatar: imageUrl});
+    try {
+      const imageUrl = await pickAndUploadImage();
+      if (imageUrl) {
+        // L'avatar est déjà mis à jour par uploadAvatar dans useImagePicker
         toastSuccess('Succès', 'Photo de profil mise à jour !');
-      } catch (error) {
-        toastError('Erreur', 'Impossible de mettre à jour la photo de profil');
       }
+    } catch (error) {
+      toastError('Erreur', 'Impossible de mettre à jour la photo de profil');
     }
   };
 
@@ -149,11 +150,13 @@ const ProfileScreen = () => {
     navigation.navigate('WorkoutSessions');
   }, [navigation]);
 
-  if (!user) {
+  if (!user || (isRefreshing && !user.stats)) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Utilisateur non connecté</Text>
-      </View>
+      <LinearGradient
+        colors={[appColors.background, appColors.backgroundDark]}
+        style={styles.gradientContainer}>
+        <ProfileScreenSkeleton />
+      </LinearGradient>
     );
   }
 
@@ -183,17 +186,15 @@ const ProfileScreen = () => {
         </View>
 
         <View style={styles.content}>
-          <QuoteCard
-            style={styles.quote}
-            quote="« Le plus grand bien-être est la force de vivre. » — Lao Tzu"
-          />
-
           {/* Avatar et Info utilisateur */}
           <ProfileHeader
             user={user}
             isUploading={isUploading}
             onChangeAvatar={handleChangeAvatar}
           />
+
+          {/* Quick Stats */}
+          <QuickStats user={user} />
 
           {/* Infos personnelles */}
           <PersonalInfoSection user={user} />

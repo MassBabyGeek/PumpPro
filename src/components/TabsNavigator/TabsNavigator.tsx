@@ -1,9 +1,10 @@
 import React, {useEffect, useRef} from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {View, StyleSheet, Platform, Animated} from 'react-native';
+import {View, StyleSheet, Platform, Animated, Image} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import HomeScreen from '../../screens/HomeScreen/HomeScreen';
 import ProfileScreen from '../../screens/ProfileScreen/ProfileScreen';
+import SocialScreen from '../../screens/SocialScreen/SocialScreen';
 import TrainingStack from '../Stacks/TrainingStack/TrainingStack';
 import ChallengeStack from '../Stacks/ChallengeStack/ChallengeStack';
 import appColors from '../../assets/colors';
@@ -11,14 +12,24 @@ import appColors from '../../assets/colors';
 // Création du Navigator
 const Tab = createBottomTabNavigator();
 
-// Composant pour une icône de tab avec animation
-const TabIcon = ({
-  iconName,
-  focused,
-}: {
-  iconName: string;
-  focused: boolean;
-}) => {
+// Composant spécial pour la tab Push Up (centrale et mise en avant)
+const PushUpTabIcon = ({focused}: {focused: boolean}) => {
+  return (
+    <View style={styles.pushUpContainer}>
+      <View
+        style={[styles.pushUpButton, focused && styles.pushUpButtonFocused]}>
+        <Image
+          source={require('../../assets/images/logoNB.png')}
+          style={styles.pushUpIcon}
+          resizeMode="contain"
+        />
+      </View>
+    </View>
+  );
+};
+
+// Composant pour une icône de tab normale avec animation
+const TabIcon = ({iconName, focused}: {iconName: string; focused: boolean}) => {
   const scaleAnim = useRef(new Animated.Value(focused ? 1 : 0)).current;
   const iconScale = useRef(new Animated.Value(1)).current;
 
@@ -142,7 +153,16 @@ const TabsNavigator = () => {
         component={TrainingStack}
         options={{
           tabBarLabel: 'Push Up',
-          tabBarIcon: renderTabIcon('fitness'),
+          tabBarIcon: ({focused}) => <PushUpTabIcon focused={focused} />,
+          popToTopOnBlur: true,
+        }}
+      />
+      <Tab.Screen
+        name="Social"
+        component={SocialScreen}
+        options={{
+          tabBarLabel: 'Social',
+          tabBarIcon: renderTabIcon('people'),
           popToTopOnBlur: true,
         }}
       />
@@ -178,6 +198,40 @@ const styles = StyleSheet.create({
   },
   icon: {
     zIndex: 1,
+  },
+  pushUpContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 70,
+    height: 70,
+    marginTop: -35, // Elevate above tab bar
+    marginBottom: 8, // Space for label below
+  },
+  pushUpButton: {
+    width: 65,
+    height: 65,
+    borderRadius: 32.5,
+    backgroundColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: appColors.backgroundDark,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  pushUpButtonFocused: {
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
+  },
+  pushUpIcon: {
+    width: 45,
+    height: 45,
   },
 });
 

@@ -9,8 +9,8 @@ import QuoteCard from '../../components/QuoteCard/QuoteCard';
 import EmptyState from '../../components/EmptyState/EmptyState';
 import LinearGradient from 'react-native-linear-gradient';
 import ProgramsByDifficulty from './component/ProgramsByDifficulty';
+import TrainingScreenSkeleton from './component/TrainingScreenSkeleton';
 import {useWorkoutPrograms, usePrograms} from '../../hooks';
-import LoaderScreen from '../LoaderScreen/LoaderScreen';
 import FadeInView from '../../components/FadeInView/FadeInView';
 import Footer from '../../components/Footer';
 
@@ -35,7 +35,13 @@ const TrainingScreen = () => {
   };
 
   if (isLoading) {
-    return <LoaderScreen />;
+    return (
+      <LinearGradient
+        colors={[appColors.background, appColors.backgroundDark]}
+        style={styles.gradientContainer}>
+        <TrainingScreenSkeleton />
+      </LinearGradient>
+    );
   }
 
   if (error) {

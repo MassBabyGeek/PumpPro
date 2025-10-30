@@ -11,9 +11,11 @@ import SocialLoginSection from '../LoginScreen/component/SocialLoginSection';
 
 type SignUpScreenProps = {
   navigation: any;
+  route?: any;
 };
 
-const SignUpScreen = ({navigation}: SignUpScreenProps) => {
+const SignUpScreen = ({navigation, route}: SignUpScreenProps) => {
+  const fromOnboarding = route?.params?.fromOnboarding || false;
   const {register} = useAuth();
   const {toastError, toastSuccess} = useToast();
   const [name, setName] = useState('');
@@ -66,7 +68,10 @@ const SignUpScreen = ({navigation}: SignUpScreenProps) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled">
-        <SignUpHeader onBack={() => navigation.goBack()} />
+        <SignUpHeader
+          onBack={() => navigation.goBack()}
+          showBackButton={fromOnboarding}
+        />
 
         <SignUpForm
           name={name}

@@ -1,27 +1,26 @@
 import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../../assets/colors';
+import Logo from '../../../components/Logo/Logo';
 
 type Props = {
   onBack: () => void;
+  showBackButton?: boolean;
 };
 
-const SignUpHeader = ({onBack}: Props) => {
+const SignUpHeader = ({onBack, showBackButton = true}: Props) => {
   return (
     <>
-      <TouchableOpacity style={styles.backButton} onPress={onBack}>
-        <Icon name="arrow-back" size={24} color={appColors.textPrimary} />
-      </TouchableOpacity>
+      {showBackButton && (
+        <TouchableOpacity style={styles.backButton} onPress={onBack}>
+          <Icon name="arrow-back" size={24} color={appColors.textPrimary} />
+        </TouchableOpacity>
+      )}
 
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <LinearGradient
-            colors={[appColors.primary, appColors.accent]}
-            style={styles.logoGradient}>
-            <Icon name="fitness" size={50} color="#fff" />
-          </LinearGradient>
+          <Logo size={120} />
         </View>
         <Text style={styles.title}>Créer un compte 💪</Text>
         <Text style={styles.subtitle}>Rejoins la communauté PompeurPro</Text>
@@ -45,19 +44,8 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   logoContainer: {
+    marginTop: 40,
     marginBottom: 24,
-  },
-  logoGradient: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: appColors.primary,
-    shadowOffset: {width: 0, height: 8},
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
   },
   title: {
     fontSize: 30,

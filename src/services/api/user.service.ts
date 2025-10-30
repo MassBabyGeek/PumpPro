@@ -7,7 +7,6 @@ import {API_BASE_URL} from './api.config';
 import ApiClient from './apiClient';
 import {
   UserProfile,
-  ChartData,
   Stats,
   AllStats,
   RawChartItem,
@@ -203,15 +202,7 @@ export async function refreshToken(
  * @returns Streak data with current and max streak
  */
 export async function getStreak(userId: string): Promise<StreakData> {
-  // TODO: Uncomment when backend is ready
-  // return client.get(`/users/${userId}/streak`);
-
-  // Mock data temporaire (à retirer quand le backend est prêt)
-  return Promise.resolve({
-    currentStreak: 7,
-    maxStreak: 15,
-    lastWorkoutDate: new Date().toISOString(),
-  });
+  return client.get(`/users/${userId}/streak`);
 }
 
 export const userService = {

@@ -1,44 +1,50 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../../assets/colors';
+import Logo from '../../../components/Logo/Logo';
 
-const LoginHeader = () => {
+type Props = {
+  onBack?: () => void;
+  showBackButton?: boolean;
+};
+
+const LoginHeader = ({onBack, showBackButton = false}: Props) => {
   return (
-    <View style={styles.header}>
+    <>
+      {showBackButton && onBack && (
+        <TouchableOpacity style={styles.backButton} onPress={onBack}>
+          <Icon name="arrow-back" size={24} color={appColors.textPrimary} />
+        </TouchableOpacity>
+      )}
+      <View style={styles.header}>
       <View style={styles.logoContainer}>
-        <LinearGradient
-          colors={[appColors.primary, appColors.accent]}
-          style={styles.logoGradient}>
-          <Icon name="fitness" size={60} color="#fff" />
-        </LinearGradient>
+        <Logo size={120} />
       </View>
       <Text style={styles.title}>Bon retour! 👋</Text>
       <Text style={styles.subtitle}>Connecte-toi pour continuer</Text>
     </View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: `${appColors.border}50`,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   header: {
     alignItems: 'center',
     marginBottom: 48,
   },
   logoContainer: {
+    marginTop: 40,
     marginBottom: 32,
-  },
-  logoGradient: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: appColors.primary,
-    shadowOffset: {width: 0, height: 10},
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 10,
   },
   title: {
     fontSize: 34,

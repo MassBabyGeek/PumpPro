@@ -11,7 +11,7 @@ import {ChallengeScreenNavigationProp} from '../../types/navigation.types';
 import ChallengeHeader from './component/ChallengeHeader';
 import SearchBar from './component/SearchBar';
 import FiltersSection from './component/FiltersSection';
-import LoaderScreen from '../LoaderScreen/LoaderScreen';
+import ChallengeScreenSkeleton from './component/ChallengeScreenSkeleton';
 import {FadeInView} from '../../components';
 import Footer from '../../components/Footer';
 
@@ -57,7 +57,13 @@ const ChallengeScreen = () => {
     (!challenges || challenges.length === 0) && !hasActiveFilters;
 
   if (isLoading) {
-    return <LoaderScreen />;
+    return (
+      <LinearGradient
+        colors={[appColors.background, appColors.backgroundDark]}
+        style={styles.gradientContainer}>
+        <ChallengeScreenSkeleton />
+      </LinearGradient>
+    );
   }
 
   if (shouldShowEmptyState) {

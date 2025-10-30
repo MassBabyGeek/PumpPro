@@ -13,9 +13,11 @@ import {credentialsStorage} from '../../services/credentialsStorage';
 
 type LoginScreenProps = {
   navigation: any;
+  route?: any;
 };
 
-const LoginScreen = ({navigation}: LoginScreenProps) => {
+const LoginScreen = ({navigation, route}: LoginScreenProps) => {
+  const fromOnboarding = route?.params?.fromOnboarding || false;
   const {login} = useAuth();
   const toast = useToast();
   const [email, setEmail] = useState('');
@@ -88,7 +90,10 @@ const LoginScreen = ({navigation}: LoginScreenProps) => {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
-        <LoginHeader />
+        <LoginHeader
+          onBack={() => navigation.goBack()}
+          showBackButton={fromOnboarding}
+        />
 
         <LoginForm
           email={email}
