@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import 'react-native-gesture-handler';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,7 +9,6 @@ import {OfflineProvider} from './src/contexts/OfflineContext';
 import {useAuth} from './src/hooks/useAuth';
 import AuthStack from './src/components/Stacks/AuthStack/AuthStack';
 import AppStack from './src/components/Stacks/AppStack/AppStack';
-import SplashScreen from './src/screens/SplashScreen/SplashScreen';
 import OfflineBanner from './src/components/OfflineBanner';
 import {toastConfig} from './src/components/CustomToast/CustomToast';
 import ErrorBoundary from './src/components/ErrorBoundary';
@@ -20,8 +20,7 @@ import WelcomeScreen from './src/screens/WelcomeScreen/WelcomeScreen';
 const RootStack = createStackNavigator();
 
 const AppNavigator = () => {
-  const {isAuthenticated, isLoading} = useAuth();
-  const [showSplash, setShowSplash] = useState(true);
+  const {isAuthenticated} = useAuth();
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(
     null,
   );
@@ -33,17 +32,12 @@ const AppNavigator = () => {
   const checkOnboardingStatus = async () => {
     try {
       const value = await AsyncStorage.getItem(ONBOARDING_KEY);
-      setHasSeenOnboarding(value);
+      setHasSeenOnboarding(value === 'true');
     } catch (error) {
       console.error('Error checking onboarding status:', error);
       setHasSeenOnboarding(false);
     }
   };
-
-  // Afficher le splash screen pendant le chargement
-  if (isLoading || showSplash || hasSeenOnboarding === null) {
-    return <SplashScreen onFinish={() => setShowSplash(false)} />;
-  }
 
   return (
     <>

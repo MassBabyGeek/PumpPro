@@ -118,6 +118,7 @@ const EditProfileModal = ({visible, onClose}: EditProfileModalProps) => {
       const updatedData: any = {
         name: formData.name.trim(),
         email: formData.email.trim(),
+        password: '',
         age: formData.age ? Number(formData.age) : undefined,
         weight: formData.weight ? Number(formData.weight) : undefined,
         height: formData.height ? Number(formData.height) : undefined,

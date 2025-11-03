@@ -1,21 +1,47 @@
+// build.gradle (top-level)
 buildscript {
     ext {
         buildToolsVersion = "35.0.0"
-        minSdkVersion = 24
+        minSdkVersion = 26
         compileSdkVersion = 35
         targetSdkVersion = 35
         ndkVersion = "27.1.12297006"
         kotlinVersion = "2.0.21"
     }
+
     repositories {
         google()
         mavenCentral()
+        // Ajout du repo RN pour trouver ReactAndroid::jsctooling
+        maven { url("$rootDir/node_modules/react-native/android") }
     }
+
     dependencies {
-        classpath("com.android.tools.build:gradle")
+        classpath("com.android.tools.build:gradle:8.6.0")
         classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
 
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        // Repo React Native pour ReactAndroid et Hermes
+        maven {
+            url("$rootDir/../node_modules/react-native/android")
+        }
+        // Repo Maven local de Node modules
+        maven {
+            url("$rootDir/../node_modules/jsc-android/dist")
+        }
+    }
+}
+
+// Appliquer le plugin React Native
 apply plugin: "com.facebook.react.rootproject"
+
+// Définir la variable globale pour CMake si nécessaire
+ext {
+    reactNativeDir = file("$rootDir/node_modules/react-native")
+}

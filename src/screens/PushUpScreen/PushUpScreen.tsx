@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Text, View, StyleSheet, Alert} from 'react-native';
+import React, {useEffect} from 'react';
+import {Text, View, StyleSheet, Alert, ScrollView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import GradientButton from '../../components/GradientButton/GradientButton';
 import appColors from '../../assets/colors';
@@ -9,7 +9,6 @@ import {
   LibreScreenNavigationProp,
   LibreScreenRouteProp,
 } from '../../types/navigation.types';
-import {ScrollView} from 'react-native-gesture-handler';
 import {useProgram, useWorkout} from '../../hooks';
 import Icon from 'react-native-vector-icons/Ionicons';
 import PushUpProgressBar from './component/PushUpProgressBar';
@@ -59,7 +58,7 @@ const PushUpScreen = () => {
 
   const handleCancel = () => {
     Alert.alert(
-      'Annuler l\'entraînement',
+      "Annuler l'entraînement",
       'Êtes-vous sûr de vouloir annuler cet entraînement ? Votre progression ne sera pas sauvegardée.',
       [
         {

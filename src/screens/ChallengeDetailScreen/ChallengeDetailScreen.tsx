@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import {View, Text, StyleSheet, ScrollView, RefreshControl} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useRoute, useNavigation} from '@react-navigation/native';
@@ -12,7 +12,6 @@ import {WorkoutProgram} from '../../types/workout.types';
 import ChallengeInfoSection from './component/ChallengeInfoSection';
 import StatsGrid from './component/StatsGrid';
 import TasksSection from './component/TasksSection';
-import {RefreshControl} from 'react-native-gesture-handler';
 import LoaderScreen from '../LoaderScreen/LoaderScreen';
 
 const ChallengeDetailScreen = () => {

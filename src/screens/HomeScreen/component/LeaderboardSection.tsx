@@ -29,6 +29,9 @@ const LeaderboardSection = ({leaderboard, onViewAll}: Props) => {
     return {backgroundColor: appColors.border};
   };
 
+  // Ensure leaderboard is an array
+  const safeLeaderboard = Array.isArray(leaderboard) ? leaderboard : [];
+
   return (
     <View style={styles.section}>
       <SectionTitle
@@ -36,7 +39,7 @@ const LeaderboardSection = ({leaderboard, onViewAll}: Props) => {
         actionText="Voir tout"
         onActionPress={onViewAll}
       />
-      {!leaderboard || leaderboard.length === 0 ? (
+      {safeLeaderboard.length === 0 ? (
         <EmptyState
           icon="trophy-outline"
           title="Aucun classement disponible"
@@ -44,14 +47,14 @@ const LeaderboardSection = ({leaderboard, onViewAll}: Props) => {
         />
       ) : (
         <View style={styles.leaderboardCard}>
-        {leaderboard.map((user, index) => (
+        {safeLeaderboard.map((user, index) => (
           <TouchableOpacity
             key={user.userId}
             onPress={() => handleUserPress(user.userId, user.userName)}
             activeOpacity={0.7}
             style={[
               styles.leaderboardItem,
-              index === leaderboard.length - 1 && styles.leaderboardItemLast,
+              index === safeLeaderboard.length - 1 && styles.leaderboardItemLast,
             ]}>
             <View style={styles.leaderboardLeft}>
               <View
