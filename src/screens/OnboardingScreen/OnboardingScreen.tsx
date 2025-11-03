@@ -7,7 +7,9 @@ import {
   Dimensions,
   TouchableOpacity,
   Animated,
+  Platform,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -73,6 +75,7 @@ const slides: OnboardingSlide[] = [
 
 const OnboardingScreen = () => {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [demoPushUpCount, setDemoPushUpCount] = useState(0);
   const flatListRef = useRef<FlatList>(null);
@@ -231,7 +234,14 @@ const OnboardingScreen = () => {
         scrollEventThrottle={16}
       />
 
-      <View style={styles.footer}>
+      <View
+        style={[
+          styles.footer,
+          {
+            paddingBottom:
+              Platform.OS === 'ios' ? 40 : Math.max(insets.bottom + 20, 40),
+          },
+        ]}>
         {renderPagination()}
 
         <View style={styles.buttonContainer}>
@@ -316,7 +326,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingHorizontal: 30,
-    paddingBottom: 40,
     paddingTop: 20,
     backgroundColor: appColors.background,
     borderTopLeftRadius: 30,

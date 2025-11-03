@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import 'react-native-gesture-handler';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import {AuthProvider} from './src/contexts/AuthContext';
@@ -66,13 +67,15 @@ const AppNavigator = () => {
 
 export default function App() {
   return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <OfflineProvider>
-          <AppNavigator />
-          <Toast config={toastConfig} />
-        </OfflineProvider>
-      </AuthProvider>
-    </ErrorBoundary>
+    <SafeAreaProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <OfflineProvider>
+            <AppNavigator />
+            <Toast config={toastConfig} />
+          </OfflineProvider>
+        </AuthProvider>
+      </ErrorBoundary>
+    </SafeAreaProvider>
   );
 }

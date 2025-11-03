@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {View, StyleSheet, ScrollView, RefreshControl} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import appColors from '../../assets/colors';
-import {useChallenges} from '../../hooks';
+import {useChallenges, useTabBarHeight} from '../../hooks';
 import ChallengeCard from '../../components/ChallengeCard/ChallengeCard';
 import EmptyState from '../../components/EmptyState/EmptyState';
 import {Challenge} from '../../types/challenge.types';
@@ -30,6 +30,7 @@ const ChallengeScreen = () => {
     refreshChallenges,
     updateFilters,
   } = useChallenges();
+  const {contentPaddingBottom} = useTabBarHeight();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -150,7 +151,7 @@ const ChallengeScreen = () => {
 
           <Footer />
 
-          <View style={styles.bottomSpacing} />
+          <View style={{height: contentPaddingBottom}} />
         </ScrollView>
       </FadeInView>
     </LinearGradient>
@@ -289,9 +290,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: appColors.textSecondary,
     marginTop: 8,
-  },
-  bottomSpacing: {
-    height: 60,
   },
 });
 

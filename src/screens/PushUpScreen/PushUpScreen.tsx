@@ -9,7 +9,7 @@ import {
   LibreScreenNavigationProp,
   LibreScreenRouteProp,
 } from '../../types/navigation.types';
-import {useProgram, useWorkout} from '../../hooks';
+import {useProgram, useWorkout, useTabBarHeight} from '../../hooks';
 import Icon from 'react-native-vector-icons/Ionicons';
 import PushUpProgressBar from './component/PushUpProgressBar';
 import WorkoutHeader from './component/WorkoutHeader';
@@ -28,6 +28,8 @@ const PushUpScreen = () => {
 
   const challengeId = route.params?.challengeId;
   const taskId = route.params?.taskId;
+
+  const {contentPaddingBottom} = useTabBarHeight();
 
   const {
     workoutState,
@@ -211,7 +213,7 @@ const PushUpScreen = () => {
           </View>
         </View>
 
-        <View style={styles.bottomSpacing} />
+        <View style={{height: contentPaddingBottom}} />
       </ScrollView>
     </LinearGradient>
   );

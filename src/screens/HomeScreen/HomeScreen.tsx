@@ -5,7 +5,7 @@ import {useNavigation} from '@react-navigation/native';
 import appColors from '../../assets/colors';
 import AppTitle from '../../components/AppTitle/AppTitle';
 import Footer from '../../components/Footer';
-import {useLeaderboard, useUser, useWorkouts} from '../../hooks';
+import {useLeaderboard, useUser, useWorkouts, useTabBarHeight} from '../../hooks';
 
 import {WorkoutProgram} from '../../types/workout.types';
 import MotivationalQuoteCard from './component/MotivationalQuoteCard';
@@ -48,6 +48,7 @@ const HomeScreen = () => {
     loadWorkouts,
     toggleLike,
   } = useWorkouts();
+  const {contentPaddingBottom} = useTabBarHeight();
   const [currentQuote] = useState(
     motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)],
   );
@@ -149,7 +150,7 @@ const HomeScreen = () => {
 
       <Footer variant="app" />
 
-      <View style={styles.bottomSpacing} />
+      <View style={{height: contentPaddingBottom}} />
     </>
   );
 

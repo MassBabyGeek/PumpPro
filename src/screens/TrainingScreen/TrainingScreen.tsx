@@ -10,7 +10,7 @@ import EmptyState from '../../components/EmptyState/EmptyState';
 import LinearGradient from 'react-native-linear-gradient';
 import ProgramsByDifficulty from './component/ProgramsByDifficulty';
 import TrainingScreenSkeleton from './component/TrainingScreenSkeleton';
-import {useWorkoutPrograms, usePrograms} from '../../hooks';
+import {useWorkoutPrograms, usePrograms, useTabBarHeight} from '../../hooks';
 import FadeInView from '../../components/FadeInView/FadeInView';
 import Footer from '../../components/Footer';
 
@@ -19,6 +19,7 @@ const TrainingScreen = () => {
   const {programs, isLoading, error, getProgramIcon, updateProgramLike, refreshPrograms} = useWorkoutPrograms();
   const {toggleLike} = usePrograms(programs, updateProgramLike);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const {contentPaddingBottom} = useTabBarHeight();
 
   const handleProgramPress = (program: WorkoutProgram) => {
     navigation.navigate('Libre', {programId: program.id});
@@ -155,7 +156,7 @@ const TrainingScreen = () => {
 
           <Footer />
 
-          <View style={styles.bottomSpacing} />
+          <View style={{height: contentPaddingBottom}} />
         </ScrollView>
       </LinearGradient>
     </FadeInView>
@@ -210,9 +211,6 @@ const styles = StyleSheet.create({
   cardSubLabel: {
     fontSize: 13,
     color: appColors.textSecondary,
-  },
-  bottomSpacing: {
-    height: 60,
   },
   loaderContainer: {
     flex: 1,

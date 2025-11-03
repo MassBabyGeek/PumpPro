@@ -22,3 +22,4 @@ export {useWorkout} from './useWorkout';
 export {useChallenges} from './useChallenges';
 export {usePrograms} from './usePrograms';
 export {useWorkouts} from './useWorkouts';
+export {useTabBarHeight} from './useTabBarHeight';

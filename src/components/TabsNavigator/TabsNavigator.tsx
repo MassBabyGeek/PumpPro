@@ -1,6 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {View, StyleSheet, Platform, Animated, Image} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import HomeScreen from '../../screens/HomeScreen/HomeScreen';
 import ProfileScreen from '../../screens/ProfileScreen/ProfileScreen';
@@ -96,6 +97,8 @@ const renderTabIcon =
   );
 
 const TabsNavigator = () => {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -111,12 +114,12 @@ const TabsNavigator = () => {
         },
         tabBarStyle: {
           position: 'absolute',
-          height: Platform.OS === 'ios' ? 88 : 70,
+          height: Platform.OS === 'ios' ? 88 : 70 + insets.bottom,
           backgroundColor: appColors.backgroundDark,
           borderTopWidth: 1,
           borderTopColor: `${appColors.border}30`,
           paddingTop: 8,
-          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+          paddingBottom: Platform.OS === 'ios' ? 24 : Math.max(insets.bottom, 8),
           elevation: 0,
           shadowColor: '#000',
           shadowOffset: {

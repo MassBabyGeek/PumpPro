@@ -5,7 +5,7 @@ import AppTitle from '../../components/AppTitle/AppTitle';
 import Footer from '../../components/Footer';
 import appColors from '../../assets/colors';
 import {useImagePicker} from '../../hooks/useImagePicker';
-import {useAuth, useUser, useToast, useWorkouts} from '../../hooks';
+import {useAuth, useUser, useToast, useWorkouts, useTabBarHeight} from '../../hooks';
 import QuoteCard from '../../components/QuoteCard/QuoteCard';
 import LinearGradient from 'react-native-linear-gradient';
 import ProfileHeader from './component/ProfileHeader';
@@ -31,6 +31,7 @@ const ProfileScreen = () => {
     loadWorkouts,
     toggleLike,
   } = useWorkouts();
+  const {contentPaddingBottom} = useTabBarHeight();
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<
@@ -226,6 +227,8 @@ const ProfileScreen = () => {
           />
 
           <Footer />
+
+          <View style={{height: contentPaddingBottom}} />
         </View>
       </ScrollView>
 
@@ -251,7 +254,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 60,
   },
   header: {
     paddingHorizontal: 20,

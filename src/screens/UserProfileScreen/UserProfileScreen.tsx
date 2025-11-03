@@ -145,6 +145,7 @@ const UserProfileScreen = () => {
             user={user}
             isUploading={false}
             onChangeAvatar={undefined} // Pas de modification d'avatar
+            showEmail={false} // Ne pas afficher l'email sur le profil des autres
           />
 
           {/* Infos personnelles */}

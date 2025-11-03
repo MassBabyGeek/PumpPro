@@ -6,13 +6,16 @@ import {
   FlatList,
   Dimensions,
   Animated,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useNavigation} from '@react-navigation/native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import appColors from '../../assets/colors';
 import {GradientButton, AppButton} from '../../components';
 
-const {width: SCREEN_WIDTH} = Dimensions.get('window');
+const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
 const PREVIEW_WIDTH = SCREEN_WIDTH * 0.85;
 
 interface FeaturePreview {
@@ -24,6 +27,7 @@ interface FeaturePreview {
 
 const WelcomeScreen = () => {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -207,9 +211,19 @@ const WelcomeScreen = () => {
       start={{x: 0, y: 0}}
       end={{x: 1, y: 1}}
       style={styles.container}>
-      <View style={styles.content}>
-        {/* Logo et titre */}
-        <View style={styles.header}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingBottom:
+              Platform.OS === 'ios' ? 40 : Math.max(insets.bottom + 40, 60),
+          },
+        ]}
+        showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
+          {/* Logo et titre */}
+          <View style={styles.header}>
           <View style={styles.logoContainer}>
             <Text style={styles.logoEmoji}>💪</Text>
           </View>
@@ -271,7 +285,8 @@ const WelcomeScreen = () => {
         <Text style={styles.footerText}>
           En continuant, tu acceptes nos conditions d'utilisation
         </Text>
-      </View>
+        </View>
+      </ScrollView>
     </LinearGradient>
   );
 };
@@ -280,10 +295,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    minHeight: SCREEN_HEIGHT,
+  },
   content: {
     flex: 1,
     paddingTop: 60,
-    paddingBottom: 40,
     justifyContent: 'space-between',
   },
   header: {

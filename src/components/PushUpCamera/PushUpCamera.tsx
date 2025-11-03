@@ -18,10 +18,7 @@ import {
   useCameraDevice,
   useFrameProcessor,
 } from 'react-native-vision-camera';
-import {
-  FaceDetectionOptions,
-  useFaceDetector,
-} from 'react-native-vision-camera-face-detector';
+import {useFaceDetector} from 'react-native-vision-camera-face-detector';
 import {Worklets} from 'react-native-worklets-core';
 import {createOnFacesDetected} from '../../utils/faceDetector/faceDetector.util';
 
@@ -53,7 +50,7 @@ const PushUpCamera = ({
 
   const device = useCameraDevice('front');
 
-  const faceDetectionOptions = useRef<FaceDetectionOptions>({
+  const faceDetectionOptions = useRef({
     autoMode: true,
     performanceMode: 'fast',
   }).current;
@@ -78,7 +75,7 @@ const PushUpCamera = ({
       setPushUpCount,
       setMovementState,
       () => movementState, // important : fonction, pas la valeur directe
-      () => isActive, // ✅ ici
+      () => isActive,
     ),
   );
 

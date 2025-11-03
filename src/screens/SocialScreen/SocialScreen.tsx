@@ -9,9 +9,11 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../assets/colors';
+import {useTabBarHeight} from '../../hooks';
 
 const SocialScreen = () => {
   const [activeTab, setActiveTab] = useState<'feed' | 'friends'>('feed');
+  const {contentPaddingBottom} = useTabBarHeight();
 
   // Skeleton loader for activity card
   const SkeletonActivityCard = () => (
@@ -179,6 +181,8 @@ const SocialScreen = () => {
                   classement !
                 </Text>
               </View>
+
+              <View style={{height: contentPaddingBottom}} />
             </View>
           </>
         ) : (
@@ -202,6 +206,8 @@ const SocialScreen = () => {
                   vous motiver mutuellement dans vos entraînements !
                 </Text>
               </View>
+
+              <View style={{height: contentPaddingBottom}} />
             </View>
           </>
         )}
@@ -276,7 +282,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    paddingBottom: 100,
+    paddingBottom: 0,
   },
   // Stats banner
   statsBanner: {

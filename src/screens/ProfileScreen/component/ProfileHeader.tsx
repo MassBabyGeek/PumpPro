@@ -15,12 +15,14 @@ type ProfileHeaderProps = {
   user: UserProfile;
   isUploading: boolean;
   onChangeAvatar?: () => void; // Optionnel pour les profils en lecture seule
+  showEmail?: boolean; // Afficher l'email ou non (par défaut true)
 };
 
 const ProfileHeader = ({
   user,
   isUploading,
   onChangeAvatar,
+  showEmail = true,
 }: ProfileHeaderProps) => {
   return (
     <View style={styles.profileHeader}>
@@ -54,7 +56,7 @@ const ProfileHeader = ({
 
       {/* User Info centré */}
       <Text style={styles.userName}>{user.name}</Text>
-      <Text style={styles.userEmail}>{user.email}</Text>
+      {showEmail && <Text style={styles.userEmail}>{user.email}</Text>}
 
       {user.goal && (
         <View style={styles.goalContainer}>
