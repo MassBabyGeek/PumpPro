@@ -28,12 +28,17 @@ type PushUpCameraProps = {
   setPushUpCount: Dispatch<SetStateAction<number>>;
   isActive: boolean;
   setDistance?: Dispatch<SetStateAction<number | null>>;
+  customThresholds?: {
+    upper: number;
+    lower: number;
+  } | null;
 };
 
 const PushUpCamera = ({
   setPushUpCount,
   isActive,
   setDistance,
+  customThresholds,
 }: PushUpCameraProps) => {
   const [hasPermission, setHasPermission] = useState(false);
   const [estimatedDistance, setEstimatedDistance] = useState<number | null>(
@@ -76,6 +81,7 @@ const PushUpCamera = ({
       setMovementState,
       () => movementState, // important : fonction, pas la valeur directe
       () => isActive,
+      customThresholds,
     ),
   );
 

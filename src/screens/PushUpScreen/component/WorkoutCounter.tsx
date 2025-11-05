@@ -13,7 +13,7 @@ type Props = {
   timeLimit?: number; // Durée limite en secondes (pour MAX_TIME, AMRAP, etc.)
 };
 
-const WorkoutCounter = ({
+const WorkoutCounter = React.memo(({
   currentReps,
   targetReps,
   progress,
@@ -30,6 +30,8 @@ const WorkoutCounter = ({
       <View style={styles.counterContainer}>
         <LinearGradient
           colors={[`${appColors.primary}15`, `${appColors.accent}15`]}
+          start={{x: 0, y: 0}}
+          end={{x: 1, y: 1}}
           style={styles.counterGradient}>
           <View style={styles.counterGradientContainer}>
             <View style={styles.counterCircle}>
@@ -40,7 +42,10 @@ const WorkoutCounter = ({
               )}
               {targetReps && (
                 <View style={styles.progressIndicator}>
-                  <View
+                  <LinearGradient
+                    colors={[appColors.success, appColors.primary]}
+                    start={{x: 0, y: 0}}
+                    end={{x: 1, y: 0}}
                     style={[styles.progressFill, {width: `${progress}%`}]}
                   />
                 </View>
@@ -52,16 +57,20 @@ const WorkoutCounter = ({
 
       {/* Timer */}
       <View style={styles.timerContainer}>
-        <Icon
-          name="time-outline"
-          size={32}
-          color={
-            isTimeBasedProgram && timeRemaining !== null && timeRemaining < 30
-              ? appColors.error
-              : appColors.primary
-          }
-          style={styles.timerIcon}
-        />
+        <View style={[
+          styles.timerIconContainer,
+          isTimeBasedProgram && timeRemaining !== null && timeRemaining < 30 && styles.timerIconUrgent
+        ]}>
+          <Icon
+            name="time-outline"
+            size={28}
+            color={
+              isTimeBasedProgram && timeRemaining !== null && timeRemaining < 30
+                ? appColors.error
+                : appColors.primary
+            }
+          />
+        </View>
         {isTimeBasedProgram && timeRemaining !== null ? (
           <View style={styles.timerContent}>
             <Text
@@ -79,81 +88,102 @@ const WorkoutCounter = ({
       </View>
     </View>
   );
-};
+});
+
+WorkoutCounter.displayName = 'WorkoutCounter';
 
 const styles = StyleSheet.create({
   mainContent: {
     alignItems: 'center',
   },
   counterContainer: {
-    marginVertical: 10,
+    marginVertical: 12,
     width: '100%',
-    borderColor: appColors.primary,
+    borderColor: appColors.primary + '40',
     borderWidth: 1,
-    borderRadius: 30,
+    borderRadius: 24,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: appColors.primary,
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
   counterGradientContainer: {
-    paddingVertical: 30,
+    paddingVertical: 32,
     paddingHorizontal: 40,
   },
   counterGradient: {
     alignItems: 'center',
-    borderRadius: 30,
   },
   counterLabel: {
-    fontSize: 14,
+    fontSize: 12,
     color: appColors.textSecondary,
-    fontWeight: '600',
-    letterSpacing: 1,
-    marginBottom: 8,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    marginBottom: 10,
+    textTransform: 'uppercase',
   },
   counterCircle: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   counterText: {
-    fontSize: 50,
+    fontSize: 64,
+    fontWeight: 'bold',
     color: appColors.primary,
   },
   targetText: {
-    fontSize: 28,
+    fontSize: 26,
     color: appColors.textSecondary,
-    marginTop: 4,
+    marginTop: 6,
+    fontWeight: '600',
   },
   progressIndicator: {
     width: 200,
-    height: 6,
-    backgroundColor: `${appColors.textSecondary}30`,
-    borderRadius: 3,
+    height: 8,
+    backgroundColor: `${appColors.textSecondary}20`,
+    borderRadius: 4,
     overflow: 'hidden',
-    marginTop: 12,
+    marginTop: 16,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: appColors.success,
-    borderRadius: 3,
+    borderRadius: 4,
   },
   timerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 12,
+    gap: 12,
+    marginTop: 16,
   },
-  timerIcon: {},
-  timerContent: {
+  timerIconContainer: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: appColors.primary + '20',
+    justifyContent: 'center',
     alignItems: 'center',
   },
+  timerIconUrgent: {
+    backgroundColor: appColors.error + '20',
+  },
+  timerContent: {
+    alignItems: 'flex-start',
+  },
   timer: {
-    fontSize: 50,
+    fontSize: 48,
+    fontWeight: 'bold',
     color: appColors.primary,
   },
   timerUrgent: {
     color: appColors.error,
   },
   timerLabel: {
-    fontSize: 14,
+    fontSize: 13,
     color: appColors.textSecondary,
-    marginTop: 4,
+    marginTop: 2,
+    fontWeight: '500',
   },
 });
 

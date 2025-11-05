@@ -1,10 +1,5 @@
-const {getDefaultConfig} = require('@react-native/metro-config');
+const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
 
-const config = getDefaultConfig(__dirname);
-
-// Extensions supplémentaires pour TypeScript et JSX
-config.resolver.sourceExts.push('ts', 'tsx', 'jsx');
-
-console.log('✅ Metro config loaded');
-
-module.exports = config;
+module.exports = mergeConfig(getDefaultConfig(__dirname), {
+  maxWorkers: 2,
+});

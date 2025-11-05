@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useMemo} from 'react';
 import {Text, View, StyleSheet, Alert, ScrollView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import GradientButton from '../../components/GradientButton/GradientButton';
@@ -10,6 +10,7 @@ import {
   LibreScreenRouteProp,
 } from '../../types/navigation.types';
 import {useProgram, useWorkout, useTabBarHeight} from '../../hooks';
+import {useCalibrationContext} from '../../contexts/CalibrationContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import PushUpProgressBar from './component/PushUpProgressBar';
 import WorkoutHeader from './component/WorkoutHeader';
@@ -30,6 +31,7 @@ const PushUpScreen = () => {
   const taskId = route.params?.taskId;
 
   const {contentPaddingBottom} = useTabBarHeight();
+  const {calibration} = useCalibrationContext();
 
   const {
     workoutState,
@@ -44,10 +46,23 @@ const PushUpScreen = () => {
     completeCurrentSet,
   } = useWorkout(program);
 
+  // Construire les thresholds personnalisés à partir de la calibration
+  const customThresholds = useMemo(
+    () =>
+      calibration.upperDistance && calibration.lowerDistance
+        ? {
+            upper: calibration.upperDistance,
+            lower: calibration.lowerDistance,
+          }
+        : null,
+    [calibration.upperDistance, calibration.lowerDistance],
+  );
+
   useEffect(() => {
-    console.log('program', program);
-    console.log('workoutState', workoutState);
-  }, [program, workoutState]);
+    console.log('[PushUpScreen] Program:', program);
+    console.log('[PushUpScreen] WorkoutState:', workoutState);
+    console.log('[PushUpScreen] Calibration thresholds:', customThresholds);
+  }, [program, workoutState, customThresholds]);
 
   const handleStop = () => {
     const session = stopWorkout();
@@ -124,6 +139,7 @@ const PushUpScreen = () => {
           isActive={cameraActive}
           setPushUpCount={incrementRep}
           setDistance={setDistance}
+          customThresholds={customThresholds}
         />
 
         {/* Zone principale */}

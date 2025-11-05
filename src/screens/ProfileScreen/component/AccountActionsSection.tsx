@@ -7,15 +7,29 @@ type AccountActionsSectionProps = {
   onLogout: () => void;
   onDeleteAccount: () => void;
   onFeedback: () => void;
+  onRecalibrate: () => void;
 };
 
 const AccountActionsSection = ({
   onLogout,
   onDeleteAccount,
   onFeedback,
+  onRecalibrate,
 }: AccountActionsSectionProps) => {
   return (
     <View style={styles.section}>
+      <TouchableOpacity style={styles.actionButton} onPress={onRecalibrate}>
+        <Icon name="scan-outline" size={20} color={appColors.primary} />
+        <Text style={[styles.actionButtonText, styles.primaryText]}>
+          Recalibrer mes pompes
+        </Text>
+        <Icon
+          name="chevron-forward"
+          size={20}
+          color={appColors.primary}
+        />
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.actionButton} onPress={onLogout}>
         <Icon name="log-out-outline" size={20} color={appColors.textPrimary} />
         <Text style={styles.actionButtonText}>Se déconnecter</Text>
@@ -85,6 +99,9 @@ const styles = StyleSheet.create({
   },
   dangerText: {
     color: appColors.error,
+  },
+  primaryText: {
+    color: appColors.primary,
   },
 });
 

@@ -1,49 +1,21 @@
 import UIKit
 import React
 import React_RCTAppDelegate
-import ReactAppDependencyProvider
 import GoogleSignIn
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
-  var window: UIWindow?
+class AppDelegate: RCTAppDelegate {
 
-  var reactNativeDelegate: ReactNativeDelegate?
-  var reactNativeFactory: RCTReactNativeFactory?
-
-  func application(
+  override func application(
     _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    let delegate = ReactNativeDelegate()
-    let factory = RCTReactNativeFactory(delegate: delegate)
-    delegate.dependencyProvider = RCTAppDependencyProvider()
+    self.moduleName = "pompeurpro"
+    self.initialProps = [:]
 
-    reactNativeDelegate = delegate
-    reactNativeFactory = factory
-
-    window = UIWindow(frame: UIScreen.main.bounds)
-
-    factory.startReactNative(
-      withModuleName: "pompeurpro",
-      in: window,
-      launchOptions: launchOptions
-    )
-
-    return true
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
-  // Handle Google Sign-In URL schemes
-  func application(
-    _ app: UIApplication,
-    open url: URL,
-    options: [UIApplication.OpenURLOptionsKey : Any] = [:]
-  ) -> Bool {
-    return GIDSignIn.sharedInstance.handle(url)
-  }
-}
-
-class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
   override func sourceURL(for bridge: RCTBridge) -> URL? {
     self.bundleURL()
   }
@@ -54,5 +26,23 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
 #else
     Bundle.main.url(forResource: "main", withExtension: "jsbundle")
 #endif
+  }
+
+  // Handle Google Sign-In URL schemes
+  override func application(
+    _ app: UIApplication,
+    open url: URL,
+    options: [UIApplication.OpenURLOptionsKey : Any] = [:]
+  ) -> Bool {
+    return GIDSignIn.sharedInstance.handle(url)
+  }
+
+  // Désactiver le shake gesture pour le dev menu
+  // Cela empêche l'ouverture accidentelle pendant les pompes
+  override func application(
+    _ application: UIApplication,
+    supportedInterfaceOrientationsFor window: UIWindow?
+  ) -> UIInterfaceOrientationMask {
+    return .portrait
   }
 }

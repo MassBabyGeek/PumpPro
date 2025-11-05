@@ -5,7 +5,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import appColors from '../../../assets/colors';
 
 interface PushUpProgressBarProps {
-  value: number; // 0 à 100
+  value: number | null; // 0 à 100 ou null si pas de visage
   label?: string;
   width?: number | string;
   height?: number;
@@ -21,8 +21,8 @@ const PushUpProgressBar: React.FC<PushUpProgressBarProps> = ({
   labels,
   shouldReset = false,
 }) => {
-  // Si shouldReset est true, on affiche 0, sinon la valeur normale
-  const displayValue = shouldReset ? 0 : value;
+  // Si shouldReset est true, on affiche 0, sinon la valeur normale (ou 0 si null)
+  const displayValue = shouldReset ? 0 : (value ?? 0);
   // Conversion hex → rgb
   const hexToRgb = (hex: string) => {
     const cleaned = hex.replace('#', '');
@@ -59,15 +59,17 @@ const PushUpProgressBar: React.FC<PushUpProgressBarProps> = ({
     }
   };
 
-  const displayText =
-    displayValue !== null
-      ? displayValue > 70
-        ? labels[0]
-        : labels[1]
-      : labels[2];
+  // Vérifier si la valeur originale est null (pas de visage)
+  const isNoFace = value === null;
 
-  const barWidth = `${displayValue}%`;
-  const barColor = getBarColor(displayValue);
+  const displayText = isNoFace
+    ? labels[2] // "Non détecté"
+    : displayValue > 70
+    ? labels[0] // "Position correcte"
+    : labels[1]; // "Ajustez"
+
+  const barWidth = isNoFace ? '0%' : `${displayValue}%`;
+  const barColor = isNoFace ? appColors.textSecondary : getBarColor(displayValue);
 
   return (
     <View style={[styles.container, {width: width as number}]}>

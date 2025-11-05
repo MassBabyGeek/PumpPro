@@ -7,6 +7,8 @@ import LeaderboardDetailScreen from '../../../screens/LeaderboardDetailScreen/Le
 import WorkoutSessionsScreen from '../../../screens/WorkoutSessionsScreen/WorkoutSessionsScreen';
 import UserProfileScreen from '../../../screens/UserProfileScreen/UserProfileScreen';
 import UserWorkoutSessionsScreen from '../../../screens/UserWorkoutSessionsScreen/UserWorkoutSessionsScreen';
+import FirstChallengeScreen from '../../../screens/FirstChallengeScreen/FirstChallengeScreen';
+import ChallengeResultsScreen from '../../../screens/ChallengeResultsScreen/ChallengeResultsScreen';
 
 const Stack = createStackNavigator();
 
@@ -46,6 +48,16 @@ const AppStack = () => {
       <Stack.Screen
         name="UserWorkoutSessions"
         component={UserWorkoutSessionsScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="FirstChallenge"
+        component={FirstChallengeScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="ChallengeResults"
+        component={ChallengeResultsScreen}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

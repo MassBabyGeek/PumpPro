@@ -32,9 +32,10 @@ export const WORKOUT_MODES: WorkoutMode[] = [
 export const CALORIES_PER_PUSHUP = 0.29;
 
 // Constantes de détection de visage
+// Logique inversée : 0 = proche (position basse), 100 = loin (position haute)
 export const FACE_DETECTION = {
   MIN_FACE_WIDTH: 0.5,
   MAX_FACE_WIDTH: 1.6,
-  CLOSE_THRESHOLD: 70,
-  FAR_THRESHOLD: 40,
+  CLOSE_THRESHOLD: 30, // Position basse : valeur basse (proche du sol)
+  FAR_THRESHOLD: 60,   // Position haute : valeur haute (loin du sol)
 } as const;

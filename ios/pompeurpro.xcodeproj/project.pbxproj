@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		675FFA54F84C845E9C2A6A6E /* libPods-pompeurpro.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B4CE13CACC78AB8B5322EE61 /* libPods-pompeurpro.a */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		9829AE721FF3728032AA2EE1 /* libPods-pompeurpro.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C10BB587CF23669204E8FC6 /* libPods-pompeurpro.a */; };
 		A879D32A6B764408162C05E3 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
@@ -19,12 +19,12 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = pompeurpro/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = pompeurpro/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = pompeurpro/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		3C10BB587CF23669204E8FC6 /* libPods-pompeurpro.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-pompeurpro.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		40B5DF29E5204552D79758AD /* Pods-pompeurpro.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pompeurpro.debug.xcconfig"; path = "Target Support Files/Pods-pompeurpro/Pods-pompeurpro.debug.xcconfig"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = pompeurpro/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = pompeurpro/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		82FD1B5DEFC972F2B34FCD56 /* Pods-pompeurpro.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pompeurpro.release.xcconfig"; path = "Target Support Files/Pods-pompeurpro/Pods-pompeurpro.release.xcconfig"; sourceTree = "<group>"; };
-		A9C604F4C9F52421D628A87E /* Pods-pompeurpro.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pompeurpro.debug.xcconfig"; path = "Target Support Files/Pods-pompeurpro/Pods-pompeurpro.debug.xcconfig"; sourceTree = "<group>"; };
-		B4CE13CACC78AB8B5322EE61 /* libPods-pompeurpro.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-pompeurpro.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7AF21132EA8394E00613318 /* pompeurpro.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = pompeurpro.entitlements; sourceTree = "<group>"; };
+		DFF709118DCA062A4C8A099F /* Pods-pompeurpro.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pompeurpro.release.xcconfig"; path = "Target Support Files/Pods-pompeurpro/Pods-pompeurpro.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -33,7 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				675FFA54F84C845E9C2A6A6E /* libPods-pompeurpro.a in Frameworks */,
+				9829AE721FF3728032AA2EE1 /* libPods-pompeurpro.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -56,7 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				B4CE13CACC78AB8B5322EE61 /* libPods-pompeurpro.a */,
+				3C10BB587CF23669204E8FC6 /* libPods-pompeurpro.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -94,8 +94,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				A9C604F4C9F52421D628A87E /* Pods-pompeurpro.debug.xcconfig */,
-				82FD1B5DEFC972F2B34FCD56 /* Pods-pompeurpro.release.xcconfig */,
+				40B5DF29E5204552D79758AD /* Pods-pompeurpro.debug.xcconfig */,
+				DFF709118DCA062A4C8A099F /* Pods-pompeurpro.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -107,13 +107,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "pompeurpro" */;
 			buildPhases = (
-				EF34F8E8C58AD0F92052512A /* [CP] Check Pods Manifest.lock */,
+				3151FE6D0C150B9137D8F2FC /* [CP] Check Pods Manifest.lock */,
+				B7D5C8FB2EB9496F0097F142 /* Bundle React Native code and images */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
-				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				7DD185619C67E02772572D42 /* [CP] Embed Pods Frameworks */,
-				928597929E006D33BFAE2D2A /* [CP] Copy Pods Resources */,
+				113AD971A68F8E083DE1F669 /* [CP] Embed Pods Frameworks */,
+				230E541407540B244319F242 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -169,23 +169,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/.xcode.env.local",
-				"$(SRCROOT)/.xcode.env",
-			);
-			name = "Bundle React Native code and images";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
-		};
-		7DD185619C67E02772572D42 /* [CP] Embed Pods Frameworks */ = {
+		113AD971A68F8E083DE1F669 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -202,7 +186,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-pompeurpro/Pods-pompeurpro-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		928597929E006D33BFAE2D2A /* [CP] Copy Pods Resources */ = {
+		230E541407540B244319F242 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -219,7 +203,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-pompeurpro/Pods-pompeurpro-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		EF34F8E8C58AD0F92052512A /* [CP] Check Pods Manifest.lock */ = {
+		3151FE6D0C150B9137D8F2FC /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -241,6 +225,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		B7D5C8FB2EB9496F0097F142 /* Bundle React Native code and images */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Bundle React Native code and images";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\nif [ -f \"$WITH_ENVIRONMENT\" ]; then\n  . \"$WITH_ENVIRONMENT\"\nfi\n\nif [ -f \"$REACT_NATIVE_XCODE\" ]; then\n  . \"$REACT_NATIVE_XCODE\"\nelse\n  echo \"error: React Native build script not found\"\n  exit 1\nfi\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -257,7 +259,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A9C604F4C9F52421D628A87E /* Pods-pompeurpro.debug.xcconfig */;
+			baseConfigurationReference = 40B5DF29E5204552D79758AD /* Pods-pompeurpro.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -291,7 +293,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 82FD1B5DEFC972F2B34FCD56 /* Pods-pompeurpro.release.xcconfig */;
+			baseConfigurationReference = DFF709118DCA062A4C8A099F /* Pods-pompeurpro.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -322,6 +324,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "";
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -349,6 +352,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				CXX = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -368,6 +372,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				LD = "";
+				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -402,6 +408,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "";
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -429,6 +436,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
+				CXX = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -441,6 +449,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				LD = "";
+				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",

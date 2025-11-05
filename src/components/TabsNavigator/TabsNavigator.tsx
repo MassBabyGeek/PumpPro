@@ -1,8 +1,9 @@
 import React, {useEffect, useRef} from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {View, StyleSheet, Platform, Animated, Image} from 'react-native';
+import {View, StyleSheet, Platform, Animated} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
+import LinearGradient from 'react-native-linear-gradient';
 import HomeScreen from '../../screens/HomeScreen/HomeScreen';
 import ProfileScreen from '../../screens/ProfileScreen/ProfileScreen';
 import SocialScreen from '../../screens/SocialScreen/SocialScreen';
@@ -17,14 +18,13 @@ const Tab = createBottomTabNavigator();
 const PushUpTabIcon = ({focused}: {focused: boolean}) => {
   return (
     <View style={styles.pushUpContainer}>
-      <View
+      <LinearGradient
+        colors={[appColors.primary, appColors.accent]}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 1}}
         style={[styles.pushUpButton, focused && styles.pushUpButtonFocused]}>
-        <Image
-          source={require('../../assets/images/logoNB.png')}
-          style={styles.pushUpIcon}
-          resizeMode="contain"
-        />
-      </View>
+        <Icon name="add" size={42} color="#FFFFFF" style={styles.pushUpIcon} />
+      </LinearGradient>
     </View>
   );
 };
@@ -214,27 +214,28 @@ const styles = StyleSheet.create({
     width: 65,
     height: 65,
     borderRadius: 32.5,
-    backgroundColor: '#000000',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
     borderColor: appColors.backgroundDark,
-    shadowColor: '#000',
+    shadowColor: appColors.primary,
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 12,
   },
   pushUpButtonFocused: {
     borderWidth: 4,
     borderColor: '#FFFFFF',
+    shadowOpacity: 0.8,
+    shadowRadius: 16,
+    elevation: 16,
   },
   pushUpIcon: {
-    width: 45,
-    height: 45,
+    // Icon styles
   },
 });
 

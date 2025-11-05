@@ -31,8 +31,9 @@ const WelcomeScreen = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
 
-  const handleStartOnboarding = () => {
-    navigation.navigate('Onboarding');
+  const handleTryNow = () => {
+    // Mode invité - va directement vers le premier défi avec calibration
+    navigation.navigate('FirstChallenge');
   };
 
   const handleLogin = () => {
@@ -270,8 +271,8 @@ const WelcomeScreen = () => {
         {/* Boutons d'action */}
         <View style={styles.buttonContainer}>
           <GradientButton
-            text="Commencer l'aventure"
-            onPress={handleStartOnboarding}
+            text="Tester maintenant 🚀"
+            onPress={handleTryNow}
           />
 
           <AppButton

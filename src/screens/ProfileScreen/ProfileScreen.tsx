@@ -6,6 +6,7 @@ import Footer from '../../components/Footer';
 import appColors from '../../assets/colors';
 import {useImagePicker} from '../../hooks/useImagePicker';
 import {useAuth, useUser, useToast, useWorkouts, useTabBarHeight} from '../../hooks';
+import {useCalibrationContext} from '../../contexts/CalibrationContext';
 import QuoteCard from '../../components/QuoteCard/QuoteCard';
 import LinearGradient from 'react-native-linear-gradient';
 import ProfileHeader from './component/ProfileHeader';
@@ -32,6 +33,7 @@ const ProfileScreen = () => {
     toggleLike,
   } = useWorkouts();
   const {contentPaddingBottom} = useTabBarHeight();
+  const {resetCalibration} = useCalibrationContext();
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<
@@ -147,6 +149,29 @@ const ProfileScreen = () => {
     setIsFeedbackModalVisible(true);
   };
 
+  const handleRecalibrate = () => {
+    Alert.alert(
+      'Recalibrer mes pompes',
+      'Voulez-vous recalibrer la détection de vos pompes ? Cela réinitialisera vos réglages actuels et vous guidera à travers le processus de calibration.',
+      [
+        {text: 'Annuler', style: 'cancel'},
+        {
+          text: 'Recalibrer',
+          style: 'default',
+          onPress: async () => {
+            try {
+              await resetCalibration();
+              navigation.navigate('FirstChallenge', {isRecalibration: true});
+              toastSuccess('Calibration réinitialisée', 'Suivez les instructions pour recalibrer');
+            } catch (error) {
+              toastError('Erreur', 'Impossible de réinitialiser la calibration');
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const handleViewAllWorkouts = useCallback(() => {
     navigation.navigate('WorkoutSessions');
   }, [navigation]);
@@ -224,6 +249,7 @@ const ProfileScreen = () => {
             onLogout={handleLogout}
             onDeleteAccount={handleDeleteAccount}
             onFeedback={handleOpenFeedback}
+            onRecalibrate={handleRecalibrate}
           />
 
           <Footer />
