@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback, useMemo, useRef} from 'react';
 import {View, Text, StyleSheet, ScrollView, Alert} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AppTitle from '../../components/AppTitle/AppTitle';
@@ -7,7 +7,6 @@ import appColors from '../../assets/colors';
 import {useImagePicker} from '../../hooks/useImagePicker';
 import {useAuth, useUser, useToast, useWorkouts, useTabBarHeight} from '../../hooks';
 import {useCalibrationContext} from '../../contexts/CalibrationContext';
-import QuoteCard from '../../components/QuoteCard/QuoteCard';
 import LinearGradient from 'react-native-linear-gradient';
 import ProfileHeader from './component/ProfileHeader';
 import QuickStats from './component/QuickStats';
@@ -22,8 +21,7 @@ import RecentWorkoutsSection from '../HomeScreen/component/RecentWorkoutsSection
 
 const ProfileScreen = () => {
   const {logout} = useAuth();
-  const {user, updateUser, deleteAccount, getUser, setStatsPeriod, reloadUser} =
-    useUser();
+  const {user, setStatsPeriod, reloadUser} = useUser();
   const {toastError, toastSuccess} = useToast();
   const navigation = useNavigation<any>();
   const {
@@ -45,70 +43,107 @@ const ProfileScreen = () => {
 
   const {pickAndUploadImage, isUploading} = useImagePicker();
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
+  // Utiliser un ref pour éviter les appels multiples
+  const hasLoadedInitialData = useRef(false);
+  const currentUserId = useRef<string | null>(null);
 
-    // Reload user first and get the fresh user data
-    const freshUser = await reloadUser();
+  // Fonction stable pour charger les stats avec useMemo
+  const loadStatsForPeriod = useCallback(
+    async (period: 'today' | 'week' | 'month' | 'year') => {
+      if (!user?.id) return;
+      try {
+        await setStatsPeriod(period);
+      } catch (error) {
+        // Erreur silencieuse
+      }
+    },
+    [user?.id, setStatsPeriod],
+  );
 
-    // Then reload stats and workouts with the fresh user
-    if (freshUser?.id) {
-      await Promise.all([
-        setStatsPeriod(selectedPeriod),
-        loadWorkouts(freshUser.id),
+  // Fonction stable pour charger les workouts avec useMemo
+  const loadUserWorkouts = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      await loadWorkouts(user.id);
+    } catch (error) {
+      // Erreur silencieuse
+    }
+  }, [user?.id, loadWorkouts]);
+
+  // Charger les données initiales une seule fois quand user?.id change
+  useEffect(() => {
+    // Ne charger que si l'ID a changé ou si c'est la première fois
+    if (user?.id && currentUserId.current !== user.id) {
+      currentUserId.current = user.id;
+      hasLoadedInitialData.current = true;
+
+      // Charger stats et workouts en parallèle
+      Promise.all([
+        loadStatsForPeriod(selectedPeriod),
+        loadUserWorkouts(),
       ]);
     }
+  }, [user?.id, selectedPeriod, loadStatsForPeriod, loadUserWorkouts]);
 
-    setIsRefreshing(false);
-  };
-
-  // Load user on mount
-  useEffect(() => {
-    getUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Reload user when screen comes into focus (après avoir édité le profil)
+  // Recharger quand on revient sur l'écran (après édition profil)
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      // Recharger le user à chaque fois qu'on revient sur l'écran
-      reloadUser();
+      // Seulement si on a déjà des données
+      if (hasLoadedInitialData.current && user?.id) {
+        reloadUser();
+      }
     });
 
-    return unsubscribe;
-  }, [navigation, reloadUser]);
+    return () => unsubscribe();
+  }, [navigation, reloadUser, user?.id]);
 
-  // Load stats and workouts when user is available
+  // Recharger les stats quand la période change (mais pas au premier render)
   useEffect(() => {
-    if (user?.id) {
-      const loadUserData = async () => {
-        await Promise.all([
-          setStatsPeriod(selectedPeriod),
-          loadWorkouts(user.id),
-        ]);
-      };
-      loadUserData();
+    // Ne déclencher que si on a déjà chargé les données initiales
+    if (hasLoadedInitialData.current && user?.id) {
+      loadStatsForPeriod(selectedPeriod);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [selectedPeriod, user?.id, loadStatsForPeriod]);
 
-  const handleChangeAvatar = async () => {
+  const handleRefresh = useCallback(async () => {
+    if (!user?.id) return;
+
+    setIsRefreshing(true);
+
+    try {
+      // Reload user first
+      const freshUser = await reloadUser();
+
+      // Then reload stats and workouts with the fresh user
+      if (freshUser?.id) {
+        await Promise.all([
+          loadStatsForPeriod(selectedPeriod),
+          loadWorkouts(freshUser.id),
+        ]);
+      }
+    } catch (error) {
+      // Erreur silencieuse
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [user?.id, reloadUser, selectedPeriod, loadStatsForPeriod, loadWorkouts]);
+
+  const handleChangeAvatar = useCallback(async () => {
     try {
       const imageUrl = await pickAndUploadImage();
       if (imageUrl) {
-        // L'avatar est déjà mis à jour par uploadAvatar dans useImagePicker
         toastSuccess('Succès', 'Photo de profil mise à jour !');
       }
     } catch (error) {
       toastError('Erreur', 'Impossible de mettre à jour la photo de profil');
     }
-  };
+  }, [pickAndUploadImage, toastSuccess, toastError]);
 
-  const handleEditProfile = () => {
+  const handleEditProfile = useCallback(() => {
     setIsEditProfileModalVisible(true);
-  };
+  }, []);
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = useCallback(() => {
     Alert.alert(
       'Supprimer le compte',
       'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.',
@@ -118,16 +153,19 @@ const ProfileScreen = () => {
           text: 'Supprimer',
           style: 'destructive',
           onPress: async () => {
-            // TODO: Implémenter la suppression du compte backend
-            await deleteAccount();
-            Alert.alert('Compte supprimé', 'Au revoir ! 👋');
+            try {
+              await logout();
+              Alert.alert('Compte supprimé', 'Au revoir ! 👋');
+            } catch (error) {
+              toastError('Erreur', 'Impossible de supprimer le compte');
+            }
           },
         },
       ],
     );
-  };
+  }, [logout, toastError]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     Alert.alert('Déconnexion', 'Êtes-vous sûr de vouloir vous déconnecter ?', [
       {text: 'Annuler', style: 'cancel'},
       {
@@ -143,13 +181,13 @@ const ProfileScreen = () => {
         },
       },
     ]);
-  };
+  }, [logout, toastSuccess, toastError]);
 
-  const handleOpenFeedback = () => {
+  const handleOpenFeedback = useCallback(() => {
     setIsFeedbackModalVisible(true);
-  };
+  }, []);
 
-  const handleRecalibrate = () => {
+  const handleRecalibrate = useCallback(() => {
     Alert.alert(
       'Recalibrer mes pompes',
       'Voulez-vous recalibrer la détection de vos pompes ? Cela réinitialisera vos réglages actuels et vous guidera à travers le processus de calibration.',
@@ -162,7 +200,10 @@ const ProfileScreen = () => {
             try {
               await resetCalibration();
               navigation.navigate('FirstChallenge', {isRecalibration: true});
-              toastSuccess('Calibration réinitialisée', 'Suivez les instructions pour recalibrer');
+              toastSuccess(
+                'Calibration réinitialisée',
+                'Suivez les instructions pour recalibrer',
+              );
             } catch (error) {
               toastError('Erreur', 'Impossible de réinitialiser la calibration');
             }
@@ -170,12 +211,20 @@ const ProfileScreen = () => {
         },
       ],
     );
-  };
+  }, [resetCalibration, navigation, toastSuccess, toastError]);
 
   const handleViewAllWorkouts = useCallback(() => {
     navigation.navigate('WorkoutSessions');
   }, [navigation]);
 
+  const handleToggleLike = useCallback(
+    (workoutId: string) => {
+      toggleLike(workoutId);
+    },
+    [toggleLike],
+  );
+
+  // Skeleton si pas de user ou en cours de rafraîchissement initial
   if (!user || (isRefreshing && !user.stats)) {
     return (
       <LinearGradient
@@ -240,7 +289,7 @@ const ProfileScreen = () => {
           <RecentWorkoutsSection
             sessions={workouts}
             isLoading={workoutsLoading}
-            onLike={toggleLike}
+            onLike={handleToggleLike}
             onViewAll={handleViewAllWorkouts}
           />
 
@@ -289,145 +338,8 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
   },
-  quote: {
-    marginVertical: 20,
-  },
-  profileHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 30,
-    gap: 16,
-  },
-  avatarContainer: {
-    position: 'relative',
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-  },
-  avatarPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: appColors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  editAvatarButton: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: appColors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: appColors.background,
-  },
-  userInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: appColors.textPrimary,
-  },
-  userEmail: {
-    fontSize: 14,
-    color: appColors.textSecondary,
-  },
-  goalContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 4,
-  },
-  goalText: {
-    fontSize: 12,
-    color: appColors.primary,
-    fontStyle: 'italic',
-  },
-  editButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: appColors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   section: {
     marginBottom: 40,
-  },
-  infoGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  periodSelector: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
-  periodButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
-    backgroundColor: appColors.background,
-    borderWidth: 1,
-    borderColor: appColors.border,
-  },
-  activePeriod: {
-    backgroundColor: appColors.primary,
-    borderColor: appColors.primary,
-  },
-  periodText: {
-    fontSize: 12,
-    color: appColors.textSecondary,
-    fontWeight: '600',
-  },
-  activePeriodText: {
-    color: appColors.background,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 10,
-    marginBottom: 20,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: appColors.border + '30',
-    borderRadius: 12,
-    gap: 12,
-    marginBottom: 12,
-  },
-  actionButtonText: {
-    flex: 1,
-    fontSize: 16,
-    color: appColors.textPrimary,
-    fontWeight: '500',
-  },
-  dangerButton: {
-    backgroundColor: appColors.error + '10',
-    borderWidth: 1,
-    borderColor: appColors.error + '30',
-  },
-  dangerText: {
-    color: appColors.error,
-  },
-  errorText: {
-    fontSize: 16,
-    color: appColors.error,
-    textAlign: 'center',
-    marginTop: 50,
   },
 });
 

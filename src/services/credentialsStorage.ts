@@ -8,24 +8,23 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const CREDENTIALS_KEY = '@pompeurpro:saved_credentials';
 const REMEMBER_ME_KEY = '@pompeurpro:remember_me';
 
+/**
+ * SÉCURITÉ: On ne stocke JAMAIS le mot de passe en clair
+ * La fonctionnalité "Se souvenir de moi" ne garde que l'email
+ */
 export interface SavedCredentials {
   email: string;
-  password: string;
 }
 
 /**
- * Save user credentials to storage
+ * Save user email to storage (for "Remember Me" functionality)
+ * SÉCURITÉ: Ne sauvegarde que l'email, jamais le mot de passe
  */
-export const saveCredentials = async (
-  email: string,
-  password: string,
-): Promise<void> => {
+export const saveCredentials = async (email: string): Promise<void> => {
   try {
-    const credentials: SavedCredentials = {email, password};
+    const credentials: SavedCredentials = {email};
     await AsyncStorage.setItem(CREDENTIALS_KEY, JSON.stringify(credentials));
-    console.log('[CredentialsStorage] Credentials saved');
   } catch (error) {
-    console.error('[CredentialsStorage] Error saving credentials:', error);
     throw error;
   }
 };
@@ -41,7 +40,6 @@ export const getSavedCredentials = async (): Promise<SavedCredentials | null> =>
     }
     return null;
   } catch (error) {
-    console.error('[CredentialsStorage] Error getting credentials:', error);
     return null;
   }
 };
@@ -52,9 +50,7 @@ export const getSavedCredentials = async (): Promise<SavedCredentials | null> =>
 export const clearCredentials = async (): Promise<void> => {
   try {
     await AsyncStorage.removeItem(CREDENTIALS_KEY);
-    console.log('[CredentialsStorage] Credentials cleared');
   } catch (error) {
-    console.error('[CredentialsStorage] Error clearing credentials:', error);
     throw error;
   }
 };
@@ -66,7 +62,6 @@ export const setRememberMe = async (remember: boolean): Promise<void> => {
   try {
     await AsyncStorage.setItem(REMEMBER_ME_KEY, JSON.stringify(remember));
   } catch (error) {
-    console.error('[CredentialsStorage] Error saving remember me:', error);
     throw error;
   }
 };
@@ -79,7 +74,6 @@ export const getRememberMe = async (): Promise<boolean> => {
     const remember = await AsyncStorage.getItem(REMEMBER_ME_KEY);
     return remember ? JSON.parse(remember) : false;
   } catch (error) {
-    console.error('[CredentialsStorage] Error getting remember me:', error);
     return false;
   }
 };

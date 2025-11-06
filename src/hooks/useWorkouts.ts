@@ -22,26 +22,14 @@ export const useWorkouts = () => {
         const cached = await storageService.getCache<WorkoutSession[]>(
           STORAGE_KEYS.WORKOUTS,
         );
-        console.log('[useWorkouts] 🔍 Cache check on mount:', {
-          hasCached: !!cached,
-          count: cached?.length || 0,
-          key: STORAGE_KEYS.WORKOUTS,
-        });
         if (cached && cached.length > 0) {
           setWorkouts(cached);
           setIsCached(true);
           setCacheLoaded(true);
-          console.log(
-            '[useWorkouts] ✅ Auto-loaded',
-            cached.length,
-            'workouts from cache',
-          );
         } else {
           setCacheLoaded(true);
-          console.log('[useWorkouts] ⚠️ No cache found on mount');
         }
       } catch (err) {
-        console.error('[useWorkouts] ❌ Failed to auto-load cache:', err);
         setCacheLoaded(true);
       }
     };
@@ -61,36 +49,25 @@ export const useWorkouts = () => {
       if (cached && cached.length > 0) {
         setWorkouts(cached);
         setIsCached(true);
-        console.log('[useWorkouts] Loaded from cache');
       }
     } catch (err) {
-      console.error('[useWorkouts] Cache load error:', err);
+      // Erreur silencieuse
     }
 
     // 2. If online, fetch fresh data and update cache
     if (isOnline) {
       try {
-        console.log('[useWorkouts] 🌐 Fetching from API...');
         const data = await workoutService.getWorkoutSessions(userId, filters);
-        console.log('[useWorkouts] ✅ API returned', data.length, 'workouts');
         setWorkouts(data);
         setIsCached(false);
 
         // Update cache
         await storageService.setCache(STORAGE_KEYS.WORKOUTS, data);
-        console.log(
-          '[useWorkouts] 💾 Cache saved with',
-          data.length,
-          'workouts',
-        );
       } catch (err) {
-        console.error('[useWorkouts] ❌ API error:', err);
         if (workouts.length === 0) {
           toastError('Erreur', 'Impossible de charger les séances');
         }
       }
-    } else {
-      console.log('[useWorkouts] 📴 Offline mode, using cached data only');
     }
 
     setIsLoading(false);
@@ -122,9 +99,8 @@ export const useWorkouts = () => {
     // Sauvegarder le cache immédiatement pour persister les changements
     try {
       await storageService.setCache(STORAGE_KEYS.WORKOUTS, updatedWorkouts);
-      console.log('[useWorkouts] Cache updated after like toggle');
     } catch (err) {
-      console.error('[useWorkouts] Failed to update cache:', err);
+      // Erreur silencieuse
     }
 
     if (isOnline) {
@@ -170,21 +146,11 @@ export const useWorkouts = () => {
     }
   };
 
-  const returnValue = {
+  return {
     workouts,
     isLoading,
     isCached,
     loadWorkouts,
     toggleLike,
   };
-
-  // Debug log
-  console.log('[useWorkouts] Returning:', {
-    hasWorkouts: !!workouts,
-    workoutsLength: workouts?.length || 0,
-    hasLoadWorkouts: typeof loadWorkouts === 'function',
-    hasToggleLike: typeof toggleLike === 'function',
-  });
-
-  return returnValue;
 };

@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import appColors from '../../assets/colors';
 import {WorkoutSession, WorkoutProgram, VARIANT_LABELS, TYPE_LABELS} from '../../types/workout.types';
 import {formatTime} from '../../utils/workout.utils';
+import {getValidIconName} from '../../utils/iconMapper';
 import LikeButton from '../LikeButton';
 import {programService} from '../../services/api';
 import CreatorBadge from '../CreatorBadge';
@@ -100,7 +101,7 @@ const WorkoutSessionCard: React.FC<WorkoutSessionCardProps> = ({
           {session.challenge && (
             <View style={styles.challengeInfo}>
               <Icon
-                name={session.challenge.iconName}
+                name={getValidIconName(session.challenge.iconName)}
                 size={18}
                 color={session.challenge.iconColor}
               />

@@ -36,9 +36,15 @@ const FirstChallengeScreen = () => {
     if (distance !== null && upperValue !== null) {
       setLowerValue(distance);
       saveCalibration(upperValue, distance, true);
-      setStep('challenge');
-      // Démarrer le chrono quand on commence le challenge
-      setStartTime(Date.now());
+
+      // Si recalibration, retourner directement au ProfileScreen
+      if (isRecalibration) {
+        navigation.goBack();
+      } else {
+        // Sinon, continuer avec le challenge de 3 pompes
+        setStep('challenge');
+        setStartTime(Date.now());
+      }
     }
   };
 

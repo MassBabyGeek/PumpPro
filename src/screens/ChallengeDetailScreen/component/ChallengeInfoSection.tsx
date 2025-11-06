@@ -5,6 +5,7 @@ import appColors from '../../../assets/colors';
 import {DIFFICULTY_LABELS, DifficultyLevel} from '../../../types/workout.types';
 import {UserCreator} from '../../../types/user.types';
 import {CreatorBadge} from '../../../components';
+import {getValidIconName} from '../../../utils/iconMapper';
 
 type ChallengeInfoSectionProps = {
   iconName: string;
@@ -30,7 +31,7 @@ const ChallengeInfoSection = ({
   return (
     <View style={styles.challengeInfo}>
       <View style={styles.iconContainer}>
-        <Icon name={iconName} size={48} color={iconColor} />
+        <Icon name={getValidIconName(iconName)} size={48} color={iconColor} />
       </View>
 
       <Text style={styles.title}>{title}</Text>

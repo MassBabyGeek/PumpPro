@@ -7,6 +7,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {useRoute, useNavigation} from '@react-navigation/native';
 import {useChallenges} from '../../hooks';
 import {formatTime} from '../../utils/workout.utils';
+import {getValidIconName} from '../../utils/iconMapper';
 import {RouteProp} from '@react-navigation/native';
 import {
   ChallengeScreenNavigationProp,
@@ -81,7 +82,7 @@ const ChallengeCompletionScreen = () => {
           colors={[challenge.iconColor, `${challenge.iconColor}AA`]}
           style={styles.iconGradient}>
           <Icon
-            name={challenge.iconName}
+            name={getValidIconName(challenge.iconName)}
             size={80}
             color={appColors.textPrimary}
           />

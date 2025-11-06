@@ -25,8 +25,9 @@ import ChallengeResultsScreen from './src/screens/ChallengeResultsScreen/Challen
 const RootStack = createStackNavigator();
 
 const AppNavigator = () => {
-  const {isAuthenticated} = useAuth();
+  const {isAuthenticated, isLoading: authLoading} = useAuth();
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(null);
+  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
 
   useEffect(() => {
     checkOnboardingStatus();
@@ -35,12 +36,19 @@ const AppNavigator = () => {
   const checkOnboardingStatus = async () => {
     try {
       const value = await AsyncStorage.getItem(ONBOARDING_KEY);
-      setHasSeenOnboarding(false);
+      setHasSeenOnboarding(value === 'true');
     } catch (error) {
       console.error('Error checking onboarding status:', error);
       setHasSeenOnboarding(false);
+    } finally {
+      setIsCheckingOnboarding(false);
     }
   };
+
+  // Attendre que tout soit chargé avant d'afficher la navigation
+  if (authLoading || isCheckingOnboarding) {
+    return null; // Ou un splash screen si tu en as un
+  }
 
   return (
     <>

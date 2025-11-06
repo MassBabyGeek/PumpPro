@@ -55,9 +55,9 @@ const HomeScreen = () => {
 
   useEffect(() => {
     if (user?.id) {
-      fetchData(user?.id);
+      fetchData(user.id);
     }
-  }, [user]);
+  }, [user?.id, fetchData]);
 
   const fetchData = useCallback(
     async (userId: string) => {
@@ -77,7 +77,7 @@ const HomeScreen = () => {
 
         refreshLeaderboard();
       } catch (err) {
-        console.error('[HomeScreen] Error fetching data', err);
+        // Erreur silencieuse en production
       } finally {
         setIsLoading(false);
       }
@@ -85,24 +85,27 @@ const HomeScreen = () => {
     [getStats, loadWorkouts, refreshLeaderboard],
   );
 
-  const handleProgramPress = (program: WorkoutProgram) => {
-    navigation.navigate('PushUp', {
-      screen: 'Libre',
-      params: {programId: program.id},
-    });
-  };
+  const handleProgramPress = useCallback(
+    (program: WorkoutProgram) => {
+      navigation.navigate('PushUp', {
+        screen: 'Libre',
+        params: {programId: program.id},
+      });
+    },
+    [navigation],
+  );
 
-  const handleNotificationPress = () => {
+  const handleNotificationPress = useCallback(() => {
     navigation.navigate('Notifications');
-  };
+  }, [navigation]);
 
-  const handleViewAllLeaderboard = () => {
+  const handleViewAllLeaderboard = useCallback(() => {
     navigation.navigate('LeaderboardDetail');
-  };
+  }, [navigation]);
 
-  const handleViewAllWorkouts = () => {
+  const handleViewAllWorkouts = useCallback(() => {
     navigation.navigate('WorkoutSessions');
-  };
+  }, [navigation]);
 
   const onRefresh = useCallback(async () => {
     if (!user?.id) return;

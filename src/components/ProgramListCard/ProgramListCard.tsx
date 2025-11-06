@@ -38,102 +38,101 @@ const ProgramListCard = ({
     <TouchableOpacity
       style={styles.cardContainer}
       onPress={onPress}
-      activeOpacity={0.7}>
-      <View style={styles.card}>
-        <LinearGradient
-          colors={[appColors.backgroundLight, appColors.backgroundLight]}
-          start={{x: 0, y: 0}}
-          end={{x: 1, y: 1}}
-          style={styles.gradient}>
-          <View style={styles.content}>
-            <View style={styles.leftSection}>
-              {/* Icon circulaire avec gradient */}
-              <View style={styles.iconContainer}>
-                <LinearGradient
-                  colors={[appColors.primary + '30', appColors.accent + '30']}
-                  start={{x: 0, y: 0}}
-                  end={{x: 1, y: 1}}
-                  style={styles.iconGradient}>
+      activeOpacity={0.85}>
+      <LinearGradient
+        colors={[appColors.primary + '25', appColors.accent + '25']}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 1}}
+        style={styles.card}>
+        <View style={styles.content}>
+          <View style={styles.leftSection}>
+            {/* Icon circulaire avec gradient */}
+            <View style={styles.iconWrapper}>
+              <LinearGradient
+                colors={[appColors.primary, appColors.accent]}
+                start={{x: 0, y: 0}}
+                end={{x: 1, y: 1}}
+                style={styles.iconGradient}>
+                <Icon
+                  name={getProgramIcon(program.type)}
+                  size={26}
+                  color="#FFFFFF"
+                />
+              </LinearGradient>
+            </View>
+
+            <View style={styles.textContainer}>
+              <Text style={styles.label}>{program.name}</Text>
+              <Text style={styles.subLabel}>{getSubLabel()}</Text>
+
+              {/* Creator Badge */}
+              <View style={styles.creatorSection}>
+                <CreatorBadge
+                  creator={program.creator}
+                  isOfficial={program.isFeatured}
+                  size="small"
+                  showAvatar={false}
+                />
+              </View>
+
+              <View style={styles.metaContainer}>
+                <View style={styles.usageContainer}>
                   <Icon
-                    name={getProgramIcon(program.type)}
-                    size={28}
+                    name="people"
+                    size={14}
                     color={appColors.primary}
                   />
-                </LinearGradient>
-              </View>
+                  <Text style={styles.usageText}>
+                    {program?.usageCount || 0} utilisations
+                  </Text>
+                </View>
 
-              <View style={styles.textContainer}>
-                <Text style={styles.label}>{program.name}</Text>
-                <Text style={styles.subLabel}>{getSubLabel()}</Text>
-
-                {/* Creator Badge */}
-                <View style={styles.creatorSection}>
-                  <CreatorBadge
-                    creator={program.creator}
-                    isOfficial={program.isFeatured}
+                {program.likes !== undefined && onLike && (
+                  <LikeButton
+                    likes={program.likes}
+                    userLiked={program.userLiked || false}
+                    onPress={onLike}
                     size="small"
-                    showAvatar={false}
+                    variant="inline"
                   />
-                </View>
-
-                <View style={styles.metaContainer}>
-                  <View style={styles.usageContainer}>
-                    <Icon
-                      name="people"
-                      size={14}
-                      color={appColors.textSecondary}
-                    />
-                    <Text style={styles.usageText}>
-                      {program?.usageCount || 0} utilisations
-                    </Text>
-                  </View>
-
-                  {program.likes !== undefined && onLike && (
-                    <LikeButton
-                      likes={program.likes}
-                      userLiked={program.userLiked || false}
-                      onPress={onLike}
-                      size="small"
-                      variant="inline"
-                    />
-                  )}
-                </View>
+                )}
               </View>
-            </View>
-
-            {/* Icône flèche avec accent */}
-            <View style={styles.arrowContainer}>
-              <Icon
-                name="chevron-forward"
-                size={24}
-                color={appColors.primary}
-              />
             </View>
           </View>
-        </LinearGradient>
-      </View>
+
+          {/* Icône flèche avec gradient */}
+          <LinearGradient
+            colors={[appColors.primary + '30', appColors.accent + '30']}
+            start={{x: 0, y: 0}}
+            end={{x: 1, y: 1}}
+            style={styles.arrowContainer}>
+            <Icon
+              name="chevron-forward"
+              size={22}
+              color={appColors.textPrimary}
+            />
+          </LinearGradient>
+        </View>
+      </LinearGradient>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   cardContainer: {
-    marginBottom: 4,
+    marginBottom: 16,
+    elevation: 8,
+    shadowColor: appColors.primary,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
   },
   card: {
     borderRadius: 20,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: appColors.border + '40',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-  },
-  gradient: {
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingVertical: 18,
+    borderWidth: 1.5,
+    borderColor: appColors.primary + '40',
   },
   content: {
     flex: 1,
@@ -147,13 +146,17 @@ const styles = StyleSheet.create({
     gap: 16,
     alignItems: 'flex-start',
   },
-  iconContainer: {
-    marginTop: 2,
+  iconWrapper: {
+    elevation: 4,
+    shadowColor: appColors.primary,
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
   },
   iconGradient: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -193,13 +196,14 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   arrowContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: appColors.primary + '20',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: 12,
+    borderWidth: 1,
+    borderColor: appColors.primary + '30',
   },
 });
 

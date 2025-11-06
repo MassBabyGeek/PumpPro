@@ -7,6 +7,7 @@ import {Challenge} from '../../types/challenge.types';
 import {DIFFICULTY_LABELS, VARIANT_LABELS} from '../../types/workout.types';
 import LikeButton from '../LikeButton';
 import CreatorBadge from '../CreatorBadge';
+import {getValidIconName} from '../../utils/iconMapper';
 
 interface ChallengeCardProps {
   challenge: Challenge;
@@ -66,32 +67,39 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
     <TouchableOpacity
       style={styles.container}
       onPress={() => onPress(challenge)}
-      activeOpacity={0.8}>
+      activeOpacity={0.85}>
       <LinearGradient
-        colors={[`${challenge.iconColor}15`, `${challenge.iconColor}05`]}
+        colors={[appColors.primary + '25', appColors.accent + '25']}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 1}}
         style={styles.gradient}>
         {/* Header avec icône et badge */}
         <View style={styles.gradientContainer}>
           <View style={styles.header}>
-            <View style={styles.iconContainer}>
-              <Icon
-                size={32}
-                name={challenge.iconName}
-                color={challenge.iconColor}
-              />
+            <View style={styles.iconWrapper}>
+              <LinearGradient
+                colors={[appColors.primary, appColors.accent]}
+                start={{x: 0, y: 0}}
+                end={{x: 1, y: 1}}
+                style={styles.iconContainer}>
+                <Icon
+                  size={28}
+                  name={getValidIconName(challenge.iconName)}
+                  color="#FFFFFF"
+                />
+              </LinearGradient>
             </View>
 
             <View style={styles.headerRight}>
-              <View
-                style={[
-                  styles.difficultyBadge,
-                  {backgroundColor: `${challenge.iconColor}20`},
-                ]}>
-                <Text
-                  style={[styles.difficultyText, {color: challenge.iconColor}]}>
+              <LinearGradient
+                colors={[appColors.primary + '40', appColors.accent + '40']}
+                start={{x: 0, y: 0}}
+                end={{x: 1, y: 0}}
+                style={styles.difficultyBadge}>
+                <Text style={styles.difficultyText}>
                   {DIFFICULTY_LABELS[challenge.difficulty]}
                 </Text>
-              </View>
+              </LinearGradient>
             </View>
           </View>
 
@@ -104,13 +112,13 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
           {/* Détails du challenge */}
           <View style={styles.details}>
             <View style={styles.detailItem}>
-              <Icon name="barbell" size={14} color={appColors.textSecondary} />
+              <Icon name="barbell" size={14} color={appColors.primary} />
               <Text style={styles.detailText}>
                 {VARIANT_LABELS[challenge.variant]}
               </Text>
             </View>
             <View style={styles.detailItem}>
-              <Icon name="target" size={14} color={appColors.textSecondary} />
+              <Icon name="target" size={14} color={appColors.accent} />
               <Text style={styles.detailText}>{getTargetText()}</Text>
             </View>
           </View>
@@ -128,7 +136,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
           {/* Stats */}
           <View style={styles.stats}>
             <View style={styles.statItem}>
-              <Icon name="people" size={16} color={appColors.textSecondary} />
+              <Icon name="people" size={16} color={appColors.primary} />
               <Text style={styles.statText}>
                 {formatNumber(challenge.participants)}
               </Text>
@@ -151,8 +159,14 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
             />
 
             <View style={styles.pointsContainer}>
-              <Icon name="star" size={14} color={appColors.warning} />
-              <Text style={styles.pointsText}>{challenge.points} pts</Text>
+              <LinearGradient
+                colors={[appColors.warning + '30', appColors.warning + '20']}
+                start={{x: 0, y: 0}}
+                end={{x: 1, y: 0}}
+                style={styles.pointsGradient}>
+                <Icon name="star" size={14} color={appColors.warning} />
+                <Text style={styles.pointsText}>{challenge.points} pts</Text>
+              </LinearGradient>
             </View>
           </View>
 
@@ -169,7 +183,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
               </View>
               <View style={styles.progressBarContainer}>
                 <LinearGradient
-                  colors={[challenge.iconColor, `${challenge.iconColor}CC`]}
+                  colors={[appColors.primary, appColors.accent]}
                   start={{x: 0, y: 0}}
                   end={{x: 1, y: 0}}
                   style={[
@@ -183,14 +197,18 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
 
           {/* Completed banner */}
           {challenge.userCompleted && (
-            <View style={styles.completedBanner}>
+            <LinearGradient
+              colors={[appColors.success + '30', appColors.success + '20']}
+              start={{x: 0, y: 0}}
+              end={{x: 1, y: 0}}
+              style={styles.completedBanner}>
               <Icon
                 name="checkmark-circle"
                 size={16}
                 color={appColors.success}
               />
-              <Text style={styles.completedText}>Complété ✓</Text>
-            </View>
+              <Text style={styles.completedText}>Complété</Text>
+            </LinearGradient>
           )}
         </View>
       </LinearGradient>
@@ -200,27 +218,43 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
-    borderRadius: 16,
+    marginBottom: 20,
+    borderRadius: 20,
     overflow: 'visible',
+    elevation: 8,
+    shadowColor: appColors.primary,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
   },
   gradientContainer: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 20,
   },
   gradient: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: `${appColors.textSecondary}20`,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: appColors.primary + '40',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 16,
+  },
+  iconWrapper: {
+    elevation: 4,
+    shadowColor: appColors.primary,
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
   },
   iconContainer: {
-    position: 'relative',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   badge: {
     position: 'absolute',
@@ -233,13 +267,16 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   difficultyBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: appColors.primary + '30',
   },
   difficultyText: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '700',
+    color: appColors.textPrimary,
   },
   title: {
     fontSize: 20,
@@ -292,13 +329,16 @@ const styles = StyleSheet.create({
   },
   pointsContainer: {
     marginLeft: 'auto',
+  },
+  pointsGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: `${appColors.warning}20`,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: appColors.warning + '40',
   },
   pointsText: {
     fontSize: 12,
@@ -343,10 +383,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    marginTop: 12,
-    paddingVertical: 8,
-    backgroundColor: `${appColors.success}20`,
-    borderRadius: 8,
+    marginTop: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: appColors.success + '40',
   },
   completedText: {
     fontSize: 13,

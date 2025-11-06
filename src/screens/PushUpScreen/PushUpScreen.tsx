@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {Text, View, StyleSheet, Alert, ScrollView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import GradientButton from '../../components/GradientButton/GradientButton';
@@ -58,16 +58,11 @@ const PushUpScreen = () => {
     [calibration.upperDistance, calibration.lowerDistance],
   );
 
-  useEffect(() => {
-    console.log('[PushUpScreen] Program:', program);
-    console.log('[PushUpScreen] WorkoutState:', workoutState);
-    console.log('[PushUpScreen] Calibration thresholds:', customThresholds);
-  }, [program, workoutState, customThresholds]);
+  // Debug: les données de calibration sont maintenant utilisées automatiquement
 
   const handleStop = () => {
     const session = stopWorkout();
     if (!session) {
-      console.error('[PushUpScreen] No session to save');
       return;
     }
     navigation.navigate('PushUpSummary', {session, challengeId, taskId});

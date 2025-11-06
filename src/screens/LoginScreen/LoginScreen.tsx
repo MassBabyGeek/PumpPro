@@ -38,12 +38,13 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
         const credentials = await credentialsStorage.getSavedCredentials();
         if (credentials) {
           setEmail(credentials.email);
-          setPassword(credentials.password);
+          // SÉCURITÉ: On ne charge jamais le mot de passe depuis le stockage
+          // L'utilisateur doit le retaper à chaque fois
           setRememberMe(true);
         }
       }
     } catch (error) {
-      console.error('[LoginScreen] Error loading credentials:', error);
+      // Erreur silencieuse lors du chargement des credentials
     }
   };
 
@@ -59,8 +60,9 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
       await login(email, password);
 
       // Save or clear credentials based on remember me checkbox
+      // SÉCURITÉ: On ne sauvegarde que l'email, jamais le mot de passe
       if (rememberMe) {
-        await credentialsStorage.saveCredentials(email, password);
+        await credentialsStorage.saveCredentials(email);
         await credentialsStorage.setRememberMe(true);
       } else {
         await credentialsStorage.clearCredentials();

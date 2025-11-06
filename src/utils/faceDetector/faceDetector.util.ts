@@ -72,12 +72,6 @@ export function createOnFacesDetected(
   const UPPER_THRESHOLD = customThresholds?.upper ?? FAR_THRESHOLD;   // Position haute (bras tendus)
   const LOWER_THRESHOLD = customThresholds?.lower ?? CLOSE_THRESHOLD; // Position basse (près du sol)
 
-  console.log('[FaceDetector] Using thresholds:', {
-    upper: UPPER_THRESHOLD,
-    lower: LOWER_THRESHOLD,
-    isCalibrated: !!customThresholds,
-  });
-
   return (faces: Face[]) => {
     if (!getIsActive()) return;
 
